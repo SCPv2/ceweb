@@ -485,202 +485,10 @@
             background: #555;
         }
 
-        /* Order Confirmation Modal */
-        .order-confirmation-modal {
-            display: none;
-            position: fixed;
-            z-index: 2000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.7);
-        }
-
-        .order-confirmation-content {
-            background-color: #fff;
-            margin: 5% auto;
-            padding: 0;
-            border-radius: 15px;
-            width: 90%;
-            max-width: 500px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-            overflow: hidden;
-            animation: slideIn 0.3s ease;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .order-confirmation-header {
-            background: linear-gradient(135deg, #333, #555);
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-
-        .order-confirmation-header h2 {
-            margin: 0;
-            font-size: 1.5rem;
-            margin-bottom: 5px;
-        }
-
-        .order-confirmation-header p {
-            margin: 0;
-            opacity: 0.9;
-            font-size: 0.9rem;
-        }
-
-        .order-confirmation-body {
-            padding: 25px;
-        }
-
-        .order-product-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 20px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 10px;
-        }
-
-        .order-product-image {
-            width: 80px;
-            height: 80px;
-            border-radius: 8px;
-            overflow: hidden;
-            background: #e0e0e0;
-        }
-
-        .order-product-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .order-product-details h3 {
-            font-size: 1.1rem;
-            color: #333;
-            margin: 0 0 5px 0;
-            line-height: 1.3;
-        }
-
-        .order-product-details p {
-            margin: 0;
-            color: #666;
-            font-size: 0.9rem;
-        }
-
-        .order-details {
-            border-top: 1px solid #eee;
-            padding-top: 20px;
-        }
-
-        .order-detail-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 0;
-            font-size: 0.95rem;
-        }
-
-        .order-detail-row.total {
-            font-weight: bold;
-            font-size: 1.1rem;
-            color: #e74c3c;
-            border-top: 2px solid #e74c3c;
-            padding-top: 15px;
-            margin-top: 10px;
-        }
-
-        .order-confirmation-footer {
-            padding: 20px 25px 25px;
-            text-align: center;
-        }
-
-        .order-confirmation-button {
-            background: #333;
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 25px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: background 0.3s ease;
-        }
-
-        .order-confirmation-button:hover {
-            background: #555;
-        }
-
-        /* Loading Overlay */
-        .loading-overlay {
-            display: none;
-            position: fixed;
-            z-index: 1500;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-        }
-
-        .loading-content {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        }
-
-        .loading-spinner-big {
-            width: 50px;
-            height: 50px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #333;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-
-        .loading-text {
-            font-size: 1.1rem;
-            color: #333;
-            margin: 0;
-        }
-
         /* Responsive */
         @media (max-width: 768px) {
             .container {
                 margin: 0;
-            }
-
-            .order-confirmation-content {
-                margin: 10% auto;
-                width: 95%;
-            }
-
-            .order-product-info {
-                flex-direction: column;
-                text-align: center;
-            }
-
-            .order-product-image {
-                width: 100px;
-                height: 100px;
             }
         }
     </style>
@@ -764,37 +572,6 @@
                     <div class="spinner"></div>
                     <p>주문 내역을 불러오는 중...</p>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="loading-overlay">
-        <div class="loading-content">
-            <div class="loading-spinner-big"></div>
-            <p class="loading-text">주문이 진행 중입니다...</p>
-        </div>
-    </div>
-
-    <!-- Order Confirmation Modal -->
-    <div id="orderConfirmationModal" class="order-confirmation-modal">
-        <div class="order-confirmation-content">
-            <div class="order-confirmation-header">
-                <h2>주문이 완료되었습니다!</h2>
-                <p>주문해 주셔서 감사합니다.</p>
-            </div>
-            <div class="order-confirmation-body">
-                <div class="order-product-info" id="confirmationProductInfo">
-                    <!-- 상품 정보가 여기에 동적으로 추가됩니다 -->
-                </div>
-                <div class="order-details" id="confirmationOrderDetails">
-                    <!-- 주문 상세 정보가 여기에 동적으로 추가됩니다 -->
-                </div>
-            </div>
-            <div class="order-confirmation-footer">
-                <button class="order-confirmation-button" onclick="closeOrderConfirmation()">
-                    쇼핑 계속하기
-                </button>
             </div>
         </div>
     </div>
@@ -962,10 +739,6 @@
                 return data;
             } catch (error) {
                 console.error('주문 API 호출 실패:', error);
-                
-                // 로딩 시뮬레이션을 위한 지연 (2초)
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                
                 // Fallback to sample success response
                 return {
                     success: true,
@@ -1056,9 +829,6 @@
                 return;
             }
 
-            // 로딩 오버레이 표시
-            showLoadingOverlay();
-
             try {
                 const orderData = {
                     customerName: orderName.value.trim(),
@@ -1069,12 +839,16 @@
                 console.log('주문 데이터 전송 중:', orderData);
                 const result = await createOrder(orderData);
 
-                // 로딩 오버레이 숨기기
-                hideLoadingOverlay();
-
                 if (result.success) {
-                    // 주문 완료 팝업 표시
-                    showOrderConfirmation(result.order);
+                    const confirmMessage = `주문이 완료되었습니다!\n\n` +
+                                         `주문자: ${result.order.customerName}\n` +
+                                         `상품: ${result.order.productTitle}\n` +
+                                         `${productData.subtitle ? `버전: ${productData.subtitle}\n` : ''}` +
+                                         `수량: ${result.order.quantity}개\n` +
+                                         `총 결제금액: ${result.order.totalPrice.toLocaleString()}원\n` +
+                                         `남은 재고: ${result.order.remainingStock}개`;
+                    
+                    alert(confirmMessage);
                     
                     // 재고 정보 새로고침
                     await fetchInventory(productData.id);
@@ -1083,85 +857,9 @@
                     alert(`주문 실패: ${result.message}`);
                 }
             } catch (error) {
-                // 로딩 오버레이 숨기기
-                hideLoadingOverlay();
                 console.error('주문 처리 오류:', error);
                 alert('주문 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
             }
-        }
-
-        // 로딩 오버레이 표시
-        function showLoadingOverlay() {
-            document.getElementById('loadingOverlay').style.display = 'block';
-        }
-
-        // 로딩 오버레이 숨기기
-        function hideLoadingOverlay() {
-            document.getElementById('loadingOverlay').style.display = 'none';
-        }
-
-        // 주문 완료 팝업 표시
-        function showOrderConfirmation(orderInfo) {
-            const modal = document.getElementById('orderConfirmationModal');
-            const productInfoContainer = document.getElementById('confirmationProductInfo');
-            const orderDetailsContainer = document.getElementById('confirmationOrderDetails');
-            
-            // 이미지 경로 처리
-            let imagePath = productData.image;
-            if (imagePath.startsWith('../prod_image/')) {
-                imagePath = imagePath.replace('../prod_image/', '../media/');
-            } else if (imagePath.startsWith('./prod_image/')) {
-                imagePath = imagePath.replace('./prod_image/', '../media/');
-            }
-            
-            // 상품 정보 렌더링
-            productInfoContainer.innerHTML = `
-                <div class="order-product-image">
-                    <img src="${imagePath}" alt="${productData.title}" 
-                         onerror="this.style.display='none'; this.parentElement.style.background='linear-gradient(135deg, #f0f0f0, #e0e0e0)';">
-                </div>
-                <div class="order-product-details">
-                    <h3>${productData.title}</h3>
-                    ${productData.subtitle ? `<p>${productData.subtitle}</p>` : ''}
-                </div>
-            `;
-            
-            // 주문 상세 정보 렌더링
-            orderDetailsContainer.innerHTML = `
-                <div class="order-detail-row">
-                    <span>주문자</span>
-                    <span>${orderInfo.customerName}</span>
-                </div>
-                <div class="order-detail-row">
-                    <span>수량</span>
-                    <span>${orderInfo.quantity}개</span>
-                </div>
-                <div class="order-detail-row">
-                    <span>상품금액</span>
-                    <span>${orderInfo.totalPrice.toLocaleString()}원</span>
-                </div>
-                <div class="order-detail-row">
-                    <span>배송비</span>
-                    <span>무료</span>
-                </div>
-                <div class="order-detail-row total">
-                    <span>총 결제금액</span>
-                    <span>${orderInfo.totalPrice.toLocaleString()}원</span>
-                </div>
-                <div class="order-detail-row">
-                    <span>남은 재고</span>
-                    <span>${orderInfo.remainingStock}개</span>
-                </div>
-            `;
-            
-            modal.style.display = 'block';
-        }
-
-        // 주문 완료 팝업 닫기 및 shop.html로 이동
-        function closeOrderConfirmation() {
-            document.getElementById('orderConfirmationModal').style.display = 'none';
-            // shop.html로 이동
-            window.location.href = './shop.html';
         }
 
         // 주문 내역 조회 모달 표시
