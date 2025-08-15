@@ -721,19 +721,17 @@
         </div>
     </div>
 
-    <!-- API Configuration Script -->
-    <script src="../web-server/api-config.js"></script>
     <script>
-        // API 설정은 api-config.js에서 처리됨
-        console.log('admin.html 로드됨 - API 설정 확인중...');
-        
-        // api-config.js가 로드되었는지 확인
-        if (typeof getProducts === 'undefined') {
-            console.error('api-config.js가 로드되지 않았습니다!');
-            alert('API 설정 파일을 로드할 수 없습니다. 페이지를 새로고침 해주세요.');
-        } else {
-            console.log('api-config.js 로드 완료');
-        }
+        // API 기본 URL 설정 - DB서버와 직접 연결
+        const API_BASE_URL = (() => {
+            if (window.location.hostname === 'localhost' || 
+                window.location.hostname === '127.0.0.1' ||
+                window.location.hostname.includes('192.168.') ||
+                window.location.hostname.includes('10.0.')) {
+                return 'http://localhost:3000/api';
+            }
+            return 'http://app.cesvc.net:3000/api';
+        })();
 
         // 데이터베이스 연결 설정
         const DB_CONFIG = {
@@ -762,16 +760,24 @@
             const statusTextElement = document.getElementById('dbStatusText');
             
             try {
-                // api-config.js의 getProducts 함수 사용
-                const data = await getProducts();
+                // order.html에서 성공한 엔드포인트 사용
+                const response = await fetch(`${API_BASE_URL}/orders/products`, { 
+                    method: 'GET',
+                    timeout: 5000 
+                });
                 
-                if (data.success) {
-                    statusElement.className = 'db-status connected';
-                    statusTextElement.textContent = 'DB 연결됨 (app.cesvc.net:3000)';
-                    console.log('데이터베이스 연결 성공', data);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        statusElement.className = 'db-status connected';
+                        statusTextElement.textContent = 'DB 연결됨 (app.cesvc.net:3000)';
+                        console.log('데이터베이스 연결 성공');
+                    } else {
+                        statusElement.className = 'db-status disconnected';
+                        statusTextElement.textContent = 'DB 연결 실패';
+                    }
                 } else {
-                    statusElement.className = 'db-status disconnected';
-                    statusTextElement.textContent = 'DB 연결 실패';
+                    throw new Error('Response not ok');
                 }
             } catch (error) {
                 console.error('Database connection check failed:', error);
@@ -838,7 +844,7 @@
         async function loadProducts() {
             showLoading();
             try {
-                const data = await getProducts();
+                const data = await getAdminProducts();
                 
                 if (data.success && data.products) {
                     products = data.products;
@@ -1130,20 +1136,22 @@
             hideLoading();
         }
 
-        // 재고 관리를 위한 상품 정보 로드 - api-config.js 사용
+        // 재고 관리를 위한 상품 정보 로드 - order.html과 동일한 방식
         async function loadProductsForInventory() {
             try {
-                const data = await getProducts();
+                const response = await fetch(`${API_BASE_URL}/orders/products`);
+                const data = await response.json();
                 
                 if (data.success && data.products) {
                     // 각 상품의 실제 재고 정보 조회
                     const inventoryPromises = data.products.map(async (product) => {
                         try {
-                            const invData = await getProductInventory(product.id);
+                            const invResponse = await fetch(`${API_BASE_URL}/orders/products/${product.id}/inventory`);
+                            const invData = await invResponse.json();
                             
                             if (invData.success && invData.product) {
                                 return {
-                                    product_id: product.id,
+                                    id: product.id,
                                     product_title: product.title,
                                     product_subtitle: product.subtitle || '',
                                     stock_quantity: invData.product.stock_quantity,
@@ -1153,7 +1161,7 @@
                                 };
                             } else {
                                 return {
-                                    product_id: product.id,
+                                    id: product.id,
                                     product_title: product.title,
                                     product_subtitle: product.subtitle || '',
                                     stock_quantity: 50,
@@ -1165,7 +1173,7 @@
                         } catch (error) {
                             console.error(`상품 ${product.id} 재고 조회 실패:`, error);
                             return {
-                                product_id: product.id,
+                                id: product.id,
                                 product_title: product.title,
                                 product_subtitle: product.subtitle || '',
                                 stock_quantity: 50,
