@@ -579,8 +579,7 @@
             
             <div class="upload-area" id="uploadArea">
                 <div class="upload-icon">📁</div>
-                <div class="upload-text">지원서를 업로드하세요<br>
-                파일 형식: (지원자 이름)_(성별)_(출생년월).확장자 (예시, 김예림_여_201005.PDF)</div>
+                <div class="upload-text">지원서를 업로드하세요</div>
                 <div class="upload-subtext">파일을 드래그 앤 드롭하거나 아래 버튼을 클릭하세요<br>
                 (PDF, DOC, DOCX, MP3, MP4, JPG, PNG 파일 지원, 최대 50MB)</div>
                 <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
@@ -623,7 +622,7 @@
                 window.location.hostname.includes('10.0.')) {
                 return 'http://localhost:3000/api';
             }
-            return 'http://app.cesvc.net:3000/api';
+            return 'https://app.cesvc.net/api';
         })();
 
         // DOM 요소들
@@ -726,17 +725,11 @@
             hideMessages();
 
             try {
-                // API 연결 시도 (타임아웃 10초)
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 10000);
-                
                 const response = await fetch(`${API_BASE_URL}/audition/upload`, {
                     method: 'POST',
-                    body: formData,
-                    signal: controller.signal
+                    body: formData
                 });
 
-                clearTimeout(timeoutId);
                 const result = await response.json();
 
                 if (result.success) {
@@ -746,7 +739,6 @@
                     showError(result.message || '파일 업로드에 실패했습니다.');
                 }
             } catch (error) {
-                console.log('API 서버에 연결할 수 없습니다. 로컬 모드로 파일을 저장합니다.');
                 console.error('Upload error:', error);
                 // API 연결 실패시 로컬에 추가 (시뮬레이션)
                 addFileToLocalList(file);
@@ -774,15 +766,7 @@
         // 파일 목록 불러오기
         async function loadFileList() {
             try {
-                // API 연결 시도 (타임아웃 5초)
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 5000);
-                
-                const response = await fetch(`${API_BASE_URL}/audition/files`, {
-                    signal: controller.signal
-                });
-                
-                clearTimeout(timeoutId);
+                const response = await fetch(`${API_BASE_URL}/audition/files`);
                 const result = await response.json();
 
                 if (result.success) {
@@ -793,13 +777,8 @@
                     renderFileList(); // 빈 목록 표시
                 }
             } catch (error) {
-                console.log('API 서버에 연결할 수 없습니다. 로컬 모드로 실행합니다.');
                 console.error('파일 목록 로드 오류:', error);
-                // API 연결 실패시 기존 로컬 데이터 유지
-                if (uploadedFiles.length === 0) {
-                    // 샘플 데이터 표시 (선택사항)
-                    uploadedFiles = [];
-                }
+                // API 연결 실패시 로컬 샘플 데이터 표시
                 renderFileList();
             }
         }
@@ -866,15 +845,7 @@
         // 파일 다운로드
         async function downloadFile(fileId) {
             try {
-                // API 연결 시도 (타임아웃 15초)
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 15000);
-                
-                const response = await fetch(`${API_BASE_URL}/audition/download/${fileId}`, {
-                    signal: controller.signal
-                });
-                
-                clearTimeout(timeoutId);
+                const response = await fetch(`${API_BASE_URL}/audition/download/${fileId}`);
                 
                 if (response.ok) {
                     const blob = await response.blob();
@@ -890,9 +861,8 @@
                     showError('파일 다운로드에 실패했습니다.');
                 }
             } catch (error) {
-                console.log('API 서버에 연결할 수 없어 다운로드를 할 수 없습니다.');
                 console.error('Download error:', error);
-                showError('API 서버에 연결할 수 없어 파일 다운로드를 할 수 없습니다. (로컬 저장된 파일)');
+                showError('파일 다운로드 중 오류가 발생했습니다.');
             }
         }
 
@@ -903,16 +873,10 @@
             }
 
             try {
-                // API 연결 시도 (타임아웃 10초)
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 10000);
-                
                 const response = await fetch(`${API_BASE_URL}/audition/delete/${fileId}`, {
-                    method: 'DELETE',
-                    signal: controller.signal
+                    method: 'DELETE'
                 });
 
-                clearTimeout(timeoutId);
                 const result = await response.json();
 
                 if (result.success) {
@@ -922,12 +886,11 @@
                     showError(result.message || '파일 삭제에 실패했습니다.');
                 }
             } catch (error) {
-                console.log('API 서버에 연결할 수 없습니다. 로컬에서 파일을 삭제합니다.');
                 console.error('Delete error:', error);
                 // API 연결 실패시 로컬에서 삭제
                 uploadedFiles = uploadedFiles.filter(file => (file.id || file.name) !== fileId);
                 renderFileList();
-                showSuccess('파일이 삭제되었습니다. (로컬에서만 삭제됨)');
+                showSuccess('파일이 삭제되었습니다.');
             }
         }
 
