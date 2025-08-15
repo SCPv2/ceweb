@@ -968,16 +968,16 @@
                     };
                 }
                 
-                // 누락된 admin 함수들 정의 (하드코딩된 엔드포인트 사용)
+                // 누락된 admin 함수들 정의
                 if (typeof window.getAdminProducts === 'undefined') {
                     window.getAdminProducts = async function() {
-                        return await apiRequest('/orders/admin/products');
+                        return await apiRequest(API_ENDPOINTS.admin.products.list);
                     };
                 }
                 
                 if (typeof window.createAdminProduct === 'undefined') {
                     window.createAdminProduct = async function(productData) {
-                        return await apiRequest('/orders/admin/products', {
+                        return await apiRequest(API_ENDPOINTS.admin.products.create, {
                             method: 'POST',
                             body: JSON.stringify(productData)
                         });
@@ -986,7 +986,7 @@
                 
                 if (typeof window.updateAdminProduct === 'undefined') {
                     window.updateAdminProduct = async function(productId, productData) {
-                        return await apiRequest(`/orders/admin/products/${productId}`, {
+                        return await apiRequest(API_ENDPOINTS.admin.products.update(productId), {
                             method: 'PUT',
                             body: JSON.stringify(productData)
                         });
@@ -995,7 +995,7 @@
                 
                 if (typeof window.deleteAdminProduct === 'undefined') {
                     window.deleteAdminProduct = async function(productId) {
-                        return await apiRequest(`/orders/admin/products/${productId}`, {
+                        return await apiRequest(API_ENDPOINTS.admin.products.delete(productId), {
                             method: 'DELETE'
                         });
                     };
@@ -1003,13 +1003,13 @@
                 
                 if (typeof window.getAdminInventory === 'undefined') {
                     window.getAdminInventory = async function() {
-                        return await apiRequest('/orders/admin/inventory');
+                        return await apiRequest(API_ENDPOINTS.admin.inventory.list);
                     };
                 }
                 
                 if (typeof window.addAdminInventory === 'undefined') {
                     window.addAdminInventory = async function(productId, quantity) {
-                        return await apiRequest(`/orders/admin/inventory/${productId}/add`, {
+                        return await apiRequest(API_ENDPOINTS.admin.inventory.add(productId), {
                             method: 'POST',
                             body: JSON.stringify({ quantity })
                         });
@@ -1018,7 +1018,7 @@
                 
                 if (typeof window.resetAdminInventory === 'undefined') {
                     window.resetAdminInventory = async function() {
-                        return await apiRequest('/orders/admin/reset-inventory', {
+                        return await apiRequest(API_ENDPOINTS.admin.inventory.resetAll, {
                             method: 'POST'
                         });
                     };
@@ -1026,13 +1026,13 @@
                 
                 if (typeof window.getAdminOrders === 'undefined') {
                     window.getAdminOrders = async function() {
-                        return await apiRequest('/orders/list');
+                        return await apiRequest(API_ENDPOINTS.admin.orders.list);
                     };
                 }
                 
                 if (typeof window.deleteAdminOrder === 'undefined') {
                     window.deleteAdminOrder = async function(orderId) {
-                        return await apiRequest(`/orders/admin/orders/${orderId}`, {
+                        return await apiRequest(API_ENDPOINTS.admin.orders.delete(orderId), {
                             method: 'DELETE'
                         });
                     };

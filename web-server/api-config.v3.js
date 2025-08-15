@@ -166,7 +166,7 @@ async function createOrder(orderData) {
  * @returns {Promise} 상품 목록
  */
 async function getAdminProducts() {
-    return await apiRequest('/orders/admin/products');
+    return await apiRequest(API_ENDPOINTS.admin.products.list);
 }
 
 /**
@@ -175,7 +175,7 @@ async function getAdminProducts() {
  * @returns {Promise} 상품 등록 결과
  */
 async function createAdminProduct(productData) {
-    return await apiRequest('/orders/admin/products', {
+    return await apiRequest(API_ENDPOINTS.admin.products.create, {
         method: 'POST',
         body: JSON.stringify(productData)
     });
@@ -188,7 +188,7 @@ async function createAdminProduct(productData) {
  * @returns {Promise} 상품 수정 결과
  */
 async function updateAdminProduct(productId, productData) {
-    return await apiRequest(`/orders/admin/products/${productId}`, {
+    return await apiRequest(API_ENDPOINTS.admin.products.update(productId), {
         method: 'PUT',
         body: JSON.stringify(productData)
     });
@@ -200,7 +200,7 @@ async function updateAdminProduct(productId, productData) {
  * @returns {Promise} 상품 삭제 결과
  */
 async function deleteAdminProduct(productId) {
-    return await apiRequest(`/orders/admin/products/${productId}`, {
+    return await apiRequest(API_ENDPOINTS.admin.products.delete(productId), {
         method: 'DELETE'
     });
 }
@@ -210,7 +210,7 @@ async function deleteAdminProduct(productId) {
  * @returns {Promise} 재고 목록
  */
 async function getAdminInventory() {
-    return await apiRequest('/orders/admin/inventory');
+    return await apiRequest(API_ENDPOINTS.admin.inventory.list);
 }
 
 /**
@@ -220,7 +220,7 @@ async function getAdminInventory() {
  * @returns {Promise} 재고 추가 결과
  */
 async function addAdminInventory(productId, quantity) {
-    return await apiRequest(`/orders/admin/inventory/${productId}/add`, {
+    return await apiRequest(API_ENDPOINTS.admin.inventory.add(productId), {
         method: 'POST',
         body: JSON.stringify({ quantity })
     });
@@ -231,7 +231,7 @@ async function addAdminInventory(productId, quantity) {
  * @returns {Promise} 재고 리셋 결과
  */
 async function resetAdminInventory() {
-    return await apiRequest('/orders/admin/reset-inventory', {
+    return await apiRequest(API_ENDPOINTS.admin.inventory.resetAll, {
         method: 'POST'
     });
 }
@@ -241,7 +241,7 @@ async function resetAdminInventory() {
  * @returns {Promise} 주문 목록
  */
 async function getAdminOrders() {
-    return await apiRequest('/orders/list');
+    return await apiRequest(API_ENDPOINTS.admin.orders.list);
 }
 
 /**
@@ -250,7 +250,7 @@ async function getAdminOrders() {
  * @returns {Promise} 주문 삭제 결과
  */
 async function deleteAdminOrder(orderId) {
-    return await apiRequest(`/orders/admin/orders/${orderId}`, {
+    return await apiRequest(API_ENDPOINTS.admin.orders.delete(orderId), {
         method: 'DELETE'
     });
 }

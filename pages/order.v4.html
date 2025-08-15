@@ -907,28 +907,22 @@
             window.history.back();
         }
 
-        // 상품 재고 정보 API 호출 (api-config.js 사용)
-        async function getOrderProductInventory(productId) {
-            try {
-                // api-config.js의 getProductInventory 함수 사용
-                if (typeof getProductInventory === 'function') {
-                    return await getProductInventory(productId);
-                } else {
-                    // Fallback: 직접 API 호출
-                    const API_BASE_URL = (() => {
-                        if (window.location.hostname === 'localhost' || 
-                            window.location.hostname === '127.0.0.1' ||
-                            window.location.hostname.includes('192.168.') ||
-                            window.location.hostname.includes('10.0.')) {
-                            return 'http://localhost:3000/api';
-                        }
-                        return 'http://app.cesvc.net:3000/api';
-                    })();
-
-                    const response = await fetch(`${API_BASE_URL}/orders/products/${productId}/inventory`);
-                    const data = await response.json();
-                    return data;
+        // 상품 재고 정보 API 호출
+        async function getProductInventory(productId) {
+            const API_BASE_URL = (() => {
+                if (window.location.hostname === 'localhost' || 
+                    window.location.hostname === '127.0.0.1' ||
+                    window.location.hostname.includes('192.168.') ||
+                    window.location.hostname.includes('10.0.')) {
+                    return 'http://localhost:3000/api';
                 }
+                return 'http://app.cesvc.net:3000/api';
+            })();
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/orders/products/${productId}/inventory`);
+                const data = await response.json();
+                return data;
             } catch (error) {
                 console.error('재고 API 호출 실패:', error);
                 // Fallback to sample data
@@ -944,34 +938,28 @@
             }
         }
 
-        // 주문 생성 API 호출 (api-config.js 사용)
-        async function createOrderRequest(orderData) {
-            try {
-                // api-config.js의 createOrder 함수 사용
-                if (typeof createOrder === 'function') {
-                    return await createOrder(orderData);
-                } else {
-                    // Fallback: 직접 API 호출
-                    const API_BASE_URL = (() => {
-                        if (window.location.hostname === 'localhost' || 
-                            window.location.hostname === '127.0.0.1' ||
-                            window.location.hostname.includes('192.168.') ||
-                            window.location.hostname.includes('10.0.')) {
-                            return 'http://localhost:3000/api';
-                        }
-                        return 'http://app.cesvc.net:3000/api';
-                    })();
-
-                    const response = await fetch(`${API_BASE_URL}/orders`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(orderData)
-                    });
-                    const data = await response.json();
-                    return data;
+        // 주문 생성 API 호출
+        async function createOrder(orderData) {
+            const API_BASE_URL = (() => {
+                if (window.location.hostname === 'localhost' || 
+                    window.location.hostname === '127.0.0.1' ||
+                    window.location.hostname.includes('192.168.') ||
+                    window.location.hostname.includes('10.0.')) {
+                    return 'http://localhost:3000/api';
                 }
+                return 'http://app.cesvc.net:3000/api';
+            })();
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/orders`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(orderData)
+                });
+                const data = await response.json();
+                return data;
             } catch (error) {
                 console.error('주문 API 호출 실패:', error);
                 
@@ -998,7 +986,7 @@
             try {
                 console.log(`상품 ID ${productId}의 재고 정보 조회 중...`);
                 
-                const data = await getOrderProductInventory(productId);
+                const data = await getProductInventory(productId);
                 
                 if (data.success && data.product) {
                     maxStock = data.product.stock_quantity;
@@ -1079,7 +1067,7 @@
                 };
 
                 console.log('주문 데이터 전송 중:', orderData);
-                const result = await createOrderRequest(orderData);
+                const result = await createOrder(orderData);
 
                 // 로딩 오버레이 숨기기
                 hideLoadingOverlay();

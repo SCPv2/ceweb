@@ -567,28 +567,22 @@
 
         let currentFilter = 'artist';
 
-        // 상품 데이터 API 호출 (api-config.js 사용)
-        async function getShopProducts() {
-            try {
-                // api-config.js의 getProducts 함수 사용
-                if (typeof getProducts === 'function') {
-                    return await getProducts();
-                } else {
-                    // Fallback: 직접 API 호출
-                    const API_BASE_URL = (() => {
-                        if (window.location.hostname === 'localhost' || 
-                            window.location.hostname === '127.0.0.1' ||
-                            window.location.hostname.includes('192.168.') ||
-                            window.location.hostname.includes('10.0.')) {
-                            return 'http://localhost:3000/api';
-                        }
-                        return 'http://app.cesvc.net:3000/api';
-                    })();
-
-                    const response = await fetch(`${API_BASE_URL}/orders/products`);
-                    const data = await response.json();
-                    return data;
+        // 상품 데이터 API 호출
+        async function getProducts() {
+            const API_BASE_URL = (() => {
+                if (window.location.hostname === 'localhost' || 
+                    window.location.hostname === '127.0.0.1' ||
+                    window.location.hostname.includes('192.168.') ||
+                    window.location.hostname.includes('10.0.')) {
+                    return 'http://localhost:3000/api';
                 }
+                return 'http://app.cesvc.net:3000/api';
+            })();
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/orders/products`);
+                const data = await response.json();
+                return data;
             } catch (error) {
                 console.error('API 호출 실패:', error);
                 // Fallback to sample data
@@ -688,7 +682,7 @@
                 showLoading();
                 console.log('상품 데이터 로딩 중...');
                 
-                const response = await getShopProducts();
+                const response = await getProducts();
                 
                 if (response.success && response.products) {
                     products = response.products;
