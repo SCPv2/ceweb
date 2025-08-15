@@ -616,8 +616,16 @@
     </div>
 
     <script>
-        // API 기본 URL 설정 (Web-Server 프록시 사용)
-        const API_BASE_URL = '/api';
+        // API 기본 URL 설정
+        const API_BASE_URL = (() => {
+            if (window.location.hostname === 'localhost' || 
+                window.location.hostname === '127.0.0.1' ||
+                window.location.hostname.includes('192.168.') ||
+                window.location.hostname.includes('10.0.')) {
+                return 'http://localhost:3000/api';
+            }
+            return 'http://app.cesvc.net:3000/api';
+        })();
 
         // DOM 요소들
         const uploadArea = document.getElementById('uploadArea');
