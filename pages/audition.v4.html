@@ -583,7 +583,8 @@
                 파일 형식: (지원자 이름)_(성별)_(출생년월).확장자 <br>
                 (예시, 김예림_여_201005.PDF)</div>
                 <div class="upload-subtext">파일을 드래그 앤 드롭하거나 아래 버튼을 클릭하세요<br>
-                (PDF, DOC, DOCX, MP3, MP4, JPG, PNG 파일 지원, 최대 50MB)</div>
+                (PDF, DOC, DOCX, MP3, MP4, JPG, PNG 파일 지원, 최대 50MB)<br>
+                <span style="color: #666; font-size: 12px;">📱 현재 로컬 모드로 동작 중입니다. 업로드된 파일은 브라우저에만 저장됩니다.</span></div>
                 <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
                     파일 선택
                 </button>
@@ -718,30 +719,21 @@
             return true;
         }
 
-        // 파일 업로드
+        // 파일 업로드 (로컬 모드 전용)
         async function uploadFile(file) {
-            const formData = new FormData();
-            formData.append('file', file);
-
             showLoading(true);
             hideMessages();
 
             try {
-                console.log('파일 업로드 중:', file.name);
+                console.log('로컬 모드에서 파일을 처리합니다:', file.name);
                 
-                const response = await fetch(`${API_BASE_URL}/audition/upload`, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    showSuccess(`파일이 성공적으로 업로드되었습니다: ${result.file.originalName}`);
-                    loadFileList(); // 파일 목록 새로고침
-                } else {
-                    showError(result.message || '파일 업로드에 실패했습니다.');
-                }
+                // 업로드 시뮬레이션 (1-2초 대기)
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                // 파일을 로컬에 추가
+                addFileToLocalList(file);
+                showSuccess(`파일이 성공적으로 업로드되었습니다! (로컬 저장: ${file.name})`);
+                
             } catch (error) {
                 console.error('Upload error:', error);
                 showError(`파일 업로드 중 오류가 발생했습니다: ${error.message}`);
@@ -751,31 +743,63 @@
             fileInput.value = ''; // 파일 입력 초기화
         }
 
+        // 로컬 파일 목록에 추가
+        function addFileToLocalList(file) {
+            const fileData = {
+                id: Date.now() + Math.random(), // 고유 ID 생성
+                name: file.name,
+                originalName: file.name,
+                size: file.size,
+                type: file.type,
+                uploadDate: new Date().toISOString(),
+                localFile: file // 로컬 File 객체 저장 (다운로드용)
+            };
+            
+            uploadedFiles.push(fileData);
+            renderFileList();
+            saveFileList(); // 로컬 스토리지에 저장
+        }
 
-        // 파일 목록 불러오기
-        async function loadFileList() {
+        // 파일 목록 불러오기 (로컬 스토리지 기반)
+        function loadFileList() {
             try {
-                console.log('서버에서 파일 목록을 불러오는 중...');
-                
-                const response = await fetch(`${API_BASE_URL}/audition/files`);
-                const result = await response.json();
-
-                if (result.success) {
-                    uploadedFiles = result.files;
-                    console.log(`${uploadedFiles.length}개 파일을 불러왔습니다.`);
-                    renderFileList();
+                // 로컬 스토리지에서 파일 목록 불러오기
+                const savedFiles = localStorage.getItem('auditionFiles');
+                if (savedFiles) {
+                    uploadedFiles = JSON.parse(savedFiles);
+                    console.log(`로컬 저장소에서 ${uploadedFiles.length}개 파일을 불러왔습니다.`);
                 } else {
-                    console.error('파일 목록 로드 실패:', result.message);
                     uploadedFiles = [];
-                    renderFileList();
+                    console.log('로컬 저장소에 저장된 파일이 없습니다.');
                 }
+                renderFileList();
             } catch (error) {
-                console.error('파일 목록 로드 오류:', error);
+                console.error('로컬 파일 목록 로드 오류:', error);
                 uploadedFiles = [];
                 renderFileList();
             }
         }
 
+        // 로컬 스토리지에 파일 목록 저장
+        function saveFileList() {
+            try {
+                // File 객체는 직렬화할 수 없으므로 메타데이터만 저장
+                const fileListForStorage = uploadedFiles.map(file => ({
+                    id: file.id,
+                    name: file.name,
+                    originalName: file.originalName,
+                    size: file.size,
+                    type: file.type,
+                    uploadDate: file.uploadDate
+                    // localFile은 제외 (직렬화 불가)
+                }));
+                
+                localStorage.setItem('auditionFiles', JSON.stringify(fileListForStorage));
+                console.log('파일 목록이 로컬 저장소에 저장되었습니다.');
+            } catch (error) {
+                console.error('로컬 저장소 저장 오류:', error);
+            }
+        }
 
         // 파일 목록 렌더링
         function renderFileList() {
@@ -836,29 +860,34 @@
             return '📎';
         }
 
-        // 파일 다운로드
+        // 파일 다운로드 (로컬 모드)
         async function downloadFile(fileId) {
             try {
-                console.log('파일 다운로드:', fileId);
-                
-                // 파일 정보에서 downloadUrl 사용 (Web-Server를 통해)
+                // 파일 정보 찾기
                 const fileInfo = uploadedFiles.find(file => file.id == fileId);
                 
-                if (!fileInfo || !fileInfo.downloadUrl) {
-                    showError('파일 다운로드 URL을 찾을 수 없습니다.');
+                if (!fileInfo) {
+                    showError('파일을 찾을 수 없습니다.');
                     return;
                 }
+
+                console.log('로컬 파일 다운로드:', fileInfo.name);
                 
-                // Web-Server의 /files/ 경로를 통해 직접 다운로드
-                const a = document.createElement('a');
-                a.href = fileInfo.downloadUrl;
-                a.target = '_blank';
-                a.download = fileInfo.name;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                
-                showSuccess('파일 다운로드가 시작되었습니다.');
+                if (fileInfo.localFile) {
+                    // 로컬 File 객체가 있는 경우 직접 다운로드
+                    const url = URL.createObjectURL(fileInfo.localFile);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = fileInfo.originalName || fileInfo.name;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    showSuccess(`파일 다운로드: ${fileInfo.name}`);
+                } else {
+                    // 로컬 File 객체가 없는 경우 (페이지 새로고침 후)
+                    showError('파일 데이터를 찾을 수 없습니다. (페이지 새로고침으로 인해 파일 데이터가 손실됨)');
+                }
                 
             } catch (error) {
                 console.error('Download error:', error);
@@ -866,27 +895,25 @@
             }
         }
 
-        // 파일 삭제
+        // 파일 삭제 (로컬 모드)
         async function deleteFile(fileId) {
             if (!confirm('정말로 이 파일을 삭제하시겠습니까?')) {
                 return;
             }
 
             try {
-                console.log('파일 삭제:', fileId);
+                console.log('로컬에서 파일을 삭제합니다:', fileId);
                 
-                const response = await fetch(`${API_BASE_URL}/audition/delete/${fileId}`, {
-                    method: 'DELETE'
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    showSuccess(result.message);
-                    loadFileList(); // 파일 목록 새로고침
-                } else {
-                    showError(result.message || '파일 삭제에 실패했습니다.');
-                }
+                // 파일 정보 찾기
+                const fileInfo = uploadedFiles.find(file => file.id == fileId);
+                const fileName = fileInfo ? fileInfo.name : fileId;
+                
+                // 로컬 배열에서 삭제
+                uploadedFiles = uploadedFiles.filter(file => file.id != fileId);
+                renderFileList();
+                saveFileList(); // 로컬 스토리지 업데이트
+                
+                showSuccess(`파일이 삭제되었습니다: ${fileName}`);
                 
             } catch (error) {
                 console.error('Delete error:', error);

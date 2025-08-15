@@ -96,18 +96,10 @@ fi
 
 # 8. 애플리케이션 디렉토리 생성
 APP_DIR="/home/$APP_USER/ceweb/app-server"
-FILES_DIR="/home/$APP_USER/ceweb/files"
-AUDITION_DIR="/home/$APP_USER/ceweb/files/audition"
-
 log "애플리케이션 디렉토리 생성: $APP_DIR"
+
 sudo -u $APP_USER mkdir -p $APP_DIR
 sudo -u $APP_USER mkdir -p $APP_DIR/logs
-
-log "파일 업로드 디렉토리 생성: $FILES_DIR"
-sudo -u $APP_USER mkdir -p $AUDITION_DIR
-chmod -R 755 $FILES_DIR
-chown -R $APP_USER:$APP_USER $FILES_DIR
-log "✅ 파일 업로드 디렉토리 생성 완료: $AUDITION_DIR"
 
 # 9. JWT 키 생성
 log "JWT Secret Key 생성 중..."
@@ -349,7 +341,6 @@ log "🔧 자동으로 완료된 작업:"
 log "- ✅ DB 연결 테스트 성공"
 log "- ✅ 애플리케이션 코드 복사"
 log "- ✅ Node.js 의존성 설치 (npm install)"
-log "- ✅ 파일 업로드 디렉토리 생성"
 log "- ✅ PM2 애플리케이션 시작"
 log "- ✅ PM2 자동 시작 설정"
 log ""
