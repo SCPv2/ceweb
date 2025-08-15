@@ -48,25 +48,6 @@ const API_ENDPOINTS = {
         create: '/orders/create',
         list: '/orders/list',
         detail: (id) => `/orders/${id}`
-    },
-    
-    // 관리자 전용 API
-    admin: {
-        products: {
-            list: '/orders/admin/products',
-            create: '/orders/admin/products',
-            update: (id) => `/orders/admin/products/${id}`,
-            delete: (id) => `/orders/admin/products/${id}`
-        },
-        inventory: {
-            list: '/orders/admin/inventory',
-            add: (id) => `/orders/admin/inventory/${id}/add`,
-            resetAll: '/orders/admin/inventory/reset-all'
-        },
-        orders: {
-            list: '/orders/list',
-            delete: (id) => `/orders/admin/orders/${id}`
-        }
     }
 };
 
@@ -154,104 +135,6 @@ async function createOrder(orderData) {
     return await apiRequest(API_ENDPOINTS.orders.create, {
         method: 'POST',
         body: JSON.stringify(orderData)
-    });
-}
-
-// ===========================================
-// 관리자 전용 API 함수들
-// ===========================================
-
-/**
- * 관리자 - 상품 목록 조회
- * @returns {Promise} 상품 목록
- */
-async function getAdminProducts() {
-    return await apiRequest(API_ENDPOINTS.admin.products.list);
-}
-
-/**
- * 관리자 - 상품 등록
- * @param {object} productData - 상품 데이터
- * @returns {Promise} 상품 등록 결과
- */
-async function createAdminProduct(productData) {
-    return await apiRequest(API_ENDPOINTS.admin.products.create, {
-        method: 'POST',
-        body: JSON.stringify(productData)
-    });
-}
-
-/**
- * 관리자 - 상품 수정
- * @param {number} productId - 상품 ID
- * @param {object} productData - 수정할 상품 데이터
- * @returns {Promise} 상품 수정 결과
- */
-async function updateAdminProduct(productId, productData) {
-    return await apiRequest(API_ENDPOINTS.admin.products.update(productId), {
-        method: 'PUT',
-        body: JSON.stringify(productData)
-    });
-}
-
-/**
- * 관리자 - 상품 삭제
- * @param {number} productId - 상품 ID
- * @returns {Promise} 상품 삭제 결과
- */
-async function deleteAdminProduct(productId) {
-    return await apiRequest(API_ENDPOINTS.admin.products.delete(productId), {
-        method: 'DELETE'
-    });
-}
-
-/**
- * 관리자 - 재고 목록 조회
- * @returns {Promise} 재고 목록
- */
-async function getAdminInventory() {
-    return await apiRequest(API_ENDPOINTS.admin.inventory.list);
-}
-
-/**
- * 관리자 - 재고 추가
- * @param {number} productId - 상품 ID
- * @param {number} quantity - 추가할 재고 수량
- * @returns {Promise} 재고 추가 결과
- */
-async function addAdminInventory(productId, quantity) {
-    return await apiRequest(API_ENDPOINTS.admin.inventory.add(productId), {
-        method: 'POST',
-        body: JSON.stringify({ quantity })
-    });
-}
-
-/**
- * 관리자 - 모든 재고 리셋
- * @returns {Promise} 재고 리셋 결과
- */
-async function resetAdminInventory() {
-    return await apiRequest(API_ENDPOINTS.admin.inventory.resetAll, {
-        method: 'POST'
-    });
-}
-
-/**
- * 관리자 - 주문 목록 조회 (일반 주문 목록과 동일)
- * @returns {Promise} 주문 목록
- */
-async function getAdminOrders() {
-    return await apiRequest(API_ENDPOINTS.admin.orders.list);
-}
-
-/**
- * 관리자 - 주문 삭제
- * @param {number} orderId - 주문 ID
- * @returns {Promise} 주문 삭제 결과
- */
-async function deleteAdminOrder(orderId) {
-    return await apiRequest(API_ENDPOINTS.admin.orders.delete(orderId), {
-        method: 'DELETE'
     });
 }
 

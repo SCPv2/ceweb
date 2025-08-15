@@ -760,18 +760,16 @@
             const statusTextElement = document.getElementById('dbStatusText');
             
             try {
-                // order.html에서 성공한 엔드포인트 사용
-                const response = await fetch(`${API_BASE_URL}/orders/products`, { 
+                const response = await fetch(`${API_BASE_URL}/health`, { 
                     method: 'GET',
                     timeout: 5000 
                 });
                 
                 if (response.ok) {
                     const data = await response.json();
-                    if (data.success) {
+                    if (data.database === 'connected' || data.success) {
                         statusElement.className = 'db-status connected';
-                        statusTextElement.textContent = 'DB 연결됨 (app.cesvc.net:3000)';
-                        console.log('데이터베이스 연결 성공');
+                        statusTextElement.textContent = 'DB 연결됨 (db.cesvc.net:2866)';
                     } else {
                         statusElement.className = 'db-status disconnected';
                         statusTextElement.textContent = 'DB 연결 실패';
@@ -840,11 +838,12 @@
             document.getElementById('loading').style.display = 'none';
         }
 
-        // 상품 목록 로드 - API 함수 사용
+        // 상품 목록 로드 - 실제 데이터베이스에서 조회
         async function loadProducts() {
             showLoading();
             try {
-                const data = await getAdminProducts();
+                const response = await fetch(`${API_BASE_URL}/orders/products`);
+                const data = await response.json();
                 
                 if (data.success && data.products) {
                     products = data.products;
@@ -1032,7 +1031,14 @@
 
             showLoading();
             try {
-                const data = await deleteAdminProduct(productId);
+                const response = await fetch(`${API_BASE_URL}/admin/products/${productId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
                 
                 if (data.success) {
                     alert('상품이 데이터베이스에서 삭제되었습니다.');
@@ -1093,12 +1099,25 @@
 
             showLoading();
             try {
-                let data;
+                const url = isEdit ? 
+                    `${API_BASE_URL}/admin/products/${productId}` : 
+                    `${API_BASE_URL}/admin/products`;
+                
+                const method = isEdit ? 'PUT' : 'POST';
+                
                 if (isEdit) {
-                    data = await updateAdminProduct(parseInt(productId), formData);
-                } else {
-                    data = await createAdminProduct(formData);
+                    formData.id = parseInt(productId);
                 }
+                
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
                 
                 if (data.success) {
                     const successMessage = isEdit 
@@ -1127,8 +1146,22 @@
         async function loadInventory() {
             showLoading();
             try {
-                // order.html에서 성공한 방식으로 상품 기반 재고 조회
-                await loadProductsForInventory();
+                // product_inventory_view를 사용하여 상품과 재고 정보를 함께 조회
+                const response = await fetch(`${API_BASE_URL}/admin/inventory`);
+                const data = await response.json();
+                
+                if (data.success && data.inventory) {
+                    inventory = data.inventory;
+                    renderInventory();
+                } else {
+                    console.error('재고 로드 실패:', data.message);
+                    // 상품 정보를 기반으로 재고 데이터 생성
+                    if (products.length > 0) {
+                        await loadProductsForInventory();
+                    } else {
+                        loadSampleInventory();
+                    }
+                }
             } catch (error) {
                 console.error('재고 로드 오류:', error);
                 loadSampleInventory();
@@ -1136,58 +1169,20 @@
             hideLoading();
         }
 
-        // 재고 관리를 위한 상품 정보 로드 - order.html과 동일한 방식
+        // 재고 관리를 위한 상품 정보 로드
         async function loadProductsForInventory() {
             try {
                 const response = await fetch(`${API_BASE_URL}/orders/products`);
                 const data = await response.json();
                 
                 if (data.success && data.products) {
-                    // 각 상품의 실제 재고 정보 조회
-                    const inventoryPromises = data.products.map(async (product) => {
-                        try {
-                            const invResponse = await fetch(`${API_BASE_URL}/orders/products/${product.id}/inventory`);
-                            const invData = await invResponse.json();
-                            
-                            if (invData.success && invData.product) {
-                                return {
-                                    id: product.id,
-                                    product_title: product.title,
-                                    product_subtitle: product.subtitle || '',
-                                    stock_quantity: invData.product.stock_quantity,
-                                    reserved_quantity: invData.product.reserved_quantity || 0,
-                                    available_quantity: invData.product.stock_quantity - (invData.product.reserved_quantity || 0),
-                                    stock_display: invData.product.stock_display || invData.product.stock_quantity.toString()
-                                };
-                            } else {
-                                return {
-                                    id: product.id,
-                                    product_title: product.title,
-                                    product_subtitle: product.subtitle || '',
-                                    stock_quantity: 50,
-                                    reserved_quantity: 0,
-                                    available_quantity: 50,
-                                    stock_display: '50'
-                                };
-                            }
-                        } catch (error) {
-                            console.error(`상품 ${product.id} 재고 조회 실패:`, error);
-                            return {
-                                id: product.id,
-                                product_title: product.title,
-                                product_subtitle: product.subtitle || '',
-                                stock_quantity: 50,
-                                reserved_quantity: 0,
-                                available_quantity: 50,
-                                stock_display: '50'
-                            };
-                        }
-                    });
-                    
-                    inventory = await Promise.all(inventoryPromises);
+                    // 상품 정보를 재고 형태로 변환 (기본 재고량 100으로 설정)
+                    inventory = data.products.map(product => ({
+                        product_id: product.id,
+                        product_title: product.title,
+                        stock_quantity: 100 // 기본 재고량
+                    }));
                     renderInventory();
-                } else {
-                    throw new Error('상품 데이터 로드 실패');
                 }
             } catch (error) {
                 console.error('상품 정보 로드 실패:', error);
@@ -1252,7 +1247,15 @@
 
             showLoading();
             try {
-                const data = await addAdminInventory(productId, addQuantity);
+                const response = await fetch(`${API_BASE_URL}/admin/inventory/${productId}/add`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ quantity: addQuantity })
+                });
+                
+                const data = await response.json();
                 
                 if (data.success) {
                     alert(`재고가 ${addQuantity}개 추가되어 데이터베이스에 저장되었습니다.`);
@@ -1281,7 +1284,14 @@
 
             showLoading();
             try {
-                const data = await resetAdminInventory();
+                const response = await fetch(`${API_BASE_URL}/admin/inventory/reset-all`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
                 
                 if (data.success) {
                     alert('✅ 모든 상품의 재고가 100개로 리셋되어 데이터베이스에 저장되었습니다.');
@@ -1296,11 +1306,12 @@
             hideLoading();
         }
 
-        // 주문 관리 로드 - API 함수 사용
+        // 주문 관리 로드 - 실제 데이터베이스에서 조회
         async function loadOrders() {
             showLoading();
             try {
-                const data = await getAdminOrders();
+                const response = await fetch(`${API_BASE_URL}/admin/orders`);
+                const data = await response.json();
                 
                 if (data.success && data.orders) {
                     orders = data.orders;
@@ -1385,7 +1396,14 @@
 
             showLoading();
             try {
-                const data = await deleteAdminOrder(orderId);
+                const response = await fetch(`${API_BASE_URL}/admin/orders/${orderId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
                 
                 if (data.success) {
                     alert('주문이 데이터베이스에서 삭제되었습니다.');
