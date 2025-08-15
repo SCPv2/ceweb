@@ -684,36 +684,6 @@
             window.history.back();
         }
 
-        // 상품 재고 정보 API 호출
-        async function getProductInventory(productId) {
-            const API_BASE_URL = (() => {
-                if (window.location.hostname === 'localhost' || 
-                    window.location.hostname === '127.0.0.1' ||
-                    window.location.hostname.includes('192.168.') ||
-                    window.location.hostname.includes('10.0.')) {
-                    return 'http://localhost:3000/api';
-                }
-                return 'http://app.cesvc.net:3000/api';
-            })();
-
-            try {
-                const response = await fetch(`${API_BASE_URL}/orders/products/${productId}/inventory`);
-                const data = await response.json();
-                return data;
-            } catch (error) {
-                console.error('재고 API 호출 실패:', error);
-                // Fallback to sample data
-                return {
-                    success: true,
-                    product: {
-                        id: productId,
-                        stock_quantity: 50,
-                        stock_display: '50',
-                        reserved_quantity: 0
-                    }
-                };
-            }
-        }
 
         // 재고 정보 조회
         async function fetchInventory(productId) {
