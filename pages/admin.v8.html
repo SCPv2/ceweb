@@ -58,11 +58,6 @@
             display: flex;
             list-style: none;
             gap: 2rem;
-            position: relative;
-        }
-
-        .nav-item {
-            position: relative;
         }
 
         .nav-menu a {
@@ -72,107 +67,10 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
             transition: color 0.3s ease;
-            padding: 0.5rem 0;
-            display: block;
         }
 
         .nav-menu a:hover {
             color: #e74c3c;
-        }
-
-        .nav-menu a.active {
-            color: #e74c3c;
-        }
-
-        /* Dropdown Styles */
-        .dropdown {
-            position: relative;
-        }
-
-        .dropdown-content {
-            display: none;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            background: white;
-            min-width: 200px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-            border-radius: 8px;
-            padding: 1rem 0;
-            z-index: 1001;
-            border-top: 3px solid #e74c3c;
-        }
-
-        .dropdown:hover .dropdown-content {
-            display: block;
-            animation: fadeInDown 0.3s ease;
-        }
-
-        @keyframes fadeInDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .dropdown-item {
-            padding: 0.8rem 1.5rem;
-            color: #666;
-            text-decoration: none;
-            display: block;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            transition: all 0.3s ease;
-            border-bottom: 1px solid #f0f0f0;
-        }
-
-        .dropdown-item:last-child {
-            border-bottom: none;
-        }
-
-        .dropdown-item:hover {
-            background: #f8f9fa;
-            color: #e74c3c;
-            padding-left: 2rem;
-        }
-
-        .dropdown-arrow {
-            margin-left: 0.5rem;
-            font-size: 0.8rem;
-            transition: transform 0.3s ease;
-        }
-
-        .dropdown:hover .dropdown-arrow {
-            transform: rotate(180deg);
-        }
-
-        .nav-icons {
-            display: flex;
-            gap: 1rem;
-        }
-
-        .nav-icon {
-            width: 30px;
-            height: 30px;
-            background: #e74c3c;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 0.8rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-        }
-
-        .nav-icon:hover {
-            transform: scale(1.1);
         }
 
         /* Main Layout */
@@ -646,23 +544,10 @@
                 <span class="admin-badge">ADMIN</span>
             </a>
             <ul class="nav-menu">
-                <li class="nav-item"><a href="../index.html#company">Company</a></li>
-                <li class="nav-item"><a href="./notice.html">Notice</a></li>
-                <li class="nav-item dropdown">
-                    <a href="../index.html#projects">Artists<span class="dropdown-arrow">▼</span></a>
-                    <div class="dropdown-content">
-                        <a href="../artist/cloudy.html" class="dropdown-item">Cloudy</a>
-                        <a href="../artist/bbweb/index.html" class="dropdown-item">Big Boys</a>
-                    </div>
-                </li>
-                <li class="nav-item"><a href="./shop.html">Shop</a></li>
+                <li><a href="../index.html">홈</a></li>
+                <li><a href="./shop.html">쇼핑몰</a></li>
+                <li><a href="./notice.html">공지사항</a></li>
             </ul>
-            <div class="nav-icons">
-                <div class="nav-icon">KOR</div>
-                <div class="nav-icon">ENG</div>
-                <div class="nav-icon">JPN</div>
-                <div class="nav-icon">CHN</div>
-            </div>
         </nav>
     </header>
 
