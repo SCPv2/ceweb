@@ -11,7 +11,7 @@ const API_CONFIG = {
         timeout: 5000
     },
     production: {
-        baseURL: 'http://app.cesvc.net:3000/api',
+        baseURL: '/api',
         timeout: 10000
     },
     
@@ -61,7 +61,7 @@ const API_ENDPOINTS = {
         inventory: {
             list: '/orders/admin/inventory',
             add: (id) => `/orders/admin/inventory/${id}/add`,
-            resetAll: '/orders/admin/reset-inventory'
+            resetAll: '/orders/admin/inventory/reset-all'
         },
         orders: {
             list: '/orders/list',

@@ -934,40 +934,6 @@
                 console.warn('누락된 admin 함수들:', missingFunctions);
                 console.log('admin 함수들을 정의합니다...');
                 
-                // API_ENDPOINTS가 정의되지 않은 경우 정의
-                if (typeof API_ENDPOINTS === 'undefined') {
-                    console.log('API_ENDPOINTS 정의 중...');
-                    window.API_ENDPOINTS = {
-                        products: {
-                            list: '/orders/products',
-                            detail: (id) => `/orders/products/${id}`,
-                            inventory: (id) => `/orders/products/${id}/inventory`
-                        },
-                        orders: {
-                            create: '/orders/create',
-                            list: '/orders/list',
-                            detail: (id) => `/orders/${id}`
-                        },
-                        admin: {
-                            products: {
-                                list: '/orders/admin/products',
-                                create: '/orders/admin/products',
-                                update: (id) => `/orders/admin/products/${id}`,
-                                delete: (id) => `/orders/admin/products/${id}`
-                            },
-                            inventory: {
-                                list: '/orders/admin/inventory',
-                                add: (id) => `/orders/admin/inventory/${id}/add`,
-                                resetAll: '/orders/admin/reset-inventory'
-                            },
-                            orders: {
-                                list: '/orders/list',
-                                delete: (id) => `/orders/admin/orders/${id}`
-                            }
-                        }
-                    };
-                }
-                
                 // 누락된 admin 함수들 정의
                 if (typeof window.getAdminProducts === 'undefined') {
                     window.getAdminProducts = async function() {
