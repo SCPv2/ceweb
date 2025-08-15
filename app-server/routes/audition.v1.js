@@ -40,13 +40,6 @@ const upload = multer({
         fileSize: 50 * 1024 * 1024 // 50MB 제한
     },
     fileFilter: (req, file, cb) => {
-        // 한글 파일명 인코딩 처리
-        try {
-            file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8');
-        } catch (error) {
-            console.log('파일명 인코딩 변환 실패, 원본 사용:', file.originalname);
-        }
-        
         // 허용된 파일 타입
         const allowedTypes = [
             'application/pdf',
