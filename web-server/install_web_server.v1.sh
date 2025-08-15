@@ -68,8 +68,8 @@ log "Nginx 설정 파일 생성 중..."
 
 cat > /etc/nginx/conf.d/creative-energy.conf << 'EOF'
 server {
-    listen 80 default_server;
-    server_name www.cesvc.net www.creative-energy.net _;
+    listen 80;
+    server_name www.cesvc.net www.creative-energy.net;
     
     # 정적 파일 서빙 (HTML, CSS, JS, 이미지 등)
     location / {
@@ -132,25 +132,17 @@ EOF
 log "Nginx 설정 테스트 중..."
 nginx -t
 
-# 7. 기본 서버 블록 비활성화 (프록시 충돌 방지)
-log "기본 서버 블록 비활성화 중..."
-cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.backup
-sed -i '/^    server {/,/^    }/s/^/#/' /etc/nginx/nginx.conf
-
-# 8. Nginx 재시작
+# 7. Nginx 재시작
 log "Nginx 재시작 중..."
 systemctl restart nginx
 
-# 9. SELinux 설정
+# 8. SELinux 설정
 log "SELinux 설정 중..."
 if command -v getenforce &> /dev/null && getenforce | grep -q "Enforcing"; then
     log "SELinux가 활성화되어 있습니다. 웹 서버 접근 권한을 설정합니다..."
     
     # Nginx가 사용자 홈 디렉토리의 컨텐츠를 읽을 수 있도록 허용
     setsebool -P httpd_read_user_content on
-    
-    # Nginx가 앱서버로 네트워크 연결을 할 수 있도록 허용
-    setsebool -P httpd_can_network_connect on
     
     # 웹 디렉토리의 SELinux 컨텍스트 복원
     restorecon -Rv $WEB_DIR
@@ -160,14 +152,14 @@ else
     log "SELinux가 비활성화되어 있거나 설치되지 않았습니다."
 fi
 
-# 10. 최종 권한 설정
+# 9. 최종 권한 설정
 log "웹 디렉토리 권한 설정 중..."
 chmod 755 /home/rocky  # 홈 디렉토리 접근 권한
 chmod -R 755 $WEB_DIR
 chown -R rocky:rocky $WEB_DIR
 log "✅ 권한 설정 완료"
 
-# 11. App Server 연결 테스트 스크립트 생성
+# 10. App Server 연결 테스트 스크립트 생성
 log "App Server 연결 테스트 스크립트 생성 중..."
 
 cat > /root/test_app_server.sh << 'EOF'
@@ -214,7 +206,7 @@ EOF
 
 chmod +x /root/test_app_server.sh
 
-# 12. 설치 완료 메시지
+# 11. 설치 완료 메시지
 log "================================================================"
 log "Creative Energy Web Server 설치가 완료되었습니다!"
 log "================================================================"
