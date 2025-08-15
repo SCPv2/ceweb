@@ -715,45 +715,6 @@
             }
         }
 
-        // 주문 생성 API 호출
-        async function createOrder(orderData) {
-            const API_BASE_URL = (() => {
-                if (window.location.hostname === 'localhost' || 
-                    window.location.hostname === '127.0.0.1' ||
-                    window.location.hostname.includes('192.168.') ||
-                    window.location.hostname.includes('10.0.')) {
-                    return 'http://localhost:3000/api';
-                }
-                return 'http://app.cesvc.net:3000/api';
-            })();
-
-            try {
-                const response = await fetch(`${API_BASE_URL}/orders`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(orderData)
-                });
-                const data = await response.json();
-                return data;
-            } catch (error) {
-                console.error('주문 API 호출 실패:', error);
-                // Fallback to sample success response
-                return {
-                    success: true,
-                    order: {
-                        id: Math.floor(Math.random() * 10000),
-                        customerName: orderData.customerName,
-                        productTitle: productData.title,
-                        quantity: orderData.quantity,
-                        totalPrice: parseInt(productData.price.replace(/[^0-9]/g, '')) * orderData.quantity,
-                        remainingStock: Math.max(0, maxStock - orderData.quantity)
-                    }
-                };
-            }
-        }
-
         // 재고 정보 조회
         async function fetchInventory(productId) {
             try {
