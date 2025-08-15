@@ -495,18 +495,18 @@
     <!-- Header -->
     <header class="header">
         <nav class="nav-container">
-            <a href="http://www.creative-energy.net/index.html" class="logo">CREATIVE ENERGY</a>
+            <a href="../index.html" class="logo">CREATIVE ENERGY</a>
             <ul class="nav-menu">
-                <li class="nav-item"><a href="http://www.creative-energy.net/index.html#company">Company</a></li>
-                <li class="nav-item"><a href="http://www.creative-energy.net/pages/notice_lb.html">Notice</a></li>
+                <li class="nav-item"><a href="../index.html#company">Company</a></li>
+                <li class="nav-item"><a href="./notice.html">Notice</a></li>
                 <li class="nav-item dropdown">
-                    <a href="http://www.creative-energy.net/index.html#projects">Artists<span class="dropdown-arrow">▼</span></a>
+                    <a href="../index.html#projects">Artists<span class="dropdown-arrow">▼</span></a>
                     <div class="dropdown-content">
-                        <a href="http://www.creative-energy.net/artist/cloudy_lb.html" class="dropdown-item">Cloudy</a>
-                        <a href="http://www.creative-energy.net/artist/bbweb/index_lb.html" class="dropdown-item">Big Boys</a>
+                        <a href="../artist/cloudy.html" class="dropdown-item">Cloudy</a>
+                        <a href="../artist/bbweb/index.html" class="dropdown-item">Big Boys</a>
                     </div>
                 </li>
-                <li class="nav-item"><a href="http://www.creative-energy.net/pages/shop_lb.html" class="active">Shop</a></li>
+                <li class="nav-item"><a href="./shop.html" class="active">Shop</a></li>
             </ul>
             <div class="nav-icons">
                 <div class="nav-icon">KOR</div>
@@ -526,12 +526,18 @@
                 <div class="sidebar-item active" onclick="filterProducts('bigboys')">BigBoys</div>
                 <div class="sidebar-item" onclick="filterProducts('cloudy')">Cloudy</div>
             </div>
+            
+            <div class="sidebar-category" style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #f0f0f0;">
+                <div style="text-align: center;">
+                    <a href="./admin.html" style="color: #999; font-size: 14px; text-decoration: none; transition: color 0.3s ease;">Administrator</a>
+                </div>
+            </div>
         </aside>
 
         <!-- Content Area -->
         <main class="content-area">
             <div class="breadcrumb">
-                <a href="http://www.creative-energy.net/index.html">홈</a> > <a href="#">아티스트</a> > 전체 상품 | Creative Energy
+                <a href="../index.html">홈</a> > <a href="#">아티스트</a> > 전체 상품 | Creative Energy
             </div>
 
             <div class="section-header">
@@ -554,94 +560,167 @@
         </main>
     </div>
 
+    <script src="../web-server/api-config.js"></script>
     <script>
-        // Sample product data
-        const products = [
-            // BigBoys Products
-            {
-                id: 1,
-                title: 'BigBoys 1st Full Album [SimplyFit] Standard Edition',
-                subtitle: 'Standard Edition',
-                price: '18,500원',
-                image: 'http://www.creative-energy.net/media/bb_prod1.png',
-                category: 'bigboys',
-                type: 'album',
-                badge: 'NEW'
-            },
-            {
-                id: 2,
-                title: 'BigBoys 1st Full Album [SimplyFit] Limited Edition',
-                subtitle: 'with Photo Book & Photo Cards',
-                price: '35,000원',
-                image: 'http://www.creative-energy.net/media/bb_prod2.png',
-                category: 'bigboys',
-                type: 'album',
-                badge: 'LIMITED'
-            },
-            {
-                id: 3,
-                title: 'BigBoys Official Light Stick',
-                subtitle: 'Ver. 1.0',
-                price: '42,000원',
-                image: 'http://www.creative-energy.net/media/bb_prod3.png',
-                category: 'bigboys',
-                type: 'goods',
-                badge: null
-            },
-            {
-                id: 4,
-                title: 'BigBoys Official T-Shirt',
-                subtitle: 'Black / White Available',
-                price: '28,000원',
-                image: 'http://www.creative-energy.net/media/bb_prod4.png',
-                category: 'bigboys',
-                type: 'goods',
-                badge: 'LIMITED'
-            },
-            // Cloudy Products
-            {
-                id: 5,
-                title: 'Cloudy 2st Official Album [In the Sky]',
-                subtitle: 'Sky Blue Ver.',
-                price: '16,800원',
-                image: 'http://www.creative-energy.net/media/cloudy_prod1.png',
-                category: 'cloudy',
-                type: 'album',
-                badge: 'NEW'
-            },
-            {
-                id: 6,
-                title: 'Cloudy 1st Official Album [FEARLESS]',
-                subtitle: 'Purple Ver.',
-                price: '16,800원',
-                image: 'http://www.creative-energy.net/media/cloudy_prod2.png',
-                category: 'cloudy',
-                type: 'album',
-                badge: null
-            },
-            {
-                id: 7,
-                title: 'Cloudy Official Merchandise',
-                subtitle: 'Eco Bag',
-                price: '40,000원',
-                image: 'http://www.creative-energy.net/media/cloudy_prod3.png',
-                category: 'cloudy',
-                type: 'goods',
-                badge: 'LIMITED'
-            },
-            {
-                id: 8,
-                title: 'Cloudy Official Light Stick',
-                subtitle: 'Ver. 2.0',
-                price: '42,000원',
-                image: 'http://www.creative-energy.net/media/cloudy_prod4.png',
-                category: 'cloudy',
-                type: 'goods',
-                badge: null
-            }
-        ];
+        // 전역 상품 데이터
+        let products = [];
 
         let currentFilter = 'artist';
+
+        // 상품 데이터 API 호출 (api-config.js 사용)
+        async function getShopProducts() {
+            try {
+                // api-config.js의 getProducts 함수 사용
+                if (typeof getProducts === 'function') {
+                    return await getProducts();
+                } else {
+                    // Fallback: 직접 API 호출
+                    const API_BASE_URL = (() => {
+                        if (window.location.hostname === 'localhost' || 
+                            window.location.hostname === '127.0.0.1' ||
+                            window.location.hostname.includes('192.168.') ||
+                            window.location.hostname.includes('10.0.')) {
+                            return 'http://localhost:3000/api';
+                        }
+                        return 'http://app.cesvc.net:3000/api';
+                    })();
+
+                    const response = await fetch(`${API_BASE_URL}/orders/products`);
+                    const data = await response.json();
+                    return data;
+                }
+            } catch (error) {
+                console.error('API 호출 실패:', error);
+                // Fallback to sample data
+                return {
+                    success: true,
+                    products: [
+                        // BigBoys Products
+                        {
+                            id: 1,
+                            title: 'BigBoys 1st Full Album [SimplyFit] Standard Edition',
+                            subtitle: 'Standard Edition',
+                            price: '18,500원',
+                            image: '../media/bb_prod1.png',
+                            category: 'bigboys',
+                            type: 'album',
+                            badge: 'NEW'
+                        },
+                        {
+                            id: 2,
+                            title: 'BigBoys 1st Full Album [SimplyFit] Limited Edition',
+                            subtitle: 'with Photo Book & Photo Cards',
+                            price: '35,000원',
+                            image: '../media/bb_prod2.png',
+                            category: 'bigboys',
+                            type: 'album',
+                            badge: 'LIMITED'
+                        },
+                        {
+                            id: 3,
+                            title: 'BigBoys Official Light Stick',
+                            subtitle: 'Ver. 1.0',
+                            price: '42,000원',
+                            image: '../media/bb_prod3.png',
+                            category: 'bigboys',
+                            type: 'goods',
+                            badge: null
+                        },
+                        {
+                            id: 4,
+                            title: 'BigBoys Official T-Shirt',
+                            subtitle: 'Black / White Available',
+                            price: '28,000원',
+                            image: '../media/bb_prod4.png',
+                            category: 'bigboys',
+                            type: 'goods',
+                            badge: 'LIMITED'
+                        },
+                        // Cloudy Products
+                        {
+                            id: 5,
+                            title: 'Cloudy 2nd Official Album [In the Sky]',
+                            subtitle: 'Sky Blue Ver.',
+                            price: '16,800원',
+                            image: '../media/cloudy_prod1.png',
+                            category: 'cloudy',
+                            type: 'album',
+                            badge: 'NEW'
+                        },
+                        {
+                            id: 6,
+                            title: 'Cloudy 1st Official Album [FEARLESS]',
+                            subtitle: 'Purple Ver.',
+                            price: '16,800원',
+                            image: '../media/cloudy_prod2.png',
+                            category: 'cloudy',
+                            type: 'album',
+                            badge: null
+                        },
+                        {
+                            id: 7,
+                            title: 'Cloudy Official Merchandise',
+                            subtitle: 'Eco Bag',
+                            price: '40,000원',
+                            image: '../media/cloudy_prod3.png',
+                            category: 'cloudy',
+                            type: 'goods',
+                            badge: 'LIMITED'
+                        },
+                        {
+                            id: 8,
+                            title: 'Cloudy Official Light Stick',
+                            subtitle: 'Ver. 2.0',
+                            price: '42,000원',
+                            image: '../media/cloudy_prod4.png',
+                            category: 'cloudy',
+                            type: 'goods',
+                            badge: null
+                        }
+                    ]
+                };
+            }
+        }
+
+        // API에서 상품 데이터 로드
+        async function loadProducts() {
+            try {
+                showLoading();
+                console.log('상품 데이터 로딩 중...');
+                
+                const response = await getShopProducts();
+                
+                if (response.success && response.products) {
+                    products = response.products;
+                    console.log(`${products.length}개 상품 로드됨`);
+                    renderProducts();
+                } else {
+                    throw new Error('상품 데이터 로드 실패');
+                }
+                
+            } catch (error) {
+                console.error('상품 로딩 오류:', error);
+                showError('상품 데이터를 불러오는데 실패했습니다. 잠시 후 다시 시도해주세요.');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // 에러 표시 함수
+        function showError(message) {
+            const container = document.getElementById('product-container');
+            const emptyState = document.getElementById('empty-state');
+            
+            container.innerHTML = '';
+            emptyState.style.display = 'block';
+            emptyState.innerHTML = `
+                <h3>오류 발생</h3>
+                <p>${message}</p>
+                <button onclick="loadProducts()" style="margin-top: 1rem; padding: 0.5rem 1rem; background: #e74c3c; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                    다시 시도
+                </button>
+            `;
+        }
 
         function renderProducts(productsToRender = products) {
             const container = document.getElementById('product-container');
@@ -731,7 +810,7 @@
 
         function updateBreadcrumb(category) {
             const breadcrumb = document.querySelector('.breadcrumb');
-            breadcrumb.innerHTML = `<a href="http://www.creative-energy.net/index.html">홈</a> > <a href="#">아티스트</a> > ${category} | Creative Energy`;
+            breadcrumb.innerHTML = `<a href="../index.html">홈</a> > <a href="#">아티스트</a> > ${category} | Creative Energy`;
         }
 
         function goToOrderPage(productId) {
@@ -753,7 +832,7 @@
                 const encodedData = btoa(encodeURIComponent(JSON.stringify(orderData)));
                 
                 // 주문 확인 페이지로 이동
-                window.location.href = `http://www.creative-energy.net/pages/order.html?data=${encodedData}`;
+                window.location.href = `./order.html?data=${encodedData}`;
             }
         }
 
@@ -777,7 +856,7 @@
 
         // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
-            renderProducts();
+            loadProducts();
         });
 
         // Search functionality

@@ -495,18 +495,18 @@
     <!-- Header -->
     <header class="header">
         <nav class="nav-container">
-            <a href="http://www.creative-energy.net/index.html" class="logo">CREATIVE ENERGY</a>
+            <a href="../index.html" class="logo">CREATIVE ENERGY</a>
             <ul class="nav-menu">
-                <li class="nav-item"><a href="http://www.creative-energy.net/index.html#company">Company</a></li>
-                <li class="nav-item"><a href="http://www.creative-energy.net/pages/notice_lb.html">Notice</a></li>
+                <li class="nav-item"><a href="../index.html#company">Company</a></li>
+                <li class="nav-item"><a href="./notice_nodb.html">Notice</a></li>
                 <li class="nav-item dropdown">
-                    <a href="http://www.creative-energy.net/index.html#projects">Artists<span class="dropdown-arrow">▼</span></a>
+                    <a href="../index.html#projects">Artists<span class="dropdown-arrow">▼</span></a>
                     <div class="dropdown-content">
-                        <a href="http://www.creative-energy.net/artist/cloudy_lb.html" class="dropdown-item">Cloudy</a>
-                        <a href="http://www.creative-energy.net/artist/bbweb/index_lb.html" class="dropdown-item">Big Boys</a>
+                        <a href="../artist/cloudy_nodb.html" class="dropdown-item">Cloudy</a>
+                        <a href="../artist/bbweb/index_nodb.html" class="dropdown-item">Big Boys</a>
                     </div>
                 </li>
-                <li class="nav-item"><a href="http://www.creative-energy.net/pages/shop_lb.html" class="active">Shop</a></li>
+                <li class="nav-item"><a href="./shop_nodb.html" class="active">Shop</a></li>
             </ul>
             <div class="nav-icons">
                 <div class="nav-icon">KOR</div>
@@ -526,12 +526,18 @@
                 <div class="sidebar-item active" onclick="filterProducts('bigboys')">BigBoys</div>
                 <div class="sidebar-item" onclick="filterProducts('cloudy')">Cloudy</div>
             </div>
+            
+            <div class="sidebar-category" style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #f0f0f0;">
+                <div style="text-align: center;">
+                    <a href="./admin.html" style="color: #999; font-size: 14px; text-decoration: none; transition: color 0.3s ease;">Administrator</a>
+                </div>
+            </div>
         </aside>
 
         <!-- Content Area -->
         <main class="content-area">
             <div class="breadcrumb">
-                <a href="http://www.creative-energy.net/index.html">홈</a> > <a href="#">아티스트</a> > 전체 상품 | Creative Energy
+                <a href="../index.html">홈</a> > <a href="#">아티스트</a> > 전체 상품 | Creative Energy
             </div>
 
             <div class="section-header">
@@ -563,7 +569,7 @@
                 title: 'BigBoys 1st Full Album [SimplyFit] Standard Edition',
                 subtitle: 'Standard Edition',
                 price: '18,500원',
-                image: 'http://www.creative-energy.net/media/bb_prod1.png',
+                image: '../media/bb_prod1.png',
                 category: 'bigboys',
                 type: 'album',
                 badge: 'NEW'
@@ -573,7 +579,7 @@
                 title: 'BigBoys 1st Full Album [SimplyFit] Limited Edition',
                 subtitle: 'with Photo Book & Photo Cards',
                 price: '35,000원',
-                image: 'http://www.creative-energy.net/media/bb_prod2.png',
+                image: '../media/bb_prod2.png',
                 category: 'bigboys',
                 type: 'album',
                 badge: 'LIMITED'
@@ -583,7 +589,7 @@
                 title: 'BigBoys Official Light Stick',
                 subtitle: 'Ver. 1.0',
                 price: '42,000원',
-                image: 'http://www.creative-energy.net/media/bb_prod3.png',
+                image: '../media/bb_prod3.png',
                 category: 'bigboys',
                 type: 'goods',
                 badge: null
@@ -593,7 +599,7 @@
                 title: 'BigBoys Official T-Shirt',
                 subtitle: 'Black / White Available',
                 price: '28,000원',
-                image: 'http://www.creative-energy.net/media/bb_prod4.png',
+                image: '../media/bb_prod4.png',
                 category: 'bigboys',
                 type: 'goods',
                 badge: 'LIMITED'
@@ -604,7 +610,7 @@
                 title: 'Cloudy 2st Official Album [In the Sky]',
                 subtitle: 'Sky Blue Ver.',
                 price: '16,800원',
-                image: 'http://www.creative-energy.net/media/cloudy_prod1.png',
+                image: '../media/cloudy_prod1.png',
                 category: 'cloudy',
                 type: 'album',
                 badge: 'NEW'
@@ -614,7 +620,7 @@
                 title: 'Cloudy 1st Official Album [FEARLESS]',
                 subtitle: 'Purple Ver.',
                 price: '16,800원',
-                image: 'http://www.creative-energy.net/media/cloudy_prod2.png',
+                image: '../media/cloudy_prod2.png',
                 category: 'cloudy',
                 type: 'album',
                 badge: null
@@ -624,7 +630,7 @@
                 title: 'Cloudy Official Merchandise',
                 subtitle: 'Eco Bag',
                 price: '40,000원',
-                image: 'http://www.creative-energy.net/media/cloudy_prod3.png',
+                image: '../media/cloudy_prod3.png',
                 category: 'cloudy',
                 type: 'goods',
                 badge: 'LIMITED'
@@ -634,7 +640,7 @@
                 title: 'Cloudy Official Light Stick',
                 subtitle: 'Ver. 2.0',
                 price: '42,000원',
-                image: 'http://www.creative-energy.net/media/cloudy_prod4.png',
+                image: '../media/cloudy_prod4.png',
                 category: 'cloudy',
                 type: 'goods',
                 badge: null
@@ -731,7 +737,7 @@
 
         function updateBreadcrumb(category) {
             const breadcrumb = document.querySelector('.breadcrumb');
-            breadcrumb.innerHTML = `<a href="http://www.creative-energy.net/index.html">홈</a> > <a href="#">아티스트</a> > ${category} | Creative Energy`;
+            breadcrumb.innerHTML = `<a href="../index.html">홈</a> > <a href="#">아티스트</a> > ${category} | Creative Energy`;
         }
 
         function goToOrderPage(productId) {
@@ -753,7 +759,7 @@
                 const encodedData = btoa(encodeURIComponent(JSON.stringify(orderData)));
                 
                 // 주문 확인 페이지로 이동
-                window.location.href = `http://www.creative-energy.net/pages/order.html?data=${encodedData}`;
+                window.location.href = `./order.html?data=${encodedData}`;
             }
         }
 
