@@ -84,48 +84,6 @@ server {
         }
     }
     
-    # Files 폴더 - 업로드된 파일 다운로드용
-    location /files/ {
-        root /home/rocky/ceweb;
-        autoindex off;  # 보안상 디렉터리 리스팅 비활성화
-        
-        # 파일 다운로드를 위한 헤더 설정
-        add_header Content-Disposition "attachment";
-        add_header X-Content-Type-Options "nosniff";
-        
-        # 허용된 파일 확장자만 접근 가능
-        location ~* \.(pdf|doc|docx|mp3|mp4|jpg|jpeg|png)$ {
-            expires 30d;
-            add_header Cache-Control "public";
-        }
-        
-        # 실행 파일 차단
-        location ~* \.(php|php3|php4|php5|phtml|pl|py|jsp|asp|sh|cgi|exe|bat|com)$ {
-            deny all;
-            return 403;
-        }
-    }
-    
-    # Web-Server 폴더 - API 설정 파일 전용 (보안 강화)
-    location /web-server/ {
-        root /home/rocky/ceweb;
-        
-        # JS 파일만 허용 (api-config.js 등)
-        location ~* \.js$ {
-            expires 1d;
-            add_header Cache-Control "public";
-        }
-        
-        # 설치 스크립트 및 문서 파일 차단
-        location ~* \.(sh|md|txt|conf|yml|yaml)$ {
-            deny all;
-            return 403;
-        }
-        
-        # 디렉토리 리스팅 금지
-        autoindex off;
-    }
-    
     # API 요청을 App Server로 프록시
     location /api/ {
         proxy_pass http://app.cesvc.net:3000/api/;
@@ -256,33 +214,7 @@ EOF
 
 chmod +x /root/test_app_server.sh
 
-# 12. API 설정 파일 수정 (production 환경에서 올바른 baseURL 설정)
-log "API 설정 파일 수정 중..."
-API_CONFIG_FILE="$WEB_DIR/web-server/api-config.js"
-
-if [ -f "$API_CONFIG_FILE" ]; then
-    log "api-config.js 파일을 찾았습니다: $API_CONFIG_FILE"
-    
-    # production baseURL을 '/api'로 수정 (Web-Server 프록시 사용)
-    sed -i "s|baseURL: 'http://app.cesvc.net:3000/api'|baseURL: '/api'|g" "$API_CONFIG_FILE"
-    
-    # 파일 수정 확인
-    if grep -q "baseURL: '/api'" "$API_CONFIG_FILE"; then
-        log "✅ api-config.js production baseURL을 '/api'로 수정 완료"
-    else
-        warn "⚠️ api-config.js 수정 확인이 필요합니다"
-    fi
-    
-    # 파일 권한 설정
-    chown rocky:rocky "$API_CONFIG_FILE"
-    chmod 644 "$API_CONFIG_FILE"
-else
-    warn "⚠️ api-config.js 파일을 찾을 수 없습니다: $API_CONFIG_FILE"
-    warn "   웹 파일 배포 후 수동으로 다음 명령어를 실행하세요:"
-    warn "   sed -i \"s|baseURL: 'http://app.cesvc.net:3000/api'|baseURL: '/api'|g\" $API_CONFIG_FILE"
-fi
-
-# 13. 설치 완료 메시지
+# 12. 설치 완료 메시지
 log "================================================================"
 log "Creative Energy Web Server 설치가 완료되었습니다!"
 log "================================================================"
@@ -317,20 +249,10 @@ log "🔌 열린 포트: 80, 443"
 log "📁 웹 디렉토리: $WEB_DIR"
 log "📝 Nginx 설정: /etc/nginx/conf.d/creative-energy.conf"
 log ""
-log "🔧 API 설정 자동 구성:"
-log "- api-config.js production baseURL: '/api' (Web-Server 프록시 사용)"
-log "- /web-server/ 경로 보안 설정: JS 파일만 허용, 설치 파일 차단"
-log "- API 타임아웃 최적화: 10초 연결, 30초 읽기/쓰기"
-log ""
 log "⚠️  중요 사항:"
 log "- 이 서버는 정적 파일 서빙과 API 프록시 역할만 수행합니다"
 log "- 실제 API 처리는 app.cesvc.net:3000에서 수행됩니다"
 log "- App Server가 실행 중이어야 API 요청이 정상 동작합니다"
 log "- SELinux 설정이 자동으로 구성되어 권한 문제 없이 동작합니다"
-log "- 브라우저에서 API 연결 시 '/api' 경로를 통해 프록시됩니다"
-log ""
-log "🧪 API 연결 테스트 명령어:"
-log "curl -X GET http://localhost/api/orders/products"
-log "curl -X GET http://localhost/health"
 log ""
 log "================================================================"

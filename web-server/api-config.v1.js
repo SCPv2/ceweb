@@ -11,7 +11,7 @@ const API_CONFIG = {
         timeout: 5000
     },
     production: {
-        baseURL: '/api',
+        baseURL: 'http://app.cesvc.net:3000/api',
         timeout: 10000
     },
     
