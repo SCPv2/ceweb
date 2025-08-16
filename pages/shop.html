@@ -572,15 +572,16 @@
                 if (typeof getProducts === 'function') {
                     return await getProducts();
                 } else {
-                    // Fallback: 직접 API 호출
+                    // Fallback: 프록시를 통한 API 호출 (로드밸런서 환경 대응)
                     const API_BASE_URL = (() => {
+                        // 개발 환경에서만 직접 API 호출
                         if (window.location.hostname === 'localhost' || 
-                            window.location.hostname === '127.0.0.1' ||
-                            window.location.hostname.includes('192.168.') ||
-                            window.location.hostname.includes('10.0.')) {
+                            window.location.hostname === '127.0.0.1') {
                             return 'http://localhost:3000/api';
                         }
-                        return 'http://app.cesvc.net:3000/api';
+                        
+                        // 로드밸런서 환경에서는 항상 프록시를 통해 호출
+                        return '/api';
                     })();
 
                     const response = await fetch(`${API_BASE_URL}/orders/products`);

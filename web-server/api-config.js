@@ -21,9 +21,31 @@ const API_CONFIG = {
         if (window.location.hostname === 'localhost' || 
             window.location.hostname === '127.0.0.1' ||
             window.location.hostname.includes('192.168.') ||
-            window.location.hostname.includes('10.0.')) {
+            window.location.hostname.includes('10.0.') ||
+            window.location.hostname.includes('172.16.')) {
             return 'development';
         }
+        
+        // 로드밸런서 환경에서 내부 IP 대역 체크
+        const hostname = window.location.hostname;
+        
+        // 로드밸런서 환경의 내부 IP 대역들
+        const internalNetworks = [
+            '10.1.1.',    // Web Server 네트워크 (webvm111r, webvm112r)
+            '10.1.2.',    // App Server 네트워크 (appvm121r, appvm122r)  
+            '10.1.3.',    // DB Server 네트워크 (dbvm131r)
+            '172.20.',    // Docker 내부 네트워크
+            '172.30.',    // Kubernetes 내부 네트워크
+            '10.'         // 기타 사설망 대역
+        ];
+        
+        // 내부 IP 대역인 경우 development로 처리
+        for (const network of internalNetworks) {
+            if (hostname.startsWith(network)) {
+                return 'development';
+            }
+        }
+        
         return 'production';
     },
     

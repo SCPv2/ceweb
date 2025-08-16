@@ -310,7 +310,64 @@ else
     warn "⚠️ bootstrap_web_vm.sh 스크립트를 찾을 수 없습니다: $BOOTSTRAP_SCRIPT"
 fi
 
-# 13. API 설정 파일 수정 (production 환경에서 올바른 baseURL 설정)
+# 13. VM 정보 파일 생성 (Load Balancer 환경용)
+log "VM 정보 파일 생성 중..."
+
+# 현재 VM 정보 수집
+VM_HOSTNAME=$(hostname -s)
+VM_IP=$(hostname -I | awk '{print $1}')
+CURRENT_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+# VM 번호 추출 (hostname에서 숫자 추출: webvm111r -> 1, webvm112r -> 2)
+VM_NUMBER=""
+if [[ $VM_HOSTNAME =~ webvm([0-9]+) ]]; then
+    FULL_NUMBER=${BASH_REMATCH[1]}
+    # 마지막 자리 숫자를 VM 번호로 사용
+    VM_NUMBER="${FULL_NUMBER: -1}"
+else
+    VM_NUMBER="1"  # 기본값
+fi
+
+log "VM 정보: 호스트명=$VM_HOSTNAME, IP=$VM_IP, VM번호=$VM_NUMBER"
+
+# vm-info.json 파일 생성
+VM_INFO_FILE="$WEB_DIR/vm-info.json"
+cat > "$VM_INFO_FILE" << EOF
+{
+  "hostname": "$VM_HOSTNAME",
+  "ip_address": "$VM_IP",
+  "vm_number": "$VM_NUMBER",
+  "server_type": "web-server",
+  "load_balancer": {
+    "name": "www.cesvc.net",
+    "ip": "10.1.1.100",
+    "policy": "Round Robin"
+  },
+  "cluster": {
+    "servers": [
+      {
+        "hostname": "webvm111r",
+        "ip": "10.1.1.111",
+        "vm_number": "1"
+      },
+      {
+        "hostname": "webvm112r", 
+        "ip": "10.1.1.112",
+        "vm_number": "2"
+      }
+    ]
+  },
+  "timestamp": "$CURRENT_TIME",
+  "version": "1.0"
+}
+EOF
+
+chmod 644 "$VM_INFO_FILE"
+chown rocky:rocky "$VM_INFO_FILE"
+
+log "✅ VM 정보 파일 생성 완료: $VM_INFO_FILE"
+
+# 14. API 설정 파일 수정 (production 환경에서 올바른 baseURL 설정)
 log "API 설정 파일 수정 중..."
 API_CONFIG_FILE="$WEB_DIR/web-server/api-config.js"
 

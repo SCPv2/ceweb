@@ -1,0 +1,27 @@
+{
+  "hostname": "{{VM_HOSTNAME}}",
+  "ip_address": "{{VM_IP_ADDRESS}}",
+  "vm_number": "{{VM_NUMBER}}",
+  "server_type": "web-server",
+  "load_balancer": {
+    "name": "www.cesvc.net",
+    "ip": "10.1.1.100",
+    "policy": "Round Robin"
+  },
+  "cluster": {
+    "servers": [
+      {
+        "hostname": "webvm111r",
+        "ip": "10.1.1.111",
+        "vm_number": "1"
+      },
+      {
+        "hostname": "webvm112r", 
+        "ip": "10.1.1.112",
+        "vm_number": "2"
+      }
+    ]
+  },
+  "timestamp": "{{TIMESTAMP}}",
+  "version": "1.0"
+}
