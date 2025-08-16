@@ -69,9 +69,10 @@ log "Nginx 설정 파일 생성 중..."
 # Samsung Cloud Platform Load Balancer 환경용 설정 우선 사용
 if [ -f "$WEB_DIR/web-server/nginx-site.conf" ]; then
     log "Load Balancer 환경용 nginx-site.conf 파일을 사용합니다"
-    # Rocky Linux는 conf.d 디렉토리 사용
-    cp "$WEB_DIR/web-server/nginx-site.conf" /etc/nginx/conf.d/creative-energy.conf
-    log "✅ nginx-site.conf를 /etc/nginx/conf.d/creative-energy.conf로 적용 완료"
+    cp "$WEB_DIR/web-server/nginx-site.conf" /etc/nginx/sites-available/ceweb
+    mkdir -p /etc/nginx/sites-enabled
+    ln -sf /etc/nginx/sites-available/ceweb /etc/nginx/sites-enabled/
+    log "✅ nginx-site.conf 적용 완료"
 else
     log "기본 nginx 설정 파일을 생성합니다"
     cat > /etc/nginx/conf.d/creative-energy.conf << 'EOF'

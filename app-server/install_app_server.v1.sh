@@ -318,34 +318,7 @@ else
     warn "⚠️ server.js 또는 ecosystem.config.js 파일이 없습니다."
 fi
 
-# 17. Samsung Cloud Platform Bootstrap 스크립트 설정
-log "VM Bootstrap 스크립트 설정 중..."
-
-BOOTSTRAP_SCRIPT="/home/$APP_USER/ceweb/app-server/bootstrap_app_vm.sh"
-if [ -f "$BOOTSTRAP_SCRIPT" ]; then
-    log "bootstrap_app_vm.sh 스크립트를 찾았습니다"
-    
-    # Bootstrap 스크립트를 시스템 위치로 복사
-    cp "$BOOTSTRAP_SCRIPT" /usr/local/bin/
-    chmod +x /usr/local/bin/bootstrap_app_vm.sh
-    chown root:root /usr/local/bin/bootstrap_app_vm.sh
-    
-    # rc.local에 Bootstrap 스크립트 추가 (VM 부팅 시 자동 실행)
-    if ! grep -q "bootstrap_app_vm.sh" /etc/rc.local 2>/dev/null; then
-        echo '#!/bin/bash' > /etc/rc.local
-        echo '/usr/local/bin/bootstrap_app_vm.sh' >> /etc/rc.local
-        chmod +x /etc/rc.local
-        log "✅ VM Bootstrap 스크립트 자동 실행 설정 완료"
-    else
-        log "Bootstrap 스크립트가 이미 rc.local에 설정되어 있습니다"
-    fi
-    
-    log "✅ Samsung Cloud Platform Load Balancer 환경 설정 완료"
-else
-    warn "⚠️ bootstrap_app_vm.sh 스크립트를 찾을 수 없습니다: $BOOTSTRAP_SCRIPT"
-fi
-
-# 18. PM2 자동 시작 설정
+# 17. PM2 자동 시작 설정
 log "PM2 자동 시작 설정 중..."
 sudo -u $APP_USER pm2 startup systemd --user $APP_USER 2>/dev/null || {
     log "PM2 startup 설정을 위해 다음 명령을 실행하세요:"
@@ -409,23 +382,9 @@ log "🔌 열린 포트: 3000"
 log "👤 애플리케이션 사용자: $APP_USER"
 log "📁 애플리케이션 경로: $APP_DIR"
 log ""
-log "🧪 API 엔드포인트 테스트 명령어:"
-log "curl -X GET http://localhost:3000/health"
-log "curl -X GET http://localhost:3000/api/orders/products"
-log ""
-log "🌐 Samsung Cloud Platform Load Balancer 환경:"
-log "- VM Bootstrap 자동 실행: VM 부팅 시 자동으로 Node.js 애플리케이션 시작"
-log "- Server Status Icons: /health 엔드포인트에서 실시간 VM 정보 제공"
-log "- VM 정보 파일: vm-info.json에서 VM 번호와 상태 정보 자동 생성"
-log "- Load Balancer에서 Health Check를 통한 서버 상태 모니터링"
-log ""
-log "🔄 VM Bootstrap 수동 실행 (테스트용):"
-log "/usr/local/bin/bootstrap_app_vm.sh"
-log ""
 log "⚠️  중요 사항:"
 log "- 이 서버는 API 처리만 담당합니다 (정적 파일 서빙 없음)"
 log "- Web Server(www.cesvc.net)에서 이 서버로 API 요청을 프록시합니다"
 log "- DB는 별도 서버(db.cesvc.net:2866)에 위치합니다"
-log "- /health 엔드포인트에서 서버 식별 정보(VM 번호, IP 등) 제공"
 log ""
 log "================================================================"
