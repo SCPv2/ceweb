@@ -6,14 +6,19 @@
 class ServerStatusIcons {
     constructor(containerId) {
         this.container = document.getElementById(containerId);
+        // Load Balancer 아키텍처 정의
+        this.loadBalancers = {
+            web: { name: 'www.cesvc.net', ip: '10.1.1.100', policy: 'Round Robin' },
+            app: { name: 'app.cesvc.net', ip: '10.1.2.100', policy: 'Round Robin' }
+        };
         this.servers = {
             web: [
-                { id: 'web1', name: 'Web-1', status: 'unknown', ip: 'unknown' },
-                { id: 'web2', name: 'Web-2', status: 'unknown', ip: 'unknown' }
+                { id: 'web1', name: 'Web-1', hostname: 'webvm111r', ip: '10.1.1.111', status: 'unknown' },
+                { id: 'web2', name: 'Web-2', hostname: 'webvm112r', ip: '10.1.1.112', status: 'unknown' }
             ],
             app: [
-                { id: 'app1', name: 'App-1', status: 'unknown', ip: 'unknown' },
-                { id: 'app2', name: 'App-2', status: 'unknown', ip: 'unknown' }
+                { id: 'app1', name: 'App-1', hostname: 'appvm121r', ip: '10.1.2.121', status: 'unknown' },
+                { id: 'app2', name: 'App-2', hostname: 'appvm122r', ip: '10.1.2.122', status: 'unknown' }
             ]
         };
         this.updateInterval = null;
@@ -32,6 +37,15 @@ class ServerStatusIcons {
 
         this.container.innerHTML = `
             <div class="server-status-container">
+                <!-- Load Balancer Info -->
+                <div class="load-balancer-info">
+                    <div class="lb-label">LB</div>
+                    <div class="lb-details">
+                        <div class="lb-item">WEB: ${this.loadBalancers.web.name}</div>
+                        <div class="lb-item">APP: ${this.loadBalancers.app.name}</div>
+                    </div>
+                </div>
+                
                 <!-- Web Servers -->
                 <div class="server-group">
                     <div class="server-group-label">WEB</div>
@@ -55,12 +69,20 @@ class ServerStatusIcons {
                     </div>
                     <div class="tooltip-content">
                         <div class="tooltip-row">
+                            <span class="tooltip-label">호스트명:</span>
+                            <span class="tooltip-value" id="tooltipHostname">Unknown</span>
+                        </div>
+                        <div class="tooltip-row">
                             <span class="tooltip-label">상태:</span>
                             <span class="tooltip-value" id="tooltipStatus">Unknown</span>
                         </div>
                         <div class="tooltip-row">
                             <span class="tooltip-label">IP:</span>
                             <span class="tooltip-value" id="tooltipIp">Unknown</span>
+                        </div>
+                        <div class="tooltip-row">
+                            <span class="tooltip-label">Load Balancer:</span>
+                            <span class="tooltip-value" id="tooltipLB">-</span>
                         </div>
                         <div class="tooltip-row">
                             <span class="tooltip-label">응답시간:</span>
@@ -99,8 +121,40 @@ class ServerStatusIcons {
             .server-status-container {
                 display: flex;
                 align-items: center;
-                gap: 15px;
+                gap: 12px;
                 position: relative;
+            }
+
+            .load-balancer-info {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 2px;
+                padding: 4px 8px;
+                background: rgba(255, 193, 7, 0.2);
+                border: 1px solid rgba(255, 193, 7, 0.3);
+                border-radius: 6px;
+                min-width: 80px;
+            }
+
+            .lb-label {
+                font-size: 0.6rem;
+                color: rgba(255, 193, 7, 0.9);
+                font-weight: bold;
+                text-align: center;
+            }
+
+            .lb-details {
+                display: flex;
+                flex-direction: column;
+                gap: 1px;
+            }
+
+            .lb-item {
+                font-size: 0.5rem;
+                color: rgba(255, 255, 255, 0.8);
+                text-align: center;
+                line-height: 1;
             }
 
             .server-group {
@@ -387,14 +441,16 @@ class ServerStatusIcons {
         // 서버 정보 찾기
         const serverInfo = this.findServerInfo(serverId, serverType);
         
-        // 툴팁 내용 업데이트
+        // 툴팁 내용 업데이트 (Load Balancer 환경)
         document.getElementById('tooltipTitle').textContent = serverName;
+        document.getElementById('tooltipHostname').textContent = serverInfo.hostname || 'Unknown';
         
         const statusElement = document.getElementById('tooltipStatus');
         statusElement.textContent = serverInfo.status.toUpperCase();
         statusElement.className = `tooltip-value ${serverInfo.status}`;
         
         document.getElementById('tooltipIp').textContent = serverInfo.ip || 'Unknown';
+        document.getElementById('tooltipLB').textContent = serverInfo.loadBalancer || 'Unknown';
         document.getElementById('tooltipResponseTime').textContent = serverInfo.responseTime || '-';
 
         tooltip.classList.add('show');
@@ -455,37 +511,35 @@ class ServerStatusIcons {
             const webVmNumber = parseInt(currentWebInfo.vmNumber) || 1;
             const appVmNumber = parseInt(currentAppInfo.vmNumber) || 1;
             
-            // 모든 서버 초기화 (회색)
+            // Load Balancer 환경: 모든 서버 초기화 (Load Balancer Pool 상태)
             this.servers.web.forEach((server, index) => {
-                server.status = 'offline';
-                server.ip = 'LB Pool';
+                server.status = 'unknown';
                 server.responseTime = '-';
                 server.name = `Web-${index + 1}`;
+                server.loadBalancer = this.loadBalancers.web.name;
             });
             
             this.servers.app.forEach((server, index) => {
-                server.status = 'offline';
-                server.ip = 'LB Pool';
+                server.status = 'unknown';
                 server.responseTime = '-';
                 server.name = `App-${index + 1}`;
+                server.loadBalancer = this.loadBalancers.app.name;
             });
             
-            // 현재 서빙 중인 서버만 녹색으로 표시
+            // 현재 Load Balancer에서 응답 중인 서버만 녹색으로 표시
             this.servers.web.forEach((server, index) => {
-                if (index + 1 === webVmNumber) {
+                if (server.hostname === currentWebInfo.hostname || index + 1 === webVmNumber) {
                     server.status = 'online';
-                    server.ip = currentWebInfo.ip;
                     server.responseTime = currentWebInfo.responseTime;
-                    server.name = `Web-${webVmNumber} (현재)`;
+                    server.name = `Web-${index + 1} (현재)`;
                 }
             });
             
             this.servers.app.forEach((server, index) => {
-                if (index + 1 === appVmNumber) {
+                if (server.hostname === currentAppInfo.hostname || index + 1 === appVmNumber) {
                     server.status = currentAppInfo.status;
-                    server.ip = currentAppInfo.ip;
                     server.responseTime = currentAppInfo.responseTime;
-                    server.name = `App-${appVmNumber} (현재)`;
+                    server.name = `App-${index + 1} (현재)`;
                 }
             });
             

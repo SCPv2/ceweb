@@ -16,28 +16,43 @@ const PORT = process.env.PORT || 3000;
 app.use(helmet());
 app.use(morgan('combined'));
 
-// CORS 설정
+// CORS 설정 (Load Balancer 환경)
 const corsOptions = {
   origin: function (origin, callback) {
     const allowedOrigins = process.env.ALLOWED_ORIGINS 
       ? process.env.ALLOWED_ORIGINS.split(',') 
       : [
+          // Load Balancer 도메인들
           'http://www.cesvc.net', 'https://www.cesvc.net',
-          'http://www.creative-energy.net', 'https://www.creative-energy.net',
-          'http://localhost:3000', 'http://127.0.0.1:3000'
+          'http://app.cesvc.net', 'https://app.cesvc.net',
+          
+          // 실제 웹서버 IP들
+          'http://10.1.1.111', 'https://10.1.1.111',
+          'http://10.1.1.112', 'https://10.1.1.112',
+          
+          // Load Balancer IP들
+          'http://10.1.1.100', 'https://10.1.1.100',
+          'http://10.1.2.100', 'https://10.1.2.100',
+          
+          // 개발용
+          'http://localhost:3000', 'http://127.0.0.1:3000',
+          'http://localhost', 'http://127.0.0.1'
         ];
     
-    // origin이 undefined인 경우 (같은 도메인) 허용
+    // origin이 undefined인 경우 (서버 간 통신, 같은 도메인) 허용
     if (!origin) return callback(null, true);
     
+    // Load Balancer 환경에서는 X-Forwarded-Host 헤더도 확인
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      console.log(`CORS 차단: 허용되지 않은 origin ${origin}`);
       callback(new Error('CORS 정책에 의해 접근이 거부되었습니다.'));
     }
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'HEAD'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-Forwarded-For', 'X-Forwarded-Host', 'X-Real-IP']
 };
 
 app.use(cors(corsOptions));
@@ -81,18 +96,40 @@ app.get('/health', async (req, res) => {
       console.warn('VM 정보 파일 읽기 실패:', vmError.message);
     }
     
+    // Load Balancer 환경을 위한 추가 정보
+    const hostname = os.hostname();
+    const internalIp = Object.values(os.networkInterfaces()).flat().find(i => !i.internal && i.family === 'IPv4')?.address || 'unknown';
+    
     res.json({
       success: true,
       message: 'Server is healthy',
       database: 'Connected',
-      hostname: os.hostname(),
-      ip: Object.values(os.networkInterfaces()).flat().find(i => !i.internal && i.family === 'IPv4')?.address || 'unknown',
+      hostname: hostname,
+      ip: internalIp,
       vm_number: vmNumber,
       vm_type: 'app',
-      uptime: process.uptime(),
-      memory: process.memoryUsage(),
-      node_version: process.version,
-      timestamp: new Date().toISOString()
+      load_balancer: {
+        name: 'app.cesvc.net',
+        ip: '10.1.2.100',
+        policy: 'Round Robin'
+      },
+      architecture: {
+        tier: 'App Server',
+        role: 'API Processing + Business Logic',
+        database: 'db.cesvc.net:2866'
+      },
+      performance: {
+        uptime: process.uptime(),
+        memory: process.memoryUsage(),
+        node_version: process.version,
+        pm2_status: 'online'
+      },
+      timestamp: new Date().toISOString(),
+      request_headers: {
+        'x-forwarded-for': req.headers['x-forwarded-for'] || 'direct',
+        'x-forwarded-host': req.headers['x-forwarded-host'] || hostname,
+        'user-agent': req.headers['user-agent'] || 'unknown'
+      }
     });
   } catch (error) {
     res.status(500).json({

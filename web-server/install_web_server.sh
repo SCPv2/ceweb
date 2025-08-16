@@ -134,9 +134,18 @@ server {
         autoindex off;
     }
     
-    # API 요청을 App Server로 프록시
+    # VM 정보 엔드포인트 - Load Balancer 서버 상태용
+    location /vm-info.json {
+        alias /home/rocky/ceweb/vm-info.json;
+        add_header Content-Type application/json;
+        add_header Cache-Control "no-cache, no-store, must-revalidate";
+        add_header Pragma no-cache;
+        add_header Expires 0;
+    }
+    
+    # API 프록시 (App Load Balancer로 전달)
     location /api/ {
-        proxy_pass http://app.cesvc.net:3000/api/;
+        proxy_pass http://app.cesvc.net:3000/;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -146,24 +155,34 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_cache_bypass $http_upgrade;
         
-        # App Server 연결 타임아웃 설정
+        # Load Balancer 환경 최적화
+        proxy_read_timeout 60s;
         proxy_connect_timeout 10s;
-        proxy_send_timeout 30s;
-        proxy_read_timeout 30s;
+        proxy_send_timeout 60s;
         
-        # 네트워크 지연 대응
+        # Load Balancer Health Check 및 Failover 설정
         proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504;
         proxy_next_upstream_tries 2;
+        proxy_next_upstream_timeout 30s;
+        
+        # 세션 유지를 위한 헤더
+        proxy_set_header X-Forwarded-Host $server_name;
+        proxy_set_header X-Forwarded-Server $host;
     }
     
-    # 헬스체크 엔드포인트
+    # Health Check 엔드포인트 (App Load Balancer로 전달)
     location /health {
         proxy_pass http://app.cesvc.net:3000/health;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_connect_timeout 5s;
         proxy_send_timeout 5s;
         proxy_read_timeout 5s;
+        
+        # Load Balancer Health Check 응답 최적화
+        proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504;
+        proxy_next_upstream_tries 1;
     }
     
     # 보안 헤더

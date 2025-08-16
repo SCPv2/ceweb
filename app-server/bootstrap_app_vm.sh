@@ -195,24 +195,42 @@ echo "13. VM 식별 정보 생성..."
 VM_INFO_FILE="/home/$APP_USER/ceweb/vm-info.json"
 PM2_STATUS=$(sudo -u $APP_USER pm2 jlist | jq -r '.[0].pm2_env.status' 2>/dev/null || echo "unknown")
 
-# VM 인스턴스 번호 자동 감지 (hostname 기반)
+# Load Balancer 환경: VM 인스턴스 번호 자동 감지 (hostname 기반)
 VM_NUMBER="1"
-if [[ $(hostname) == *"2"* ]] || [[ $(hostname) == *"app2"* ]]; then
+VM_HOSTNAME=$(hostname)
+if [[ $VM_HOSTNAME == *"121"* ]] || [[ $VM_HOSTNAME == *"app1"* ]]; then
+    VM_NUMBER="1"
+elif [[ $VM_HOSTNAME == *"122"* ]] || [[ $VM_HOSTNAME == *"app2"* ]]; then
     VM_NUMBER="2"
 fi
+
+# 실제 서버 IP 확인 (Load Balancer 환경)
+INTERNAL_IP=$(hostname -I | awk '{print $1}')
+PUBLIC_IP=$(curl -s ifconfig.me 2>/dev/null || echo "unknown")
 
 sudo -u $APP_USER bash -c "cat > '$VM_INFO_FILE' << EOF
 {
     \"vm_type\": \"app\",
     \"vm_number\": \"$VM_NUMBER\",
-    \"hostname\": \"$(hostname)\",
-    \"ip_address\": \"$(hostname -I | awk '{print $1}')\",
+    \"hostname\": \"$VM_HOSTNAME\",
+    \"internal_ip\": \"$INTERNAL_IP\",
+    \"ip_address\": \"$PUBLIC_IP\",
     \"startup_time\": \"$(date -Iseconds)\",
     \"app_status\": \"$PM2_STATUS\",
     \"app_port\": \"3000\",
     \"node_version\": \"$(node --version)\",
     \"pm2_version\": \"$(pm2 --version)\",
-    \"load_balancer\": \"appLB\",
+    \"load_balancer\": {
+        \"name\": \"app.cesvc.net\",
+        \"ip\": \"10.1.2.100\",
+        \"policy\": \"Round Robin\",
+        \"pool\": [\"appvm121r (10.1.2.121)\", \"appvm122r (10.1.2.122)\"]
+    },
+    \"architecture\": {
+        \"tier\": \"App Server\",
+        \"role\": \"API Processing + Business Logic\",
+        \"database\": \"db.cesvc.net:2866\"
+    },
     \"region\": \"$(curl -s http://169.254.169.254/latest/meta-data/placement/region 2>/dev/null || echo 'samsung-cloud')\",
     \"last_health_check\": \"$(date -Iseconds)\"
 }

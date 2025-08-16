@@ -123,22 +123,40 @@ echo "Nginx 포트: $(ss -tlnp | grep :80 || echo 'Port 80 not listening')"
 echo "11. VM 식별 정보 생성..."
 VM_INFO_FILE="/home/rocky/ceweb/vm-info.json"
 
-# VM 인스턴스 번호 자동 감지 (hostname 기반)
+# Load Balancer 환경: VM 인스턴스 번호 자동 감지 (hostname 기반)
 VM_NUMBER="1"
-if [[ $(hostname) == *"2"* ]] || [[ $(hostname) == *"web2"* ]]; then
+VM_HOSTNAME=$(hostname)
+if [[ $VM_HOSTNAME == *"111"* ]] || [[ $VM_HOSTNAME == *"web1"* ]]; then
+    VM_NUMBER="1"
+elif [[ $VM_HOSTNAME == *"112"* ]] || [[ $VM_HOSTNAME == *"web2"* ]]; then
     VM_NUMBER="2"
 fi
+
+# 실제 서버 IP 확인 (Load Balancer 환경)
+INTERNAL_IP=$(hostname -I | awk '{print $1}')
+PUBLIC_IP=$(curl -s ifconfig.me 2>/dev/null || echo "unknown")
 
 cat > "$VM_INFO_FILE" << EOF
 {
     "vm_type": "web",
     "vm_number": "$VM_NUMBER",
-    "hostname": "$(hostname)",
-    "ip_address": "$(hostname -I | awk '{print $1}')",
+    "hostname": "$VM_HOSTNAME",
+    "internal_ip": "$INTERNAL_IP",
+    "ip_address": "$PUBLIC_IP",
     "startup_time": "$(date -Iseconds)",
     "nginx_status": "$(systemctl is-active nginx)",
     "nginx_port": "80",
-    "load_balancer": "webLB",
+    "load_balancer": {
+        "name": "www.cesvc.net",
+        "ip": "10.1.1.100",
+        "policy": "Round Robin",
+        "pool": ["webvm111r (10.1.1.111)", "webvm112r (10.1.1.112)"]
+    },
+    "architecture": {
+        "tier": "Web Server",
+        "role": "Static files + API Proxy",
+        "upstream": "app.cesvc.net (10.1.2.100)"
+    },
     "region": "$(curl -s http://169.254.169.254/latest/meta-data/placement/region 2>/dev/null || echo 'samsung-cloud')",
     "last_health_check": "$(date -Iseconds)"
 }

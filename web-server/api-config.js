@@ -261,30 +261,50 @@ async function deleteAdminOrder(orderId) {
  */
 async function getServerInfo() {
     try {
-        // Web 서버 정보 조회
+        // Web Load Balancer 정보 (현재 응답 중인 웹서버)
         const webInfo = await fetch('/vm-info.json').then(r => r.json()).catch(() => ({}));
         
-        // App 서버 정보 조회
+        // App Load Balancer 정보 (현재 응답 중인 앱서버)
         const appInfo = await apiRequest('/health').catch(() => ({}));
         
         return {
-            web: {
-                hostname: webInfo.hostname || 'unknown',
-                ip: webInfo.ip_address || 'unknown',
-                status: 'online'
+            loadBalancer: {
+                web: 'www.cesvc.net (10.1.1.100)',
+                app: 'app.cesvc.net (10.1.2.100)',
+                policy: 'Round Robin'
             },
-            app: {
-                hostname: appInfo.hostname || 'unknown',
-                ip: appInfo.ip || 'unknown', 
-                status: appInfo.success ? 'online' : 'offline'
+            currentServing: {
+                web: {
+                    hostname: webInfo.hostname || 'unknown',
+                    ip: webInfo.ip_address || 'unknown',
+                    vm_number: webInfo.vm_number || '1',
+                    status: 'online'
+                },
+                app: {
+                    hostname: appInfo.hostname || 'unknown',
+                    ip: appInfo.ip || 'unknown',
+                    vm_number: appInfo.vm_number || '1',
+                    status: appInfo.success ? 'online' : 'offline'
+                }
+            },
+            architecture: {
+                webServers: ['webvm111r (10.1.1.111)', 'webvm112r (10.1.1.112)'],
+                appServers: ['appvm121r (10.1.2.121)', 'appvm122r (10.1.2.122)']
             },
             timestamp: new Date().toISOString()
         };
     } catch (error) {
         console.error('서버 정보 조회 실패:', error);
         return {
-            web: { hostname: 'unknown', ip: 'unknown', status: 'unknown' },
-            app: { hostname: 'unknown', ip: 'unknown', status: 'unknown' },
+            loadBalancer: {
+                web: 'www.cesvc.net (10.1.1.100)',
+                app: 'app.cesvc.net (10.1.2.100)',
+                status: 'error'
+            },
+            currentServing: {
+                web: { hostname: 'unknown', ip: 'unknown', status: 'unknown' },
+                app: { hostname: 'unknown', ip: 'unknown', status: 'unknown' }
+            },
             timestamp: new Date().toISOString()
         };
     }
