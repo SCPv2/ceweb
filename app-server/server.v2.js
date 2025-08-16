@@ -65,21 +65,6 @@ app.get('/health', async (req, res) => {
     
     // 서버 정보 포함
     const os = require('os');
-    const fs = require('fs');
-    const path = require('path');
-    
-    // VM 정보 파일에서 VM 번호 읽기
-    let vmNumber = '1';
-    let vmInfo = {};
-    try {
-      const vmInfoPath = path.join(process.cwd(), 'vm-info.json');
-      if (fs.existsSync(vmInfoPath)) {
-        vmInfo = JSON.parse(fs.readFileSync(vmInfoPath, 'utf8'));
-        vmNumber = vmInfo.vm_number || '1';
-      }
-    } catch (vmError) {
-      console.warn('VM 정보 파일 읽기 실패:', vmError.message);
-    }
     
     res.json({
       success: true,
@@ -87,8 +72,6 @@ app.get('/health', async (req, res) => {
       database: 'Connected',
       hostname: os.hostname(),
       ip: Object.values(os.networkInterfaces()).flat().find(i => !i.internal && i.family === 'IPv4')?.address || 'unknown',
-      vm_number: vmNumber,
-      vm_type: 'app',
       uptime: process.uptime(),
       memory: process.memoryUsage(),
       node_version: process.version,
