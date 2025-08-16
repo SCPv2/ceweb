@@ -62,19 +62,10 @@ app.get('/', (req, res) => {
 app.get('/health', async (req, res) => {
   try {
     await pool.query('SELECT 1');
-    
-    // 서버 정보 포함
-    const os = require('os');
-    
     res.json({
       success: true,
       message: 'Server is healthy',
       database: 'Connected',
-      hostname: os.hostname(),
-      ip: Object.values(os.networkInterfaces()).flat().find(i => !i.internal && i.family === 'IPv4')?.address || 'unknown',
-      uptime: process.uptime(),
-      memory: process.memoryUsage(),
-      node_version: process.version,
       timestamp: new Date().toISOString()
     });
   } catch (error) {
@@ -82,7 +73,6 @@ app.get('/health', async (req, res) => {
       success: false,
       message: 'Database connection failed',
       error: error.message,
-      hostname: require('os').hostname(),
       timestamp: new Date().toISOString()
     });
   }

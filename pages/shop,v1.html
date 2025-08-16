@@ -512,7 +512,10 @@
                 <li class="nav-item"><a href="./shop.html" class="active">Shop</a></li>
             </ul>
             <div class="nav-icons">
-                <div id="serverStatusIcons"></div>
+                <div class="nav-icon">KOR</div>
+                <div class="nav-icon">ENG</div>
+                <div class="nav-icon">JPN</div>
+                <div class="nav-icon">CHN</div>
             </div>
         </nav>
     </header>
@@ -880,17 +883,6 @@
                 if (query !== null) {
                     searchProducts(query);
                 }
-            }
-        });
-    </script>
-
-    <!-- Load Balancer 서버 상태 아이콘 -->
-    <script src="../scripts/server-status-icons.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // 서버 상태 아이콘 초기화
-            if (typeof initServerStatusIcons === 'function') {
-                initServerStatusIcons('serverStatusIcons');
             }
         });
     </script>

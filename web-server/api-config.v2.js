@@ -255,41 +255,6 @@ async function deleteAdminOrder(orderId) {
     });
 }
 
-/**
- * 서버 정보 조회 (Load Balancer 환경용)
- * @returns {Promise} 서버 정보
- */
-async function getServerInfo() {
-    try {
-        // Web 서버 정보 조회
-        const webInfo = await fetch('/vm-info.json').then(r => r.json()).catch(() => ({}));
-        
-        // App 서버 정보 조회
-        const appInfo = await apiRequest('/health').catch(() => ({}));
-        
-        return {
-            web: {
-                hostname: webInfo.hostname || 'unknown',
-                ip: webInfo.ip_address || 'unknown',
-                status: 'online'
-            },
-            app: {
-                hostname: appInfo.hostname || 'unknown',
-                ip: appInfo.ip || 'unknown', 
-                status: appInfo.success ? 'online' : 'offline'
-            },
-            timestamp: new Date().toISOString()
-        };
-    } catch (error) {
-        console.error('서버 정보 조회 실패:', error);
-        return {
-            web: { hostname: 'unknown', ip: 'unknown', status: 'unknown' },
-            app: { hostname: 'unknown', ip: 'unknown', status: 'unknown' },
-            timestamp: new Date().toISOString()
-        };
-    }
-}
-
 // 환경 정보 출력 (개발용)
 console.log('API 환경 설정:', {
     environment: API_CONFIG.getCurrentEnv(),

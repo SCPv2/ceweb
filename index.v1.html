@@ -658,7 +658,10 @@
                 <li class="nav-item"><a href="./pages/shop.html">Shop</a></li>
             </ul>
             <div class="nav-icons">
-                <div id="serverStatusIcons"></div>
+                <div class="nav-icon">KOR</div>
+                <div class="nav-icon">ENG</div>
+                <div class="nav-icon">JPN</div>
+                <div class="nav-icon">CHN</div>
             </div>
         </nav>
     </header>
@@ -953,18 +956,6 @@
         document.getElementById('videoModal').addEventListener('click', function(e) {
             if (e.target === this) {
                 closeVideoModal();
-            }
-        });
-    </script>
-
-    <!-- Load Balancer 서버 상태 아이콘 -->
-    <script src="./web-server/api-config.js"></script>
-    <script src="./scripts/server-status-icons.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // 서버 상태 아이콘 초기화
-            if (typeof initServerStatusIcons === 'function') {
-                initServerStatusIcons('serverStatusIcons');
             }
         });
     </script>
