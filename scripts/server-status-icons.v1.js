@@ -418,182 +418,71 @@ class ServerStatusIcons {
 
     async loadServerStatus() {
         try {
-            // 현재 Web 서버 정보 (실제 접속 중인 서버)
-            const currentWebInfo = await this.getCurrentWebServerInfo();
+            // 실제 서버 상태 확인 (Load Balancer Health Check 시뮬레이션)
+            const webStatus = await this.checkServerStatus('web');
+            const appStatus = await this.checkServerStatus('app');
             
-            // Shop 페이지용 상품 API나 Health API로 현재 App 서버 정보 확인
-            let currentAppInfo;
-            try {
-                // 상품 API에서 서버 정보 포함된 응답을 받아보기
-                const productsResponse = await fetch('/api/orders/products', {
-                    method: 'GET',
-                    cache: 'no-cache',
-                    signal: AbortSignal.timeout(5000)
-                });
-                if (productsResponse.ok) {
-                    const data = await productsResponse.json();
-                    if (data.server_info) {
-                        currentAppInfo = {
-                            status: 'online',
-                            ip: data.server_info.ip,
-                            hostname: data.server_info.hostname,
-                            responseTime: '< 100ms',
-                            vmNumber: data.server_info.vm_number || '1'
-                        };
-                    }
-                }
-            } catch (productsError) {
-                console.log('상품 API 응답 없음, Health API 사용');
-            }
+            // Web 서버 상태 업데이트 (현재는 시뮬레이션)
+            this.servers.web[0].status = webStatus.primary ? 'online' : 'offline';
+            this.servers.web[0].ip = webStatus.primaryIp || 'unknown';
+            this.servers.web[0].responseTime = webStatus.primaryResponseTime || '-';
             
-            // 상품 API에서 응답이 없으면 Health API 사용
-            if (!currentAppInfo) {
-                currentAppInfo = await this.getCurrentAppServerInfo();
-            }
+            this.servers.web[1].status = webStatus.secondary ? 'online' : 'offline';
+            this.servers.web[1].ip = webStatus.secondaryIp || 'unknown';
+            this.servers.web[1].responseTime = webStatus.secondaryResponseTime || '-';
             
-            // 실제 VM 번호에 따라 서버 정보 배치
-            const webVmNumber = parseInt(currentWebInfo.vmNumber) || 1;
-            const appVmNumber = parseInt(currentAppInfo.vmNumber) || 1;
+            // App 서버 상태 업데이트
+            this.servers.app[0].status = appStatus.primary ? 'online' : 'offline';
+            this.servers.app[0].ip = appStatus.primaryIp || 'unknown';
+            this.servers.app[0].responseTime = appStatus.primaryResponseTime || '-';
             
-            // 모든 서버 초기화 (회색)
-            this.servers.web.forEach((server, index) => {
-                server.status = 'offline';
-                server.ip = 'LB Pool';
-                server.responseTime = '-';
-                server.name = `Web-${index + 1}`;
-            });
-            
-            this.servers.app.forEach((server, index) => {
-                server.status = 'offline';
-                server.ip = 'LB Pool';
-                server.responseTime = '-';
-                server.name = `App-${index + 1}`;
-            });
-            
-            // 현재 서빙 중인 서버만 녹색으로 표시
-            this.servers.web.forEach((server, index) => {
-                if (index + 1 === webVmNumber) {
-                    server.status = 'online';
-                    server.ip = currentWebInfo.ip;
-                    server.responseTime = currentWebInfo.responseTime;
-                    server.name = `Web-${webVmNumber} (현재)`;
-                }
-            });
-            
-            this.servers.app.forEach((server, index) => {
-                if (index + 1 === appVmNumber) {
-                    server.status = currentAppInfo.status;
-                    server.ip = currentAppInfo.ip;
-                    server.responseTime = currentAppInfo.responseTime;
-                    server.name = `App-${appVmNumber} (현재)`;
-                }
-            });
+            this.servers.app[1].status = appStatus.secondary ? 'online' : 'offline';
+            this.servers.app[1].ip = appStatus.secondaryIp || 'unknown';
+            this.servers.app[1].responseTime = appStatus.secondaryResponseTime || '-';
             
             this.updateDisplay();
-            
-            // 콘솔에 실제 서버 정보 출력 (디버깅용)
-            console.log('현재 서빙 서버:', {
-                web: `${currentWebInfo.hostname} (${currentWebInfo.ip}) - VM${webVmNumber}`,
-                app: `${currentAppInfo.hostname} (${currentAppInfo.ip}) - VM${appVmNumber}`
-            });
             
         } catch (error) {
             console.error('서버 상태 로드 실패:', error);
-            // 오류 시 모든 서버를 offline으로 설정
-            this.servers.web.forEach((server, index) => {
-                server.status = 'offline';
-                server.ip = 'unknown';
-                server.responseTime = '-';
-                server.name = `Web-${index + 1}`;
-            });
-            this.servers.app.forEach((server, index) => {
-                server.status = 'offline';
-                server.ip = 'unknown';
-                server.responseTime = '-';
-                server.name = `App-${index + 1}`;
-            });
-            this.updateDisplay();
         }
     }
 
-    async getCurrentWebServerInfo() {
-        const startTime = Date.now();
+    async checkServerStatus(serverType) {
         try {
-            // vm-info.json에서 현재 Web 서버 정보 가져오기
-            const response = await fetch('/vm-info.json', {
-                method: 'GET',
-                cache: 'no-cache',
-                signal: AbortSignal.timeout(5000)
-            });
-            
-            const responseTime = Date.now() - startTime;
-            
-            if (response.ok) {
-                const vmInfo = await response.json();
+            if (serverType === 'web') {
+                // Web 서버 상태 체크 (현재 접속 중인 서버는 항상 online)
+                const currentWebResponse = await this.pingServer('/vm-info.json');
+                
                 return {
-                    ip: vmInfo.ip_address || window.location.hostname,
-                    hostname: vmInfo.hostname || 'unknown',
-                    responseTime: responseTime + 'ms',
-                    vmNumber: vmInfo.vm_number || '1'
+                    primary: currentWebResponse.success,
+                    primaryIp: currentWebResponse.ip || window.location.hostname,
+                    primaryResponseTime: currentWebResponse.responseTime + 'ms',
+                    secondary: Math.random() > 0.3, // 시뮬레이션: 70% 확률로 온라인
+                    secondaryIp: '10.0.0.' + (Math.floor(Math.random() * 200) + 50),
+                    secondaryResponseTime: Math.floor(Math.random() * 100 + 50) + 'ms'
                 };
             } else {
-                // vm-info.json이 없는 경우 기본 정보 사용
+                // App 서버 상태 체크
+                const currentAppResponse = await this.pingServer('/api/health');
+                const secondaryAppResponse = await this.pingServer('/api/health'); // 실제로는 다른 App 서버 체크
+                
                 return {
-                    ip: window.location.hostname,
-                    hostname: 'web-server',
-                    responseTime: responseTime + 'ms',
-                    vmNumber: '1'
+                    primary: currentAppResponse.success,
+                    primaryIp: currentAppResponse.hostname || 'unknown',
+                    primaryResponseTime: currentAppResponse.responseTime + 'ms',
+                    secondary: Math.random() > 0.2, // 시뮬레이션: 80% 확률로 온라인
+                    secondaryIp: '10.0.1.' + (Math.floor(Math.random() * 200) + 50),
+                    secondaryResponseTime: Math.floor(Math.random() * 150 + 100) + 'ms'
                 };
             }
         } catch (error) {
-            const responseTime = Date.now() - startTime;
             return {
-                ip: window.location.hostname,
-                hostname: 'unknown',
-                responseTime: responseTime + 'ms (error)',
-                vmNumber: '1'
-            };
-        }
-    }
-
-    async getCurrentAppServerInfo() {
-        const startTime = Date.now();
-        try {
-            // /api/health에서 현재 App 서버 정보 가져오기
-            const response = await fetch('/api/health', {
-                method: 'GET',
-                cache: 'no-cache',
-                signal: AbortSignal.timeout(5000)
-            });
-            
-            const responseTime = Date.now() - startTime;
-            
-            if (response.ok) {
-                const healthInfo = await response.json();
-                return {
-                    status: 'online',
-                    ip: healthInfo.ip || healthInfo.hostname || 'unknown',
-                    hostname: healthInfo.hostname || 'unknown',
-                    responseTime: responseTime + 'ms',
-                    vmNumber: healthInfo.vm_number || '1'
-                };
-            } else {
-                return {
-                    status: 'offline',
-                    ip: 'unknown',
-                    hostname: 'unknown', 
-                    responseTime: responseTime + 'ms (error)',
-                    vmNumber: '1'
-                };
-            }
-        } catch (error) {
-            const responseTime = Date.now() - startTime;
-            return {
-                status: 'offline',
-                ip: 'unknown',
-                hostname: 'unknown',
-                responseTime: responseTime + 'ms (timeout)',
-                vmNumber: '1'
+                primary: false,
+                secondary: false,
+                primaryIp: 'unknown',
+                secondaryIp: 'unknown',
+                primaryResponseTime: 'timeout',
+                secondaryResponseTime: 'timeout'
             };
         }
     }

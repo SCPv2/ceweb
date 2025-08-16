@@ -66,16 +66,7 @@ chmod -R 755 $WEB_DIR
 # 5. Nginx 설정 파일 생성
 log "Nginx 설정 파일 생성 중..."
 
-# Samsung Cloud Platform Load Balancer 환경용 설정 우선 사용
-if [ -f "$WEB_DIR/web-server/nginx-site.conf" ]; then
-    log "Load Balancer 환경용 nginx-site.conf 파일을 사용합니다"
-    cp "$WEB_DIR/web-server/nginx-site.conf" /etc/nginx/sites-available/ceweb
-    mkdir -p /etc/nginx/sites-enabled
-    ln -sf /etc/nginx/sites-available/ceweb /etc/nginx/sites-enabled/
-    log "✅ nginx-site.conf 적용 완료"
-else
-    log "기본 nginx 설정 파일을 생성합니다"
-    cat > /etc/nginx/conf.d/creative-energy.conf << 'EOF'
+cat > /etc/nginx/conf.d/creative-energy.conf << 'EOF'
 server {
     listen 80 default_server;
     server_name www.cesvc.net www.creative-energy.net _;
@@ -170,7 +161,7 @@ server {
     # 보안 헤더
     add_header X-Frame-Options "SAMEORIGIN" always;
     add_header X-Content-Type-Options "nosniff" always;
-    add_header X-XS-Protection "1; mode=block" always;
+    add_header X-XSS-Protection "1; mode=block" always;
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
     
     # 로그 설정
@@ -178,7 +169,6 @@ server {
     error_log /var/log/nginx/creative-energy-error.log;
 }
 EOF
-fi
 
 # 6. Nginx 설정 테스트
 log "Nginx 설정 테스트 중..."
@@ -266,33 +256,7 @@ EOF
 
 chmod +x /root/test_app_server.sh
 
-# 12. Samsung Cloud Platform Bootstrap 스크립트 설정
-log "VM Bootstrap 스크립트 설정 중..."
-
-BOOTSTRAP_SCRIPT="$WEB_DIR/web-server/bootstrap_web_vm.sh"
-if [ -f "$BOOTSTRAP_SCRIPT" ]; then
-    log "bootstrap_web_vm.sh 스크립트를 찾았습니다"
-    
-    # Bootstrap 스크립트를 시스템 위치로 복사
-    cp "$BOOTSTRAP_SCRIPT" /usr/local/bin/
-    chmod +x /usr/local/bin/bootstrap_web_vm.sh
-    
-    # rc.local에 Bootstrap 스크립트 추가 (VM 부팅 시 자동 실행)
-    if ! grep -q "bootstrap_web_vm.sh" /etc/rc.local 2>/dev/null; then
-        echo '#!/bin/bash' > /etc/rc.local
-        echo '/usr/local/bin/bootstrap_web_vm.sh' >> /etc/rc.local
-        chmod +x /etc/rc.local
-        log "✅ VM Bootstrap 스크립트 자동 실행 설정 완료"
-    else
-        log "Bootstrap 스크립트가 이미 rc.local에 설정되어 있습니다"
-    fi
-    
-    log "✅ Samsung Cloud Platform Load Balancer 환경 설정 완료"
-else
-    warn "⚠️ bootstrap_web_vm.sh 스크립트를 찾을 수 없습니다: $BOOTSTRAP_SCRIPT"
-fi
-
-# 13. API 설정 파일 수정 (production 환경에서 올바른 baseURL 설정)
+# 12. API 설정 파일 수정 (production 환경에서 올바른 baseURL 설정)
 log "API 설정 파일 수정 중..."
 API_CONFIG_FILE="$WEB_DIR/web-server/api-config.js"
 
@@ -365,18 +329,8 @@ log "- App Server가 실행 중이어야 API 요청이 정상 동작합니다"
 log "- SELinux 설정이 자동으로 구성되어 권한 문제 없이 동작합니다"
 log "- 브라우저에서 API 연결 시 '/api' 경로를 통해 프록시됩니다"
 log ""
-log "🧪 API 및 서버 상태 테스트 명령어:"
+log "🧪 API 연결 테스트 명령어:"
 log "curl -X GET http://localhost/api/orders/products"
 log "curl -X GET http://localhost/health"
-log "curl -X GET http://localhost/vm-info.json  # VM 정보 확인"
-log ""
-log "🌐 Samsung Cloud Platform Load Balancer 환경:"
-log "- VM Bootstrap 자동 실행: VM 부팅 시 자동으로 서비스 시작"
-log "- Server Status Icons: Web-1, Web-2, App-1, App-2 실시간 상태 표시"
-log "- 현재 서빙 서버는 녹색, 나머지 서버는 회색으로 표시"
-log "- /vm-info.json 엔드포인트에서 실시간 VM 정보 제공"
-log ""
-log "🔄 VM Bootstrap 수동 실행 (테스트용):"
-log "/usr/local/bin/bootstrap_web_vm.sh"
 log ""
 log "================================================================"

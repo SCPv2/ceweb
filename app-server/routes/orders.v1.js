@@ -78,47 +78,16 @@ router.get('/products', async (req, res) => {
     
     const result = await pool.query(query);
     
-    // 서버 정보 포함
-    const os = require('os');
-    const fs = require('fs');
-    const path = require('path');
-    
-    // VM 정보 파일에서 VM 번호 읽기
-    let vmNumber = '1';
-    let vmInfo = {};
-    try {
-      const vmInfoPath = path.join(process.cwd(), 'vm-info.json');
-      if (fs.existsSync(vmInfoPath)) {
-        vmInfo = JSON.parse(fs.readFileSync(vmInfoPath, 'utf8'));
-        vmNumber = vmInfo.vm_number || '1';
-      }
-    } catch (vmError) {
-      console.warn('VM 정보 파일 읽기 실패:', vmError.message);
-    }
-    
     res.json({
       success: true,
-      products: result.rows,
-      server_info: {
-        hostname: os.hostname(),
-        ip: Object.values(os.networkInterfaces()).flat().find(i => !i.internal && i.family === 'IPv4')?.address || 'unknown',
-        vm_number: vmNumber,
-        vm_type: 'app',
-        response_time: new Date().toISOString(),
-        products_count: result.rows.length
-      }
+      products: result.rows
     });
     
   } catch (error) {
     console.error('상품 목록 조회 오류:', error);
     res.status(500).json({
       success: false,
-      message: '상품 목록 조회 중 오류가 발생했습니다.',
-      server_info: {
-        hostname: require('os').hostname(),
-        error: true,
-        timestamp: new Date().toISOString()
-      }
+      message: '상품 목록 조회 중 오류가 발생했습니다.'
     });
   }
 });
