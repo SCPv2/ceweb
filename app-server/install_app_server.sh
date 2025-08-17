@@ -332,6 +332,16 @@ if [ -f "$APP_DIR/package.json" ]; then
     
     if [ $? -eq 0 ]; then
         log "✅ npm install 완료"
+        
+        # Samsung Cloud Platform Object Storage용 AWS SDK 설치
+        log "Samsung Cloud Platform Object Storage용 AWS SDK 설치 중..."
+        sudo -u $APP_USER npm install @aws-sdk/client-s3@^3.600.0
+        
+        if [ $? -eq 0 ]; then
+            log "✅ AWS SDK for S3 설치 완료 (Samsung Cloud Platform 호환)"
+        else
+            warn "⚠️ AWS SDK 설치 실패"
+        fi
     else
         warn "⚠️ npm install 실패"
     fi
@@ -472,6 +482,7 @@ log "🔧 자동으로 완료된 작업:"
 log "- ✅ DB 연결 테스트 성공"
 log "- ✅ 애플리케이션 코드 복사"
 log "- ✅ Node.js 의존성 설치 (npm install)"
+log "- ✅ Samsung Cloud Platform Object Storage SDK 설치"
 log "- ✅ 파일 업로드 디렉토리 생성"
 log "- ✅ PM2 애플리케이션 시작"
 log "- ✅ PM2 자동 시작 설정"

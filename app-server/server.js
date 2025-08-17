@@ -8,6 +8,7 @@ require('dotenv').config();
 const pool = require('./config/database');
 const ordersRoutes = require('./routes/orders');
 const auditionRoutes = require('./routes/audition');
+const s3UploadRoutes = require('./routes/s3upload');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -97,6 +98,7 @@ app.use(express.urlencoded({ extended: true, charset: 'utf-8', limit: '100mb' })
 // 라우트 설정
 app.use('/api/orders', ordersRoutes);
 app.use('/api/audition', auditionRoutes);
+app.use('/api/s3', s3UploadRoutes);
 
 // 기본 라우트
 app.get('/', (req, res) => {

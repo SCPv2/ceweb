@@ -89,6 +89,24 @@ const API_ENDPOINTS = {
             list: '/orders/list',
             delete: (id) => `/orders/admin/orders/${id}`
         }
+    },
+    
+    // Samsung Cloud Platform Object Storage API (S3 호환)
+    s3: {
+        // 상품 이미지 업로드
+        uploadProductImage: '/s3/upload-product-image',
+        
+        // 오디션 파일 업로드
+        uploadAuditionFile: '/s3/upload-audition-file',
+        
+        // 파일 삭제 (type: 'product' | 'audition')
+        deleteFile: (type, filename) => `/s3/delete-file/${type}/${filename}`,
+        
+        // CORS 설정
+        setupCors: '/s3/setup-cors',
+        
+        // S3 서비스 상태 확인
+        status: '/s3/status'
     }
 };
 
@@ -330,6 +348,69 @@ async function getServerInfo() {
             timestamp: new Date().toISOString()
         };
     }
+}
+
+/**
+ * S3 - 상품 이미지 업로드 (Samsung Cloud Platform Object Storage)
+ * @param {File} file - 업로드할 이미지 파일
+ * @returns {Promise} 업로드 결과 (S3 Public URL 포함)
+ */
+async function uploadProductImageToS3(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    return await apiRequest(API_ENDPOINTS.s3.uploadProductImage, {
+        method: 'POST',
+        body: formData,
+        // Content-Type을 명시적으로 설정하지 않음 (multipart/form-data 자동 설정)
+        headers: {} 
+    });
+}
+
+/**
+ * S3 - 오디션 파일 업로드 (Samsung Cloud Platform Object Storage)
+ * @param {File} file - 업로드할 파일
+ * @returns {Promise} 업로드 결과 (S3 Public URL 포함)
+ */
+async function uploadAuditionFileToS3(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    return await apiRequest(API_ENDPOINTS.s3.uploadAuditionFile, {
+        method: 'POST',
+        body: formData,
+        headers: {}
+    });
+}
+
+/**
+ * S3 - 파일 삭제 (Samsung Cloud Platform Object Storage)
+ * @param {string} type - 파일 타입 ('product' | 'audition')
+ * @param {string} filename - 삭제할 파일명
+ * @returns {Promise} 삭제 결과
+ */
+async function deleteFileFromS3(type, filename) {
+    return await apiRequest(API_ENDPOINTS.s3.deleteFile(type, filename), {
+        method: 'DELETE'
+    });
+}
+
+/**
+ * S3 - CORS 설정 (Samsung Cloud Platform Object Storage)
+ * @returns {Promise} CORS 설정 결과
+ */
+async function setupS3CORS() {
+    return await apiRequest(API_ENDPOINTS.s3.setupCors, {
+        method: 'POST'
+    });
+}
+
+/**
+ * S3 - 서비스 상태 확인 (Samsung Cloud Platform Object Storage)
+ * @returns {Promise} S3 서비스 상태
+ */
+async function getS3Status() {
+    return await apiRequest(API_ENDPOINTS.s3.status);
 }
 
 // 환경 정보 출력 (개발용)

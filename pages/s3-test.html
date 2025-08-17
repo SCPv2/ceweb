@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Samsung Cloud Platform Object Storage 테스트</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: #f8f9fa;
+        }
+        
+        .test-section {
+            background: white;
+            padding: 2rem;
+            margin: 1rem 0;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .test-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #e74c3c;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #e74c3c;
+            padding-bottom: 0.5rem;
+        }
+        
+        .upload-area {
+            border: 2px dashed #e74c3c;
+            border-radius: 10px;
+            padding: 2rem;
+            text-align: center;
+            margin: 1rem 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .upload-area:hover {
+            border-color: #c0392b;
+            background: #fafafa;
+        }
+        
+        .upload-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 0.5rem;
+        }
+        
+        .upload-btn:hover {
+            background: #c0392b;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .result {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 5px;
+            margin: 1rem 0;
+            border-left: 4px solid #28a745;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 5px;
+            margin: 1rem 0;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .status-ok {
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        .status-error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Samsung Cloud Platform Object Storage 테스트</h1>
+    
+    <!-- S3 서비스 상태 확인 -->
+    <div class="test-section">
+        <div class="test-title">1. S3 서비스 상태 확인</div>
+        <button class="upload-btn" onclick="checkS3Status()">서비스 상태 확인</button>
+        <div id="statusResult"></div>
+    </div>
+    
+    <!-- CORS 설정 테스트 -->
+    <div class="test-section">
+        <div class="test-title">2. CORS 설정</div>
+        <button class="upload-btn" onclick="setupCORS()">CORS 설정 실행</button>
+        <div id="corsResult"></div>
+    </div>
+    
+    <!-- 상품 이미지 업로드 테스트 -->
+    <div class="test-section">
+        <div class="test-title">3. 상품 이미지 업로드 테스트</div>
+        <div class="upload-area" onclick="document.getElementById('productImageInput').click()">
+            <div>📁 상품 이미지를 선택하세요</div>
+            <div style="font-size: 0.9rem; color: #666; margin-top: 0.5rem;">
+                JPG, PNG, GIF, WebP 파일 지원
+            </div>
+            <button class="upload-btn" onclick="event.stopPropagation(); document.getElementById('productImageInput').click()">
+                파일 선택
+            </button>
+        </div>
+        <input type="file" id="productImageInput" class="file-input" accept="image/*" onchange="uploadProductImage(event)">
+        <div id="productImageResult"></div>
+    </div>
+    
+    <!-- 오디션 파일 업로드 테스트 -->
+    <div class="test-section">
+        <div class="test-title">4. 오디션 파일 업로드 테스트</div>
+        <div class="upload-area" onclick="document.getElementById('auditionFileInput').click()">
+            <div>📁 오디션 파일을 선택하세요</div>
+            <div style="font-size: 0.9rem; color: #666; margin-top: 0.5rem;">
+                PDF, DOC, MP3, MP4, JPG, PNG 파일 지원
+            </div>
+            <button class="upload-btn" onclick="event.stopPropagation(); document.getElementById('auditionFileInput').click()">
+                파일 선택
+            </button>
+        </div>
+        <input type="file" id="auditionFileInput" class="file-input" 
+               accept=".pdf,.doc,.docx,.mp3,.mp4,.jpg,.jpeg,.png" 
+               onchange="uploadAuditionFile(event)">
+        <div id="auditionFileResult"></div>
+    </div>
+
+    <!-- API Configuration Script -->
+    <script src="../web-server/api-config.js"></script>
+    <script>
+        // API 기본 URL 설정
+        const API_BASE_URL = '/api';
+
+        // 결과 표시 함수
+        function showResult(elementId, content, isError = false) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="${isError ? 'error' : 'result'}">${content}</div>`;
+        }
+
+        // 1. S3 서비스 상태 확인
+        async function checkS3Status() {
+            try {
+                showResult('statusResult', '서비스 상태 확인 중...');
+                
+                const response = await fetch(`${API_BASE_URL}/s3/status`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    const statusHtml = `
+                        <div class="status-item">
+                            <span>서비스 상태:</span>
+                            <span class="status-ok">✅ 정상 작동</span>
+                        </div>
+                        <div class="status-item">
+                            <span>버킷명:</span>
+                            <span>${result.config.bucketName}</span>
+                        </div>
+                        <div class="status-item">
+                            <span>리전:</span>
+                            <span>${result.config.region}</span>
+                        </div>
+                        <div class="status-item">
+                            <span>Public Endpoint:</span>
+                            <span>${result.config.publicEndpoint}</span>
+                        </div>
+                        <div class="status-item">
+                            <span>폴더 구조:</span>
+                            <span>media: ${result.config.folders.media}, audition: ${result.config.folders.audition}</span>
+                        </div>
+                    `;
+                    showResult('statusResult', statusHtml);
+                } else {
+                    showResult('statusResult', `❌ 서비스 오류: ${result.message}`, true);
+                }
+            } catch (error) {
+                console.error('S3 상태 확인 오류:', error);
+                showResult('statusResult', `❌ 연결 오류: ${error.message}`, true);
+            }
+        }
+
+        // 2. CORS 설정
+        async function setupCORS() {
+            try {
+                showResult('corsResult', 'CORS 설정 중...');
+                
+                const response = await fetch(`${API_BASE_URL}/s3/setup-cors`, {
+                    method: 'POST'
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    showResult('corsResult', `✅ CORS 설정 완료: ${result.message}`);
+                } else {
+                    showResult('corsResult', `❌ CORS 설정 실패: ${result.message}`, true);
+                }
+            } catch (error) {
+                console.error('CORS 설정 오류:', error);
+                showResult('corsResult', `❌ CORS 설정 오류: ${error.message}`, true);
+            }
+        }
+
+        // 3. 상품 이미지 업로드
+        async function uploadProductImage(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            try {
+                showResult('productImageResult', `상품 이미지 업로드 중: ${file.name} (${(file.size / 1024 / 1024).toFixed(1)}MB)`);
+                
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                const response = await fetch(`${API_BASE_URL}/s3/upload-product-image`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    const uploadHtml = `
+                        <div class="status-item">
+                            <span>업로드 상태:</span>
+                            <span class="status-ok">✅ 성공</span>
+                        </div>
+                        <div class="status-item">
+                            <span>파일명:</span>
+                            <span>${result.file.filename}</span>
+                        </div>
+                        <div class="status-item">
+                            <span>크기:</span>
+                            <span>${(result.file.size / 1024 / 1024).toFixed(1)}MB</span>
+                        </div>
+                        <div class="status-item">
+                            <span>Public URL:</span>
+                            <span><a href="${result.file.publicUrl}" target="_blank">${result.file.publicUrl}</a></span>
+                        </div>
+                        <div style="margin-top: 1rem;">
+                            <img src="${result.file.publicUrl}" alt="업로드된 이미지" style="max-width: 200px; border-radius: 5px;">
+                        </div>
+                    `;
+                    showResult('productImageResult', uploadHtml);
+                } else {
+                    showResult('productImageResult', `❌ 업로드 실패: ${result.message}`, true);
+                }
+            } catch (error) {
+                console.error('상품 이미지 업로드 오류:', error);
+                showResult('productImageResult', `❌ 업로드 오류: ${error.message}`, true);
+            }
+        }
+
+        // 4. 오디션 파일 업로드
+        async function uploadAuditionFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            try {
+                showResult('auditionFileResult', `오디션 파일 업로드 중: ${file.name} (${(file.size / 1024 / 1024).toFixed(1)}MB)`);
+                
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                const response = await fetch(`${API_BASE_URL}/s3/upload-audition-file`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    const uploadHtml = `
+                        <div class="status-item">
+                            <span>업로드 상태:</span>
+                            <span class="status-ok">✅ 성공</span>
+                        </div>
+                        <div class="status-item">
+                            <span>파일명:</span>
+                            <span>${result.file.filename}</span>
+                        </div>
+                        <div class="status-item">
+                            <span>크기:</span>
+                            <span>${(result.file.size / 1024 / 1024).toFixed(1)}MB</span>
+                        </div>
+                        <div class="status-item">
+                            <span>Public URL:</span>
+                            <span><a href="${result.file.publicUrl}" target="_blank">${result.file.publicUrl}</a></span>
+                        </div>
+                    `;
+                    showResult('auditionFileResult', uploadHtml);
+                } else {
+                    showResult('auditionFileResult', `❌ 업로드 실패: ${result.message}`, true);
+                }
+            } catch (error) {
+                console.error('오디션 파일 업로드 오류:', error);
+                showResult('auditionFileResult', `❌ 업로드 오류: ${error.message}`, true);
+            }
+        }
+
+        // 페이지 로드 시 자동으로 서비스 상태 확인
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Samsung Cloud Platform Object Storage 테스트 페이지 로드됨');
+            
+            // 자동으로 서비스 상태 확인
+            setTimeout(() => {
+                checkS3Status();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
