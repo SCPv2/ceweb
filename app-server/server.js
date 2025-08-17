@@ -16,39 +16,74 @@ const PORT = process.env.PORT || 3000;
 app.use(helmet());
 app.use(morgan('combined'));
 
-// CORS 설정 (Load Balancer 환경)
+// CORS 설정 (Load Balancer 환경 + Public IP 허용)
 const corsOptions = {
   origin: function (origin, callback) {
-    const allowedOrigins = process.env.ALLOWED_ORIGINS 
-      ? process.env.ALLOWED_ORIGINS.split(',') 
-      : [
-          // Load Balancer 도메인들
-          'http://www.cesvc.net', 'https://www.cesvc.net',
-          'http://app.cesvc.net', 'https://app.cesvc.net',
-          
-          // 실제 웹서버 IP들
-          'http://10.1.1.111', 'https://10.1.1.111',
-          'http://10.1.1.112', 'https://10.1.1.112',
-          
-          // Load Balancer IP들
-          'http://10.1.1.100', 'https://10.1.1.100',
-          'http://10.1.2.100', 'https://10.1.2.100',
-          
-          // 개발용
-          'http://localhost:3000', 'http://127.0.0.1:3000',
-          'http://localhost', 'http://127.0.0.1'
-        ];
-    
     // origin이 undefined인 경우 (서버 간 통신, 같은 도메인) 허용
     if (!origin) return callback(null, true);
     
-    // Load Balancer 환경에서는 X-Forwarded-Host 헤더도 확인
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      console.log(`CORS 차단: 허용되지 않은 origin ${origin}`);
-      callback(new Error('CORS 정책에 의해 접근이 거부되었습니다.'));
+    // 환경변수로 특정 도메인만 허용하도록 설정 가능
+    if (process.env.ALLOWED_ORIGINS) {
+      const allowedOrigins = process.env.ALLOWED_ORIGINS.split(',');
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      } else {
+        console.log(`CORS 차단: 허용되지 않은 origin ${origin}`);
+        return callback(new Error('CORS 정책에 의해 접근이 거부되었습니다.'));
+      }
     }
+    
+    const url = new URL(origin);
+    const hostname = url.hostname;
+    
+    // 내부 네트워크 (10.x.x.x, 192.168.x.x, 172.16-31.x.x) 허용
+    if (hostname.startsWith('10.') || 
+        hostname.startsWith('192.168.') ||
+        (hostname.startsWith('172.') && 
+         parseInt(hostname.split('.')[1]) >= 16 && 
+         parseInt(hostname.split('.')[1]) <= 31)) {
+      console.log(`CORS 허용: 내부 네트워크 ${origin}`);
+      return callback(null, true);
+    }
+    
+    // 로컬호스트 허용
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      console.log(`CORS 허용: 로컬호스트 ${origin}`);
+      return callback(null, true);
+    }
+    
+    // 허용된 도메인들
+    const allowedDomains = [
+      'www.cesvc.net',
+      'app.cesvc.net', 
+      'www.creative-energy.net'
+    ];
+    
+    if (allowedDomains.includes(hostname)) {
+      console.log(`CORS 허용: 허용된 도메인 ${origin}`);
+      return callback(null, true);
+    }
+    
+    // 모든 Public IP (외부 IP) 허용 - IPv4 패턴 매칭
+    const ipv4Pattern = /^(\d{1,3}\.){3}\d{1,3}$/;
+    if (ipv4Pattern.test(hostname)) {
+      // 내부 IP가 아닌 경우 Public IP로 간주하여 허용
+      const octets = hostname.split('.').map(Number);
+      const isPrivateIP = (
+        (octets[0] === 10) ||
+        (octets[0] === 192 && octets[1] === 168) ||
+        (octets[0] === 172 && octets[1] >= 16 && octets[1] <= 31) ||
+        (octets[0] === 127)
+      );
+      
+      if (!isPrivateIP) {
+        console.log(`CORS 허용: Public IP ${origin}`);
+        return callback(null, true);
+      }
+    }
+    
+    console.log(`CORS 차단: 허용되지 않은 origin ${origin}`);
+    callback(new Error('CORS 정책에 의해 접근이 거부되었습니다.'));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'HEAD'],
