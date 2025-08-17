@@ -154,6 +154,9 @@ server {
     listen 80 default_server;
     server_name $SERVER_NAMES _;
     
+    # 파일 업로드 크기 제한 (오디션 파일용)
+    client_max_body_size 100M;
+    
     # 정적 파일 서빙 (HTML, CSS, JS, 이미지 등)
     location / {
         root /home/rocky/ceweb;

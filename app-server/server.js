@@ -91,8 +91,8 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.use(express.json({ charset: 'utf-8' }));
-app.use(express.urlencoded({ extended: true, charset: 'utf-8' }));
+app.use(express.json({ charset: 'utf-8', limit: '100mb' }));
+app.use(express.urlencoded({ extended: true, charset: 'utf-8', limit: '100mb' }));
 
 // 라우트 설정
 app.use('/api/orders', ordersRoutes);

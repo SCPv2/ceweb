@@ -7,6 +7,7 @@ const router = express.Router();
 
 // 파일 저장 경로 설정 (App-Server에 저장)
 const UPLOAD_PATH = '/home/rocky/ceweb/files/audition';
+const PRODUCT_IMAGE_PATH = '/home/rocky/ceweb/media/img';
 
 // 업로드 디렉토리 생성
 async function ensureUploadDir() {
@@ -15,6 +16,16 @@ async function ensureUploadDir() {
     } catch {
         await fs.mkdir(UPLOAD_PATH, { recursive: true });
         console.log('Audition upload directory created:', UPLOAD_PATH);
+    }
+}
+
+// 상품 이미지 디렉토리 생성
+async function ensureProductImageDir() {
+    try {
+        await fs.access(PRODUCT_IMAGE_PATH);
+    } catch {
+        await fs.mkdir(PRODUCT_IMAGE_PATH, { recursive: true });
+        console.log('Product image directory created:', PRODUCT_IMAGE_PATH);
     }
 }
 
@@ -359,6 +370,106 @@ router.get('/info/:id', async (req, res) => {
         res.status(500).json({
             success: false,
             message: '파일 정보 조회 중 오류가 발생했습니다.'
+        });
+    }
+});
+
+// 상품 이미지 업로드용 Multer 설정
+const productImageStorage = multer.diskStorage({
+    destination: async (req, file, cb) => {
+        await ensureProductImageDir();
+        cb(null, PRODUCT_IMAGE_PATH);
+    },
+    filename: (req, file, cb) => {
+        // 상품 이미지 파일명 생성 (product_ + 타임스탬프 + 원본확장자)
+        const timestamp = Date.now();
+        const random = Math.floor(Math.random() * 1000);
+        const ext = path.extname(file.originalname);
+        const filename = `product_${timestamp}_${random}${ext}`;
+        cb(null, filename);
+    }
+});
+
+const productImageUpload = multer({
+    storage: productImageStorage,
+    limits: {
+        fileSize: 10 * 1024 * 1024 // 10MB 제한 (상품 이미지는 더 작게)
+    },
+    fileFilter: (req, file, cb) => {
+        // 한글 파일명 인코딩 처리
+        try {
+            file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8');
+        } catch (error) {
+            console.log('파일명 인코딩 변환 실패, 원본 사용:', file.originalname);
+        }
+        
+        // 이미지 파일만 허용
+        const allowedTypes = [
+            'image/jpeg',
+            'image/jpg', 
+            'image/png'
+        ];
+        
+        if (allowedTypes.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error(`상품 이미지는 JPG, PNG 파일만 업로드 가능합니다: ${file.mimetype}`));
+        }
+    }
+});
+
+/**
+ * 상품 이미지 업로드 (관리자 페이지용)
+ * POST /api/audition/upload-product-image
+ */
+router.post('/upload-product-image', productImageUpload.single('file'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: '이미지 파일이 업로드되지 않았습니다.'
+            });
+        }
+
+        console.log('상품 이미지 업로드 완료:', {
+            originalName: req.file.originalname,
+            filename: req.file.filename,
+            size: req.file.size,
+            path: req.file.path
+        });
+
+        // 웹에서 접근 가능한 경로 생성
+        const webPath = `/media/img/${req.file.filename}`;
+        
+        res.json({
+            success: true,
+            message: '상품 이미지가 성공적으로 업로드되었습니다.',
+            file: {
+                originalName: req.file.originalname,
+                filename: req.file.filename,
+                size: req.file.size,
+                type: req.file.mimetype,
+                path: webPath,
+                url: webPath,
+                uploadDate: new Date().toISOString()
+            }
+        });
+
+    } catch (error) {
+        console.error('Product image upload error:', error);
+        
+        // 업로드된 파일이 있다면 삭제
+        if (req.file) {
+            try {
+                await fs.unlink(req.file.path);
+            } catch (unlinkError) {
+                console.error('Failed to delete uploaded product image:', unlinkError);
+            }
+        }
+        
+        res.status(500).json({
+            success: false,
+            message: error.message || '상품 이미지 업로드 중 오류가 발생했습니다.'
         });
     }
 });

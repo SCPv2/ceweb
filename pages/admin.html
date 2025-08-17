@@ -570,6 +570,117 @@
             font-weight: 500;
         }
 
+        /* Image Upload Styles */
+        .image-upload-area {
+            border: 3px dashed #e74c3c;
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            background: #fafafa;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin-bottom: 1rem;
+        }
+
+        .image-upload-area:hover {
+            border-color: #c0392b;
+            background: #f5f5f5;
+        }
+
+        .image-upload-area.dragover {
+            border-color: #c0392b;
+            background: #fff5f5;
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: #e74c3c;
+            margin-bottom: 1rem;
+        }
+
+        .upload-text {
+            font-size: 1.1rem;
+            color: #333;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .upload-subtext {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 1.5rem;
+            line-height: 1.4;
+        }
+
+        .upload-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-btn:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        /* Image Preview Styles */
+        .image-preview-section {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: white;
+            border-radius: 10px;
+            border: 1px solid #eee;
+        }
+
+        .image-preview-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        .image-preview-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .image-preview {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+
+        .image-info {
+            flex: 1;
+        }
+
+        .image-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.3rem;
+        }
+
+        .image-path {
+            font-size: 0.9rem;
+            color: #666;
+            font-family: monospace;
+        }
+
         .status-completed {
             background: #d4edda;
             color: #155724;
@@ -821,8 +932,39 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">이미지 URL</label>
-                    <input type="text" class="form-input" id="productImage" placeholder="예: ../media/img/product1.png">
+                    <label class="form-label">상품 이미지</label>
+                    
+                    <!-- 이미지 업로드 영역 -->
+                    <div class="image-upload-area" id="imageUploadArea">
+                        <div class="upload-icon">📁</div>
+                        <div class="upload-text">상품 이미지를 업로드하세요</div>
+                        <div class="upload-subtext">파일을 드래그 앤 드롭하거나 아래 버튼을 클릭하세요<br>
+                        (JPG, PNG 파일 지원, 최대 10MB)</div>
+                        <button type="button" class="upload-btn" onclick="document.getElementById('imageFileInput').click()">
+                            파일 선택
+                        </button>
+                        <input type="file" id="imageFileInput" class="file-input" 
+                               accept=".jpg,.jpeg,.png" 
+                               onchange="handleImageUpload(event)">
+                    </div>
+                    
+                    <!-- 업로드된 이미지 미리보기 -->
+                    <div class="image-preview-section" id="imagePreviewSection" style="display: none;">
+                        <div class="image-preview-title">업로드된 이미지</div>
+                        <div class="image-preview-container">
+                            <img id="imagePreview" class="image-preview" src="" alt="미리보기">
+                            <div class="image-info">
+                                <div class="image-name" id="imageName"></div>
+                                <div class="image-path" id="imagePath"></div>
+                            </div>
+                            <button type="button" class="btn btn-danger btn-sm" onclick="removeImage()">
+                                이미지 제거
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 숨겨진 이미지 경로 입력 (기존 호환성 유지) -->
+                    <input type="hidden" id="productImage" value="">
                 </div>
 
                 <div style="display: flex; gap: 1rem; margin-top: 2rem;">
@@ -1037,6 +1179,63 @@
                 });
             }
 
+        // 이미지 업로드 API 함수 추가
+        async function uploadProductImage(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            const config = API_CONFIG.current;
+            const url = config.baseURL + '/audition/upload-product-image';
+            
+            try {
+                console.log('상품 이미지 업로드 중:', file.name);
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error(`이미지 업로드 HTTP ${response.status}: ${errorText}`);
+                    
+                    if (response.status === 413) {
+                        throw new Error(`파일이 너무 큽니다. (현재 파일: ${(file.size / 1024 / 1024).toFixed(1)}MB, 최대: 10MB)`);
+                    } else if (response.status === 403) {
+                        throw new Error(`파일 업로드 권한이 없습니다.`);
+                    } else {
+                        throw new Error(`서버 오류 (${response.status}): ${response.statusText}`);
+                    }
+                }
+                
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const responseText = await response.text();
+                    console.error('JSON이 아닌 응답:', responseText.substring(0, 200));
+                    throw new Error(`서버에서 잘못된 응답 형식을 반환했습니다`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    return {
+                        success: true,
+                        file: {
+                            ...result.file,
+                            path: result.file.path,
+                            url: result.file.url
+                        }
+                    };
+                } else {
+                    throw new Error(result.message || '파일 업로드에 실패했습니다.');
+                }
+                
+            } catch (error) {
+                console.error('상품 이미지 업로드 오류:', error);
+                throw error;
+            }
+        }
+
             console.log('Fallback API 설정 완료');
         }
     </script>
@@ -1192,11 +1391,7 @@
         let orders = [];
         let inventory = [];
 
-        // 페이지 초기화
-        document.addEventListener('DOMContentLoaded', function() {
-            checkDatabaseConnection();
-            loadProducts();
-        });
+        // 페이지 초기화 - 이미지 업로드 기능과 통합됨 (아래 참조)
 
         // 데이터베이스 연결 상태 확인
         async function checkDatabaseConnection() {
@@ -1427,6 +1622,9 @@
             // 폼 초기화
             form.reset();
             document.getElementById('productId').value = '';
+            
+            // 이미지 미리보기 초기화
+            removeImage();
 
             if (productId) {
                 // 수정 모드
@@ -1441,6 +1639,11 @@
                     document.getElementById('productType').value = product.type;
                     document.getElementById('productBadge').value = product.badge || '';
                     document.getElementById('productImage').value = product.image;
+                    
+                    // 기존 이미지가 있으면 미리보기 표시
+                    if (product.image) {
+                        showExistingImagePreview(product.image);
+                    }
                 }
             } else {
                 // 등록 모드
@@ -1453,6 +1656,8 @@
         // 상품 모달 닫기
         function closeProductModal() {
             document.getElementById('productModal').style.display = 'none';
+            // 이미지 미리보기도 초기화
+            removeImage();
         }
 
         // 상품 수정
@@ -1834,6 +2039,155 @@
             hideLoading();
         }
 
+        // 이미지 업로드 관련 함수들
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                validateAndUploadImage(file);
+            }
+        }
+        
+        function validateAndUploadImage(file) {
+            // 파일 검증
+            const maxSize = 10 * 1024 * 1024; // 10MB
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+            
+            if (file.size > maxSize) {
+                alert(`파일 크기는 10MB를 초과할 수 없습니다. (현재: ${(file.size / 1024 / 1024).toFixed(1)}MB)`);
+                return;
+            }
+            
+            if (!allowedTypes.includes(file.type)) {
+                alert('지원하지 않는 파일 형식입니다. JPG, PNG 파일만 업로드 가능합니다.');
+                return;
+            }
+            
+            // 파일 업로드 실행
+            uploadImageFile(file);
+        }
+        
+        async function uploadImageFile(file) {
+            showLoading();
+            
+            try {
+                const result = await uploadProductImage(file);
+                
+                if (result.success) {
+                    // 이미지 미리보기 표시
+                    showImagePreview(file, result.file);
+                    
+                    // 숨겨진 input에 이미지 경로 저장
+                    document.getElementById('productImage').value = result.file.path;
+                    
+                    alert('이미지가 성공적으로 업로드되었습니다!');
+                } else {
+                    alert('이미지 업로드에 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('이미지 업로드 오류:', error);
+                alert(`이미지 업로드 중 오류가 발생했습니다: ${error.message}`);
+            }
+            
+            hideLoading();
+            
+            // 파일 입력 초기화
+            document.getElementById('imageFileInput').value = '';
+        }
+        
+        function showImagePreview(file, uploadedFile) {
+            const previewSection = document.getElementById('imagePreviewSection');
+            const imagePreview = document.getElementById('imagePreview');
+            const imageName = document.getElementById('imageName');
+            const imagePath = document.getElementById('imagePath');
+            
+            // 파일을 읽어서 미리보기 이미지 설정
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imagePreview.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+            
+            // 파일 정보 표시
+            imageName.textContent = file.name;
+            imagePath.textContent = uploadedFile.path;
+            
+            // 미리보기 섹션 표시
+            previewSection.style.display = 'block';
+        }
+        
+        function removeImage() {
+            // 미리보기 숨기기
+            document.getElementById('imagePreviewSection').style.display = 'none';
+            
+            // 숨겨진 input 초기화
+            document.getElementById('productImage').value = '';
+            
+            // 파일 입력 초기화
+            document.getElementById('imageFileInput').value = '';
+        }
+        
+        function showExistingImagePreview(imagePath) {
+            const previewSection = document.getElementById('imagePreviewSection');
+            const imagePreview = document.getElementById('imagePreview');
+            const imageName = document.getElementById('imageName');
+            const imagePathElement = document.getElementById('imagePath');
+            
+            // 기존 이미지 미리보기 설정
+            imagePreview.src = imagePath;
+            
+            // 파일 정보 표시
+            const fileName = imagePath.split('/').pop();
+            imageName.textContent = fileName;
+            imagePathElement.textContent = imagePath;
+            
+            // 미리보기 섹션 표시
+            previewSection.style.display = 'block';
+        }
+        
+        // 페이지 초기화 - 기존 DOMContentLoaded 이벤트 수정
+        document.addEventListener('DOMContentLoaded', function() {
+            checkDatabaseConnection();
+            loadProducts();
+            
+            // 이미지 드래그 앤 드롭 기능 추가
+            const uploadArea = document.getElementById('imageUploadArea');
+            
+            if (uploadArea) {
+                uploadArea.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    uploadArea.classList.add('dragover');
+                });
+                
+                uploadArea.addEventListener('dragleave', function(e) {
+                    e.preventDefault();
+                    uploadArea.classList.remove('dragover');
+                });
+                
+                uploadArea.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    uploadArea.classList.remove('dragover');
+                    
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0) {
+                        const file = files[0];
+                        if (file.type.startsWith('image/')) {
+                            validateAndUploadImage(file);
+                        } else {
+                            alert('이미지 파일만 업로드 가능합니다.');
+                        }
+                    }
+                });
+                
+                // 클릭으로도 파일 선택 가능
+                uploadArea.addEventListener('click', function(e) {
+                    if (e.target === uploadArea || e.target.classList.contains('upload-icon') || 
+                        e.target.classList.contains('upload-text') || e.target.classList.contains('upload-subtext')) {
+                        document.getElementById('imageFileInput').click();
+                    }
+                });
+            }
+        });
+        
         // 모달 외부 클릭 시 닫기
         window.onclick = function(event) {
             const modal = document.getElementById('productModal');

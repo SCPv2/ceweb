@@ -725,6 +725,31 @@
                     body: formData
                 });
 
+                // 응답 상태 코드 확인
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error(`HTTP ${response.status}: ${errorText}`);
+                    
+                    // 특정 오류에 대한 상세 메시지
+                    if (response.status === 413) {
+                        throw new Error(`파일이 너무 큽니다. 서버 업로드 제한을 확인해주세요. (현재 파일: ${(file.size / 1024 / 1024).toFixed(1)}MB)`);
+                    } else if (response.status === 403) {
+                        throw new Error(`파일 업로드 권한이 없습니다. 서버 설정을 확인해주세요.`);
+                    } else if (response.status === 404) {
+                        throw new Error(`업로드 API 엔드포인트를 찾을 수 없습니다. (/api/audition/upload)`);
+                    } else {
+                        throw new Error(`서버 오류 (${response.status}): ${response.statusText}`);
+                    }
+                }
+
+                // Content-Type 확인
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const responseText = await response.text();
+                    console.error('JSON이 아닌 응답:', responseText.substring(0, 200));
+                    throw new Error(`서버에서 잘못된 응답 형식을 반환했습니다 (Content-Type: ${contentType})`);
+                }
+
                 const result = await response.json();
 
                 if (result.success) {
@@ -749,6 +774,22 @@
                 console.log('서버에서 파일 목록을 불러오는 중...');
                 
                 const response = await fetch(`${API_BASE_URL}/audition/files`);
+                
+                // 응답 상태 코드 확인
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error(`파일 목록 HTTP ${response.status}: ${errorText}`);
+                    throw new Error(`파일 목록 서버 오류 (${response.status}): ${response.statusText}`);
+                }
+
+                // Content-Type 확인
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const responseText = await response.text();
+                    console.error('파일 목록 JSON이 아닌 응답:', responseText.substring(0, 200));
+                    throw new Error(`파일 목록 서버에서 잘못된 응답 형식 (Content-Type: ${contentType})`);
+                }
+
                 const result = await response.json();
 
                 if (result.success) {
@@ -869,6 +910,21 @@
                 const response = await fetch(`${API_BASE_URL}/audition/delete/${fileId}`, {
                     method: 'DELETE'
                 });
+
+                // 응답 상태 코드 확인
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error(`파일 삭제 HTTP ${response.status}: ${errorText}`);
+                    throw new Error(`파일 삭제 서버 오류 (${response.status}): ${response.statusText}`);
+                }
+
+                // Content-Type 확인
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const responseText = await response.text();
+                    console.error('파일 삭제 JSON이 아닌 응답:', responseText.substring(0, 200));
+                    throw new Error(`파일 삭제 서버에서 잘못된 응답 형식 (Content-Type: ${contentType})`);
+                }
 
                 const result = await response.json();
 
