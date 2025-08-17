@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>주문/결제 - Creative Energy</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f8f8;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .header {
+            background-color: #fff;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .back-btn {
+            font-size: 18px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .header-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #000;
+        }
+
+        .cart-icon {
+            position: relative;
+            font-size: 18px;
+            color: #666;
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ff4444;
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            min-width: 16px;
+            text-align: center;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #fff;
+            min-height: calc(100vh - 70px);
+        }
+
+        /* Section Headers */
+        .section-header {
+            width: 100%;
+            background: #666;
+            color: white;
+            padding: 12px 20px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        /* Order Info Section */
+        .order-section {
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            color: #333;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .form-input:focus {
+            border-color: #666;
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            background: white;
+            outline: none;
+        }
+
+        .phone-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .phone-select {
+            width: 80px;
+        }
+
+        .phone-input {
+            flex: 1;
+        }
+
+        /* Product Quantity Section */
+        .quantity-section {
+            padding: 20px;
+        }
+
+        .product-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .product-image {
+            width: 60px;
+            height: 60px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .product-details {
+            flex: 1;
+        }
+
+        .product-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .product-subtitle {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .product-price {
+            font-size: 14px;
+            font-weight: bold;
+            color: #000;
+        }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .stock-info {
+            font-size: 12px;
+            color: #666;
+            margin-top: 8px;
+        }
+
+        .stock-info.soldout {
+            color: #ff4444;
+            font-weight: bold;
+        }
+
+        .quantity-btn {
+            width: 32px;
+            height: 32px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 18px;
+            color: #666;
+        }
+
+        .quantity-btn:hover {
+            background: #f0f0f0;
+        }
+
+        .quantity-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .quantity-input {
+            width: 60px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        /* Price Summary */
+        .price-summary {
+            border-top: 1px solid #e0e0e0;
+            padding: 20px;
+        }
+
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .price-row.total {
+            font-size: 16px;
+            font-weight: bold;
+            border-top: 1px solid #e0e0e0;
+            padding-top: 10px;
+            margin-top: 10px;
+            color: #ff4444;
+        }
+
+        /* Bottom Fixed Buttons */
+        .bottom-actions {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            max-width: 600px;
+            width: 100%;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+            padding: 15px 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #666;
+            border: 1px solid #ddd;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-primary {
+            background: #ff4444;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #e03333;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .modal-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .modal-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .modal-text {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 2rem;
+            line-height: 1.5;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .modal-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            min-width: 80px;
+        }
+
+        .modal-btn-primary {
+            background: #ff4444;
+            color: white;
+        }
+
+        .modal-btn-secondary {
+            background: #f0f0f0;
+            color: #666;
+            border: 1px solid #ddd;
+        }
+
+        /* Order Confirmation Section */
+        .confirmation-section {
+            display: none;
+        }
+
+        .confirmation-section.show {
+            display: block;
+        }
+
+        .order-product-image {
+            width: 50px;
+            height: 50px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .order-product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .order-detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .order-detail-row:last-child {
+            border-bottom: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .container {
+                max-width: 100%;
+            }
+
+            .bottom-actions {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="back-btn" onclick="goBack()">←</div>
+        <div class="header-title">주문/결제</div>
+        <div class="cart-icon">
+            🛒
+            <div class="cart-badge" id="cartBadge">1</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Order Form Section -->
+        <div id="orderFormSection">
+            <div class="section-header">주문자 정보</div>
+            <div class="order-section">
+                <div class="form-group">
+                    <label class="form-label">이름 *</label>
+                    <input type="text" class="form-input" id="customerName" placeholder="주문자 이름을 입력하세요" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">휴대폰 번호 *</label>
+                    <div class="phone-group">
+                        <select class="form-select phone-select" id="phonePrefix">
+                            <option value="010">010</option>
+                            <option value="011">011</option>
+                            <option value="016">016</option>
+                            <option value="017">017</option>
+                            <option value="018">018</option>
+                            <option value="019">019</option>
+                        </select>
+                        <input type="text" class="form-input phone-input" id="phoneMiddle" placeholder="1234" maxlength="4">
+                        <input type="text" class="form-input phone-input" id="phoneLast" placeholder="5678" maxlength="4">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">이메일</label>
+                    <input type="email" class="form-input" id="email" placeholder="example@email.com">
+                </div>
+            </div>
+
+            <div class="section-header">상품 정보</div>
+            <div class="quantity-section">
+                <div id="product-info" class="product-info">
+                    <!-- 상품 정보가 동적으로 로드됩니다 -->
+                </div>
+                
+                <div class="quantity-controls">
+                    <button class="quantity-btn" onclick="changeQuantity(-1)">-</button>
+                    <input type="number" class="quantity-input" id="quantity" value="1" min="1" max="99" onchange="updateTotal()">
+                    <button class="quantity-btn" onclick="changeQuantity(1)">+</button>
+                </div>
+                
+                <div class="stock-info" id="stockInfo">
+                    재고: <span id="stockDisplay">-</span>개
+                </div>
+            </div>
+
+            <div class="section-header">결제 정보</div>
+            <div class="price-summary">
+                <div class="price-row">
+                    <span>상품금액</span>
+                    <span id="product-price">0원</span>
+                </div>
+                <div class="price-row">
+                    <span>배송비</span>
+                    <span>무료</span>
+                </div>
+                <div class="price-row total">
+                    <span>총 결제금액</span>
+                    <span id="total-price">0원</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Confirmation Section -->
+        <div id="confirmationSection" class="confirmation-section">
+            <div class="section-header">주문 완료</div>
+            <div class="order-section">
+                <div class="modal-icon">✅</div>
+                <div class="modal-title">주문이 완료되었습니다!</div>
+                
+                <div id="confirmationProductInfo" class="product-info">
+                    <!-- 상품 정보 -->
+                </div>
+                
+                <div id="confirmationOrderDetails">
+                    <!-- 주문 상세 정보 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Actions -->
+    <div class="bottom-actions">
+        <button class="btn btn-secondary" onclick="goBack()" id="backButton">돌아가기</button>
+        <button class="btn btn-primary" onclick="processOrder()" id="orderButton">주문하기</button>
+        <button class="btn btn-primary" onclick="goToShop()" id="completeButton" style="display: none;">쇼핑 계속하기</button>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal" id="confirmModal">
+        <div class="modal-content">
+            <div class="modal-icon">❓</div>
+            <div class="modal-title">주문 확인</div>
+            <div class="modal-text" id="confirmText">
+                정말로 주문하시겠습니까?
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-secondary" onclick="closeConfirmModal()">취소</button>
+                <button class="modal-btn modal-btn-primary" onclick="confirmOrder()">주문하기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Object Storage 전용 API 설정 로드 -->
+    <script src="../web-server/api-config-obj.js"></script>
+    <script>
+        // 전역 변수
+        let productData = {};
+        let unitPrice = 0;
+        let maxStock = 0;
+        let orderInfo = {};
+
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProductData();
+            initializeForm();
+        });
+
+        // URL 파라미터에서 상품 데이터 로드
+        function loadProductData() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const data = urlParams.get('data');
+            
+            if (data) {
+                try {
+                    const decodedData = decodeURIComponent(atob(data));
+                    productData = JSON.parse(decodedData);
+                    console.log('상품 데이터 로드됨:', productData);
+                    
+                    // 상품 정보 렌더링
+                    renderProductInfo();
+                    
+                    // 재고 정보 조회 (Object Storage 버전 API 사용)
+                    checkProductStock();
+                    
+                } catch (error) {
+                    console.error('상품 데이터 파싱 오류:', error);
+                    alert('상품 정보를 불러오는데 실패했습니다.');
+                    goBack();
+                }
+            } else {
+                alert('상품 정보가 없습니다.');
+                goBack();
+            }
+        }
+
+        // 상품 정보 렌더링
+        function renderProductInfo() {
+            const productInfoContainer = document.getElementById('product-info');
+            
+            if (!productData || !productInfoContainer) {
+                console.error('상품 데이터 또는 컨테이너가 없습니다.');
+                return;
+            }
+            
+            // 이미지 경로는 상대경로로 유지 (동적 변환됨)
+            let imagePath = productData.image;
+            
+            productInfoContainer.innerHTML = `
+                <div class="product-image">
+                    <img src="${imagePath}" alt="${productData.title}" 
+                         onerror="this.style.display='none'; this.parentElement.style.background='linear-gradient(135deg, #f0f0f0, #e0e0e0)';">
+                </div>
+                <div class="product-details">
+                    <div class="product-title">${productData.title || '상품명 없음'}</div>
+                    ${productData.subtitle ? `<div class="product-subtitle">${productData.subtitle}</div>` : ''}
+                    <div class="product-price">${productData.price || '가격 정보 없음'}</div>
+                </div>
+            `;
+        }
+
+        // 수량 변경
+        function changeQuantity(change) {
+            const quantityInput = document.getElementById('quantity');
+            let currentQty = parseInt(quantityInput.value) || 1;
+            let newQty = currentQty + change;
+            
+            if (newQty < 1) newQty = 1;
+            if (newQty > maxStock) newQty = maxStock;
+            if (newQty > 99) newQty = 99;
+            
+            quantityInput.value = newQty;
+            updateTotal();
+        }
+
+        // 총 금액 업데이트
+        function updateTotal() {
+            const quantity = parseInt(document.getElementById('quantity').value) || 1;
+            const totalPrice = unitPrice * quantity;
+            
+            // 가격 표시 업데이트
+            document.getElementById('product-price').textContent = totalPrice.toLocaleString() + '원';
+            document.getElementById('total-price').textContent = totalPrice.toLocaleString() + '원';
+        }
+
+        // 상품 재고 정보 조회 (Object Storage 버전 API 사용)
+        async function checkProductStock() {
+            try {
+                console.log('Object Storage API로 재고 조회 중...');
+                
+                const response = await apiRequestObj(`/objorders/products/${productData.id}/inventory`);
+                
+                if (response.success && response.product) {
+                    const product = response.product;
+                    maxStock = product.stock_quantity || 0;
+                    unitPrice = product.price_numeric || 0;
+                    
+                    // 재고 정보 업데이트
+                    const stockDisplay = document.getElementById('stockDisplay');
+                    const stockInfo = document.getElementById('stockInfo');
+                    
+                    if (maxStock <= 0) {
+                        stockDisplay.textContent = '매진';
+                        stockInfo.classList.add('soldout');
+                        document.getElementById('orderButton').disabled = true;
+                        document.getElementById('orderButton').textContent = '품절';
+                    } else {
+                        stockDisplay.textContent = maxStock;
+                        stockInfo.classList.remove('soldout');
+                    }
+                    
+                    // 가격 업데이트
+                    updateTotal();
+                    
+                } else {
+                    throw new Error('재고 정보 조회 실패');
+                }
+                
+            } catch (error) {
+                console.error('재고 조회 오류:', error);
+                document.getElementById('stockDisplay').textContent = '조회 실패';
+            }
+        }
+
+        // 주문 처리 (Object Storage 버전 API 사용)
+        async function processOrder() {
+            if (!validateOrderForm()) {
+                return;
+            }
+            
+            const customerName = document.getElementById('customerName').value.trim();
+            const quantity = parseInt(document.getElementById('quantity').value) || 1;
+            
+            // 확인 모달 표시
+            document.getElementById('confirmText').innerHTML = 
+                `<strong>${productData.title}</strong><br>` +
+                `수량: ${quantity}개<br>` +
+                `총액: ${(unitPrice * quantity).toLocaleString()}원<br><br>` +
+                `주문자: ${customerName}`;
+            
+            document.getElementById('confirmModal').classList.add('show');
+        }
+
+        // 주문 확인
+        async function confirmOrder() {
+            closeConfirmModal();
+            
+            const customerName = document.getElementById('customerName').value.trim();
+            const quantity = parseInt(document.getElementById('quantity').value) || 1;
+            
+            try {
+                console.log('Object Storage API로 주문 생성 중...');
+                
+                const orderData = {
+                    customerName: customerName,
+                    productId: productData.id,
+                    quantity: quantity
+                };
+                
+                const response = await apiRequestObj('/objorders/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(orderData)
+                });
+                
+                if (response.success) {
+                    orderInfo = response.order;
+                    showOrderCompletion();
+                } else {
+                    alert(response.message || '주문 처리 중 오류가 발생했습니다.');
+                }
+                
+            } catch (error) {
+                console.error('주문 처리 오류:', error);
+                alert('주문 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
+            }
+        }
+
+        // 주문 완료 화면 표시
+        function showOrderCompletion() {
+            document.getElementById('orderFormSection').style.display = 'none';
+            document.getElementById('confirmationSection').classList.add('show');
+            document.getElementById('backButton').style.display = 'none';
+            document.getElementById('orderButton').style.display = 'none';
+            document.getElementById('completeButton').style.display = 'block';
+            
+            // 주문 완료 정보 렌더링
+            renderOrderConfirmation();
+        }
+
+        // 주문 완료 정보 렌더링
+        function renderOrderConfirmation() {
+            const productInfoContainer = document.getElementById('confirmationProductInfo');
+            const orderDetailsContainer = document.getElementById('confirmationOrderDetails');
+            
+            // 이미지 경로는 상대경로로 유지 (동적 변환됨)
+            let imagePath = productData.image;
+            
+            // 상품 정보 렌더링
+            productInfoContainer.innerHTML = `
+                <div class="order-product-image">
+                    <img src="${imagePath}" alt="${productData.title}" 
+                         onerror="this.style.display='none'; this.parentElement.style.background='linear-gradient(135deg, #f0f0f0, #e0e0e0)';">
+                </div>
+                <div class="order-product-details">
+                    <h3>${productData.title}</h3>
+                    ${productData.subtitle ? `<p>${productData.subtitle}</p>` : ''}
+                </div>
+            `;
+            
+            // 주문 상세 정보 렌더링
+            orderDetailsContainer.innerHTML = `
+                <div class="order-detail-row">
+                    <span>주문자</span>
+                    <span>${orderInfo.customerName}</span>
+                </div>
+                <div class="order-detail-row">
+                    <span>주문 수량</span>
+                    <span>${orderInfo.quantity}개</span>
+                </div>
+                <div class="order-detail-row">
+                    <span>결제 금액</span>
+                    <span>${orderInfo.totalPrice.toLocaleString()}원</span>
+                </div>
+                <div class="order-detail-row">
+                    <span>주문 번호</span>
+                    <span>#${orderInfo.id}</span>
+                </div>
+                <div class="order-detail-row">
+                    <span>주문 일시</span>
+                    <span>${new Date(orderInfo.orderDate).toLocaleString('ko-KR')}</span>
+                </div>
+            `;
+        }
+
+        // 폼 유효성 검사
+        function validateOrderForm() {
+            const customerName = document.getElementById('customerName').value.trim();
+            const phoneMiddle = document.getElementById('phoneMiddle').value.trim();
+            const phoneLast = document.getElementById('phoneLast').value.trim();
+            
+            if (!customerName) {
+                alert('주문자 이름을 입력해주세요.');
+                document.getElementById('customerName').focus();
+                return false;
+            }
+            
+            if (!phoneMiddle || !phoneLast) {
+                alert('휴대폰 번호를 입력해주세요.');
+                if (!phoneMiddle) document.getElementById('phoneMiddle').focus();
+                else document.getElementById('phoneLast').focus();
+                return false;
+            }
+            
+            if (!/^\d{4}$/.test(phoneMiddle) || !/^\d{4}$/.test(phoneLast)) {
+                alert('휴대폰 번호는 숫자만 입력해주세요.');
+                return false;
+            }
+            
+            const quantity = parseInt(document.getElementById('quantity').value) || 1;
+            if (quantity > maxStock) {
+                alert(`재고가 부족합니다. (최대 ${maxStock}개)`);
+                return false;
+            }
+            
+            return true;
+        }
+
+        // 폼 초기화
+        function initializeForm() {
+            // 기본값 설정
+            document.getElementById('quantity').value = productData.quantity || 1;
+            updateTotal();
+        }
+
+        // 뒤로 가기
+        function goBack() {
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                // shop_obj.html로 이동 (Object Storage 버전)
+                window.location.href = './shop_obj.html';
+            }
+        }
+
+        // 쇼핑 계속하기
+        function goToShop() {
+            // shop_obj.html로 이동 (Object Storage 버전)
+            window.location.href = './shop_obj.html';
+        }
+
+        // 확인 모달 닫기
+        function closeConfirmModal() {
+            document.getElementById('confirmModal').classList.remove('show');
+        }
+
+        // ESC 키로 모달 닫기
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeConfirmModal();
+            }
+        });
+
+        // 모달 외부 클릭으로 닫기
+        document.getElementById('confirmModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeConfirmModal();
+            }
+        });
+    </script>
+</body>
+</html>
