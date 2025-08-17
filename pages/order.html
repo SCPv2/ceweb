@@ -857,9 +857,9 @@
             // 이미지 경로 처리 (media 폴더로 수정)
             let imagePath = productData.image;
             if (imagePath.startsWith('../prod_image/')) {
-                imagePath = imagePath.replace('../prod_image/', '../media/');
+                imagePath = imagePath.replace('../prod_image/', '../media/img/');
             } else if (imagePath.startsWith('./prod_image/')) {
-                imagePath = imagePath.replace('./prod_image/', '../media/');
+                imagePath = imagePath.replace('./prod_image/', '../media/img/');
             }
             
             productInfoContainer.innerHTML = `
@@ -1123,9 +1123,9 @@
             // 이미지 경로 처리
             let imagePath = productData.image;
             if (imagePath.startsWith('../prod_image/')) {
-                imagePath = imagePath.replace('../prod_image/', '../media/');
+                imagePath = imagePath.replace('../prod_image/', '../media/img/');
             } else if (imagePath.startsWith('./prod_image/')) {
-                imagePath = imagePath.replace('./prod_image/', '../media/');
+                imagePath = imagePath.replace('./prod_image/', '../media/img/');
             }
             
             // 상품 정보 렌더링
