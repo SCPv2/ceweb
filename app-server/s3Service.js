@@ -24,7 +24,7 @@ class S3Service {
      */
     loadCredentials() {
         try {
-            const credentialsPath = path.join(__dirname, '../web-server/credentials.json');
+            const credentialsPath = path.join(__dirname, 'credentials.json');
             
             if (!fs.existsSync(credentialsPath)) {
                 throw new Error(`S3 인증 파일을 찾을 수 없습니다: ${credentialsPath}`);
