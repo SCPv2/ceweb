@@ -1179,7 +1179,10 @@
                 });
             }
 
-        // 이미지 업로드 API 함수 추가
+            console.log('Fallback API 설정 완료');
+        }
+        
+        // 상품 이미지 업로드 API 함수 (전역 함수로 정의)
         async function uploadProductImage(file) {
             const formData = new FormData();
             formData.append('file', file);
@@ -1234,9 +1237,6 @@
                 console.error('상품 이미지 업로드 오류:', error);
                 throw error;
             }
-        }
-
-            console.log('Fallback API 설정 완료');
         }
     </script>
     <script>
