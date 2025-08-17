@@ -60,8 +60,13 @@ useradd -m -s /bin/bash rocky || echo "rocky 사용자가 이미 존재합니다
 usermod -aG wheel rocky
 
 mkdir -p $WEB_DIR
+mkdir -p $WEB_DIR/media/img
+mkdir -p $WEB_DIR/files/audition
 chown -R rocky:rocky $WEB_DIR
 chmod -R 755 $WEB_DIR
+
+log "✅ 미디어 디렉토리 생성 완료: $WEB_DIR/media/img"
+log "✅ 파일 업로드 디렉토리 생성 완료: $WEB_DIR/files/audition"
 
 # 5. Public 도메인 입력 받기
 log "Web Server 도메인 설정 중..."
@@ -151,6 +156,25 @@ server {
         
         # 실행 파일 차단
         location ~* \.(php|php3|php4|php5|phtml|pl|py|jsp|asp|sh|cgi|exe|bat|com)$ {
+            deny all;
+            return 403;
+        }
+    }
+    
+    # Media 폴더 - 이미지 파일 서빙용
+    location /media/ {
+        root /home/rocky/ceweb;
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+        
+        # 이미지 파일만 허용
+        location ~* /media/.*\.(jpg|jpeg|png|gif|ico|svg|webp)$ {
+            expires 1y;
+            add_header Cache-Control "public, immutable";
+        }
+        
+        # 실행 파일 및 기타 파일 차단
+        location ~* /media/.*\.(php|php3|php4|php5|phtml|pl|py|jsp|asp|sh|cgi|exe|bat|com|txt|md)$ {
             deny all;
             return 403;
         }
@@ -448,13 +472,18 @@ log ""
 log "📋 다음 단계를 진행해주세요:"
 log ""
 log "1. 정적 파일 업로드:"
-log "   HTML, CSS, JS, 이미지 파일을 $WEB_DIR 에 업로드하세요"
+log "   HTML, CSS, JS 파일을 $WEB_DIR 에 업로드하세요"
 log "   예: scp -r /local/html-files/* user@server:$WEB_DIR/"
 log ""
-log "2. App Server 연결 테스트:"
+log "2. 미디어 파일 업로드:"
+log "   이미지 파일을 $WEB_DIR/media/img/ 에 업로드하세요"
+log "   예: scp /local/images/*.png user@server:$WEB_DIR/media/img/"
+log "   접근 URL: http://도메인/media/img/파일명.png"
+log ""
+log "3. App Server 연결 테스트:"
 log "   /root/test_app_server.sh"
 log ""
-log "3. DNS 설정 확인:"
+log "4. DNS 설정 확인:"
 if [[ -n "$CUSTOM_DOMAIN" ]]; then
     log "   $CUSTOM_DOMAIN → 이 서버 IP"
 fi
@@ -489,6 +518,7 @@ log "🧪 API 및 서버 상태 테스트 명령어:"
 log "curl -X GET http://localhost/api/orders/products"
 log "curl -X GET http://localhost/health"
 log "curl -X GET http://localhost/vm-info.json  # VM 정보 확인"
+log "curl -I http://localhost/media/img/  # 미디어 디렉토리 접근 테스트"
 log ""
 log "🌐 Samsung Cloud Platform Load Balancer 환경:"
 log "- VM Bootstrap 자동 실행: VM 부팅 시 자동으로 서비스 시작"
