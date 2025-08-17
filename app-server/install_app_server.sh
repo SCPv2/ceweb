@@ -119,7 +119,46 @@ else
     JWT_SECRET="your_jwt_secret_key_minimum_32_characters_long_change_this_in_production"
 fi
 
-# 10. 환경 설정 파일 생성
+# 10. Public 도메인 입력 받기
+log "CORS 허용 도메인 설정 중..."
+echo ""
+echo "================================================"
+echo "Public 도메인 설정"
+echo "================================================"
+echo "이 App Server에 접근할 Public 도메인을 입력하세요."
+echo "기본 허용 도메인: www.cesvc.net, www.creative-energy.net"
+echo "추가로 허용할 도메인이 있다면 입력하세요 (없으면 Enter)."
+echo ""
+echo "예시: mysite.com 또는 subdomain.mysite.com"
+echo -n "Public 도메인 입력: "
+
+# 사용자 입력 받기 (30초 타임아웃)
+read -t 30 CUSTOM_DOMAIN || CUSTOM_DOMAIN=""
+
+# 기본 허용 도메인 목록
+DEFAULT_ORIGINS="http://www.cesvc.net,https://www.cesvc.net,http://www.creative-energy.net,https://www.creative-energy.net"
+
+# 사용자가 입력한 도메인 추가
+if [[ -n "$CUSTOM_DOMAIN" ]]; then
+    # 공백 제거 및 소문자 변환
+    CUSTOM_DOMAIN=$(echo "$CUSTOM_DOMAIN" | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]')
+    
+    # http:// 또는 https:// 제거 (있다면)
+    CUSTOM_DOMAIN=${CUSTOM_DOMAIN#http://}
+    CUSTOM_DOMAIN=${CUSTOM_DOMAIN#https://}
+    
+    # 허용 도메인 목록에 추가
+    ALLOWED_ORIGINS="$DEFAULT_ORIGINS,http://$CUSTOM_DOMAIN,https://$CUSTOM_DOMAIN"
+    
+    log "✅ 추가 Public 도메인 설정: $CUSTOM_DOMAIN"
+else
+    ALLOWED_ORIGINS="$DEFAULT_ORIGINS"
+    log "기본 도메인만 사용합니다"
+fi
+
+log "CORS 허용 도메인 목록: $ALLOWED_ORIGINS"
+
+# 11. 환경 설정 파일 생성
 log "App Server용 환경 설정 파일 생성 중..."
 
 cat > $APP_DIR/.env << EOF
@@ -142,8 +181,8 @@ PORT=3000
 NODE_ENV=production
 BIND_HOST=0.0.0.0
 
-# CORS Configuration (Web Server 도메인 허용)
-ALLOWED_ORIGINS=http://www.cesvc.net,https://www.cesvc.net,http://www.creative-energy.net,https://www.creative-energy.net
+# CORS Configuration (허용 도메인 목록)
+ALLOWED_ORIGINS=$ALLOWED_ORIGINS
 
 # Security
 JWT_SECRET=$JWT_SECRET

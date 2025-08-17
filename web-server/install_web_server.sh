@@ -63,21 +63,63 @@ mkdir -p $WEB_DIR
 chown -R rocky:rocky $WEB_DIR
 chmod -R 755 $WEB_DIR
 
-# 5. Nginx 설정 파일 생성
+# 5. Public 도메인 입력 받기
+log "Web Server 도메인 설정 중..."
+echo ""
+echo "================================================"
+echo "Public 도메인 설정"
+echo "================================================"
+echo "이 Web Server에서 사용할 Public 도메인을 입력하세요."
+echo "기본 허용 도메인: www.cesvc.net, www.creative-energy.net"
+echo "추가로 사용할 도메인이 있다면 입력하세요 (없으면 Enter)."
+echo ""
+echo "예시: mysite.com 또는 subdomain.mysite.com"
+echo -n "Public 도메인 입력: "
+
+# 사용자 입력 받기 (30초 타임아웃)
+read -t 30 CUSTOM_DOMAIN || CUSTOM_DOMAIN=""
+
+# 기본 서버명
+DEFAULT_SERVERS="www.cesvc.net www.creative-energy.net"
+
+# 사용자가 입력한 도메인 추가
+if [[ -n "$CUSTOM_DOMAIN" ]]; then
+    # 공백 제거 및 소문자 변환
+    CUSTOM_DOMAIN=$(echo "$CUSTOM_DOMAIN" | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]')
+    
+    # http:// 또는 https:// 제거 (있다면)
+    CUSTOM_DOMAIN=${CUSTOM_DOMAIN#http://}
+    CUSTOM_DOMAIN=${CUSTOM_DOMAIN#https://}
+    
+    # 서버명 목록에 추가
+    SERVER_NAMES="$DEFAULT_SERVERS $CUSTOM_DOMAIN"
+    
+    log "✅ 추가 Public 도메인 설정: $CUSTOM_DOMAIN"
+else
+    SERVER_NAMES="$DEFAULT_SERVERS"
+    log "기본 도메인만 사용합니다"
+fi
+
+log "Nginx 서버명 목록: $SERVER_NAMES"
+
+# 6. Nginx 설정 파일 생성
 log "Nginx 설정 파일 생성 중..."
 
 # Samsung Cloud Platform Load Balancer 환경용 설정 우선 사용
 if [ -f "$WEB_DIR/web-server/nginx-site.conf" ]; then
     log "Load Balancer 환경용 nginx-site.conf 파일을 사용합니다"
-    # Rocky Linux는 conf.d 디렉토리 사용
-    cp "$WEB_DIR/web-server/nginx-site.conf" /etc/nginx/conf.d/creative-energy.conf
+    
+    # server_name 설정 업데이트
+    sed "s/server_name www\.cesvc\.net;/server_name $SERVER_NAMES;/" "$WEB_DIR/web-server/nginx-site.conf" > /etc/nginx/conf.d/creative-energy.conf
+    
     log "✅ nginx-site.conf를 /etc/nginx/conf.d/creative-energy.conf로 적용 완료"
+    log "서버명이 업데이트되었습니다: $SERVER_NAMES"
 else
     log "기본 nginx 설정 파일을 생성합니다"
-    cat > /etc/nginx/conf.d/creative-energy.conf << 'EOF'
+    cat > /etc/nginx/conf.d/creative-energy.conf << EOF
 server {
     listen 80 default_server;
-    server_name www.cesvc.net www.creative-energy.net _;
+    server_name $SERVER_NAMES _;
     
     # 정적 파일 서빙 (HTML, CSS, JS, 이미지 등)
     location / {
@@ -413,6 +455,9 @@ log "2. App Server 연결 테스트:"
 log "   /root/test_app_server.sh"
 log ""
 log "3. DNS 설정 확인:"
+if [[ -n "$CUSTOM_DOMAIN" ]]; then
+    log "   $CUSTOM_DOMAIN → 이 서버 IP"
+fi
 log "   www.cesvc.net → 이 서버 IP"
 log "   www.creative-energy.net → 이 서버 IP"
 log "   app.cesvc.net → App Server IP"

@@ -24,11 +24,12 @@ const corsOptions = {
     
     // 환경변수로 특정 도메인만 허용하도록 설정 가능
     if (process.env.ALLOWED_ORIGINS) {
-      const allowedOrigins = process.env.ALLOWED_ORIGINS.split(',');
+      const allowedOrigins = process.env.ALLOWED_ORIGINS.split(',').map(domain => domain.trim());
       if (allowedOrigins.includes(origin)) {
+        console.log(`CORS 허용: 환경변수 도메인 ${origin}`);
         return callback(null, true);
       } else {
-        console.log(`CORS 차단: 허용되지 않은 origin ${origin}`);
+        console.log(`CORS 차단: 환경변수에 없는 origin ${origin}`);
         return callback(new Error('CORS 정책에 의해 접근이 거부되었습니다.'));
       }
     }
