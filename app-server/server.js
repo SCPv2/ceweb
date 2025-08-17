@@ -28,10 +28,9 @@ const corsOptions = {
       if (allowedOrigins.includes(origin)) {
         console.log(`CORS 허용: 환경변수 도메인 ${origin}`);
         return callback(null, true);
-      } else {
-        console.log(`CORS 차단: 환경변수에 없는 origin ${origin}`);
-        return callback(new Error('CORS 정책에 의해 접근이 거부되었습니다.'));
       }
+      // 환경변수가 있어도 Public IP는 허용하도록 계속 진행
+      console.log(`환경변수에 없는 origin, Public IP 체크 진행: ${origin}`);
     }
     
     const url = new URL(origin);
