@@ -12,8 +12,8 @@ yarn-error.log*
 .env.production.local
 
 # Samsung Cloud Platform Object Storage credentials
-web-server/s3-credentials.json
-app-server/s3-credentials.json
+web-server/credentials.json
+app-server/credentials.json
 
 # Log files
 *.log
