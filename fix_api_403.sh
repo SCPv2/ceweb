@@ -60,6 +60,18 @@ if [ -f "$SERVER_JS" ]; then
         echo "최신 버전은 모든 Public IP를 자동으로 허용합니다"
     fi
     
+    # 환경변수 ALLOWED_ORIGINS 확인
+    if [ -f "$APP_SERVER_DIR/.env" ]; then
+        ENV_ORIGINS=$(grep "ALLOWED_ORIGINS=" "$APP_SERVER_DIR/.env" | cut -d'=' -f2)
+        if [[ -n "$ENV_ORIGINS" ]]; then
+            log "현재 환경변수 ALLOWED_ORIGINS: $ENV_ORIGINS"
+            echo "⚠️ 환경변수가 설정되어 있으면 Public IP 허용이 제한될 수 있습니다"
+            echo "   해결방법: .env 파일에서 ALLOWED_ORIGINS 주석 처리 또는 삭제"
+        else
+            log "✅ ALLOWED_ORIGINS 환경변수가 설정되지 않음 - Public IP 허용 활성화"
+        fi
+    fi
+    
     # CORS 설정 확인
     echo ""
     echo "=== 현재 CORS 설정 ===" 
