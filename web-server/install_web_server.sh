@@ -73,14 +73,18 @@ if command -v getenforce >/dev/null 2>&1 && [ "$(getenforce)" != "Disabled" ]; t
     log "SELinux 활성화 상태 - 웹 디렉토리 접근 권한 설정 중..."
     
     # Nginx가 웹 디렉토리에 접근할 수 있도록 SELinux 컨텍스트 설정
-    semanage fcontext -a -t httpd_exec_t "$WEB_DIR/media(/.*)?" 2>/dev/null || true
-    semanage fcontext -a -t httpd_exec_t "$WEB_DIR/files(/.*)?" 2>/dev/null || true
-    restorecon -Rv $WEB_DIR/media 2>/dev/null || true
-    restorecon -Rv $WEB_DIR/files 2>/dev/null || true
+    # httpd_exec_t가 아닌 httpd_t (웹 콘텐츠) 사용
+    semanage fcontext -a -t httpd_t "$WEB_DIR(/.*)?" 2>/dev/null || true
+    semanage fcontext -a -t httpd_t "$WEB_DIR/media(/.*)?" 2>/dev/null || true  
+    semanage fcontext -a -t httpd_t "$WEB_DIR/files(/.*)?" 2>/dev/null || true
+    restorecon -Rv $WEB_DIR 2>/dev/null || true
     
     # Nginx가 홈 디렉토리에 접근할 수 있도록 허용
     setsebool -P httpd_read_user_content 1 2>/dev/null || true
     setsebool -P httpd_enable_homedirs 1 2>/dev/null || true
+    
+    # 추가 네트워크 권한 (프록시 사용을 위해)
+    setsebool -P httpd_can_network_connect 1 2>/dev/null || true
     
     log "✅ SELinux 웹 디렉토리 접근 권한 설정 완료"
 else
