@@ -4,6 +4,7 @@
  */
 
 const { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand, PutBucketCorsCommand } = require('@aws-sdk/client-s3');
+const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const path = require('path');
 const fs = require('fs');
 
@@ -137,16 +138,17 @@ class S3Service {
 
             const result = await this.s3Client.send(command);
             
-            // Public URL 생성 (Public endpoint 사용)
+            // Public URL 생성 (직접 접근 불가능하므로 참고용)
             const publicUrl = `${this.publicEndpoint}/${this.bucketName}/${key}`;
             
             console.log(`✅ 파일 업로드 성공: ${key}`);
-            console.log(`   - Public URL: ${publicUrl}`);
+            console.log(`   - Public URL (참고용): ${publicUrl}`);
+            console.log(`   - Presigned URL은 별도 API로 요청 필요`);
             
             return {
                 success: true,
                 key: key,
-                publicUrl: publicUrl,
+                publicUrl: publicUrl,    // 직접 접근 불가능한 Public URL
                 etag: result.ETag,
                 uploadDate: new Date().toISOString(),
                 size: fileBuffer.length,
@@ -219,7 +221,27 @@ class S3Service {
     }
 
     /**
-     * Public URL 생성
+     * Presigned URL 생성 (파일 접근용)
+     * @param {string} key S3 키 (경로/파일명)
+     * @param {number} expiresIn 만료 시간 (초, 기본: 7일)
+     * @returns {Promise<string>} Presigned URL
+     */
+    async getPresignedUrl(key, expiresIn = 7 * 24 * 60 * 60) {
+        try {
+            const command = new GetObjectCommand({
+                Bucket: this.bucketName,
+                Key: key
+            });
+            
+            return await getSignedUrl(this.s3Client, command, { expiresIn });
+        } catch (error) {
+            console.error(`❌ Presigned URL 생성 실패 (${key}):`, error.message);
+            throw new Error(`Presigned URL 생성 실패: ${error.message}`);
+        }
+    }
+
+    /**
+     * Public URL 생성 (참고용 - 직접 접근 불가능할 수 있음)
      * @param {string} key S3 키 (경로/파일명)
      * @returns {string} Public URL
      */

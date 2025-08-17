@@ -102,6 +102,9 @@ const API_ENDPOINTS = {
         // 파일 삭제 (type: 'product' | 'audition')
         deleteFile: (type, filename) => `/s3/delete-file/${type}/${filename}`,
         
+        // Presigned URL 생성 (type: 'product' | 'audition')
+        presignedUrl: (type, filename, expiresIn = 3600) => `/s3/presigned-url/${type}/${filename}?expiresIn=${expiresIn}`,
+        
         // CORS 설정
         setupCors: '/s3/setup-cors',
         
@@ -403,6 +406,17 @@ async function setupS3CORS() {
     return await apiRequest(API_ENDPOINTS.s3.setupCors, {
         method: 'POST'
     });
+}
+
+/**
+ * S3 - Presigned URL 생성 (Samsung Cloud Platform Object Storage)
+ * @param {string} type - 파일 타입 ('product' | 'audition')
+ * @param {string} filename - 파일명
+ * @param {number} expiresIn - 만료 시간 (초, 기본: 3600)
+ * @returns {Promise} Presigned URL 생성 결과
+ */
+async function getS3PresignedUrl(type, filename, expiresIn = 3600) {
+    return await apiRequest(API_ENDPOINTS.s3.presignedUrl(type, filename, expiresIn));
 }
 
 /**

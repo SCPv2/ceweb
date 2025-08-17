@@ -259,11 +259,14 @@
                             <span>Public URL:</span>
                             <span><a href="${result.file.publicUrl}" target="_blank">${result.file.publicUrl}</a></span>
                         </div>
-                        <div style="margin-top: 1rem;">
-                            <img src="${result.file.publicUrl}" alt="업로드된 이미지" style="max-width: 200px; border-radius: 5px;">
+                        <div style="margin-top: 1rem;" id="imagePreview_${result.file.filename}">
+                            <div>Presigned URL을 가져오는 중...</div>
                         </div>
                     `;
                     showResult('productImageResult', uploadHtml);
+                    
+                    // Presigned URL을 가져와서 이미지 표시
+                    loadImageWithPresignedUrl(result.file.filename, `imagePreview_${result.file.filename}`);
                 } else {
                     showResult('productImageResult', `❌ 업로드 실패: ${result.message}`, true);
                 }
@@ -317,6 +320,40 @@
             } catch (error) {
                 console.error('오디션 파일 업로드 오류:', error);
                 showResult('auditionFileResult', `❌ 업로드 오류: ${error.message}`, true);
+            }
+        }
+
+        // Presigned URL로 이미지 로드
+        async function loadImageWithPresignedUrl(filename, containerId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/s3/presigned-url/product/${filename}?expiresIn=3600`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    const container = document.getElementById(containerId);
+                    container.innerHTML = `
+                        <div class="status-item">
+                            <span>Presigned URL:</span>
+                            <span><a href="${result.data.presignedUrl}" target="_blank">접근 링크</a></span>
+                        </div>
+                        <div class="status-item">
+                            <span>만료시간:</span>
+                            <span>${result.data.expiresAt}</span>
+                        </div>
+                        <div style="margin-top: 1rem;">
+                            <img src="${result.data.presignedUrl}" alt="업로드된 이미지" style="max-width: 200px; border-radius: 5px;" 
+                                 onload="console.log('이미지 로드 성공')" 
+                                 onerror="console.error('이미지 로드 실패'); this.alt='이미지 로드 실패';">
+                        </div>
+                    `;
+                } else {
+                    const container = document.getElementById(containerId);
+                    container.innerHTML = `<div class="error">Presigned URL 생성 실패: ${result.message}</div>`;
+                }
+            } catch (error) {
+                console.error('Presigned URL 요청 오류:', error);
+                const container = document.getElementById(containerId);
+                container.innerHTML = `<div class="error">Presigned URL 요청 오류: ${error.message}</div>`;
             }
         }
 

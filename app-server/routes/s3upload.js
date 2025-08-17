@@ -277,6 +277,62 @@ router.post('/setup-cors', async (req, res) => {
 });
 
 /**
+ * Presigned URL 생성
+ * GET /api/s3/presigned-url/:type/:filename
+ * type: 'product' | 'audition'
+ */
+router.get('/presigned-url/:type/:filename', async (req, res) => {
+    try {
+        const { type, filename } = req.params;
+        const { expiresIn = 3600 } = req.query; // 기본 1시간
+        
+        if (!['product', 'audition'].includes(type)) {
+            return res.status(400).json({
+                success: false,
+                message: '올바르지 않은 파일 타입입니다. (product 또는 audition만 허용)'
+            });
+        }
+
+        // S3 서비스 인스턴스 가져오기
+        const s3Service = getS3Service();
+        
+        // S3 키 생성
+        let key;
+        if (type === 'product') {
+            key = `${s3Service.credentials.folders.media}/${filename}`;
+        } else {
+            key = `${s3Service.credentials.folders.audition}/${filename}`;
+        }
+        
+        console.log(`${type} 파일 Presigned URL 생성: ${key}, 만료시간: ${expiresIn}초`);
+
+        // Presigned URL 생성
+        const presignedUrl = await s3Service.getPresignedUrl(key, parseInt(expiresIn));
+
+        res.json({
+            success: true,
+            message: 'Presigned URL이 성공적으로 생성되었습니다.',
+            data: {
+                filename: filename,
+                type: type,
+                key: key,
+                presignedUrl: presignedUrl,
+                expiresIn: parseInt(expiresIn),
+                expiresAt: new Date(Date.now() + parseInt(expiresIn) * 1000).toISOString()
+            }
+        });
+
+    } catch (error) {
+        console.error('Presigned URL 생성 오류:', error);
+        
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Presigned URL 생성 중 오류가 발생했습니다.'
+        });
+    }
+});
+
+/**
  * S3 서비스 상태 확인
  * GET /api/s3/status
  */
