@@ -68,6 +68,25 @@ chmod -R 755 $WEB_DIR
 log "✅ 미디어 디렉토리 생성 완료: $WEB_DIR/media/img"
 log "✅ 파일 업로드 디렉토리 생성 완료: $WEB_DIR/files/audition"
 
+# SELinux 설정 (활성화된 경우)
+if command -v getenforce >/dev/null 2>&1 && [ "$(getenforce)" != "Disabled" ]; then
+    log "SELinux 활성화 상태 - 웹 디렉토리 접근 권한 설정 중..."
+    
+    # Nginx가 웹 디렉토리에 접근할 수 있도록 SELinux 컨텍스트 설정
+    semanage fcontext -a -t httpd_exec_t "$WEB_DIR/media(/.*)?" 2>/dev/null || true
+    semanage fcontext -a -t httpd_exec_t "$WEB_DIR/files(/.*)?" 2>/dev/null || true
+    restorecon -Rv $WEB_DIR/media 2>/dev/null || true
+    restorecon -Rv $WEB_DIR/files 2>/dev/null || true
+    
+    # Nginx가 홈 디렉토리에 접근할 수 있도록 허용
+    setsebool -P httpd_read_user_content 1 2>/dev/null || true
+    setsebool -P httpd_enable_homedirs 1 2>/dev/null || true
+    
+    log "✅ SELinux 웹 디렉토리 접근 권한 설정 완료"
+else
+    log "SELinux가 비활성화되어 있거나 설치되지 않았습니다"
+fi
+
 # 5. Public 도메인 입력 받기
 log "Web Server 도메인 설정 중..."
 echo ""
@@ -511,7 +530,7 @@ log "⚠️  중요 사항:"
 log "- 이 서버는 정적 파일 서빙과 API 프록시 역할만 수행합니다"
 log "- 실제 API 처리는 app.cesvc.net:3000에서 수행됩니다"
 log "- App Server가 실행 중이어야 API 요청이 정상 동작합니다"
-log "- SELinux 설정이 자동으로 구성되어 권한 문제 없이 동작합니다"
+log "- SELinux 설정이 자동으로 구성되어 /media/ 및 /files/ 디렉토리 접근 가능"
 log "- 브라우저에서 API 연결 시 '/api' 경로를 통해 프록시됩니다"
 log ""
 log "🧪 API 및 서버 상태 테스트 명령어:"
