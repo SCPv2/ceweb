@@ -221,19 +221,36 @@ class S3Service {
     }
 
     /**
-     * Presigned URL 생성 (파일 접근용)
+     * Presigned URL 생성 (파일 접근용) - 퍼블릭 엔드포인트 사용
      * @param {string} key S3 키 (경로/파일명)
      * @param {number} expiresIn 만료 시간 (초, 기본: 7일)
      * @returns {Promise<string>} Presigned URL
      */
     async getPresignedUrl(key, expiresIn = 7 * 24 * 60 * 60) {
         try {
+            // Presigned URL 생성을 위한 별도 S3 클라이언트 (퍼블릭 엔드포인트 사용)
+            const publicS3Client = new S3Client({
+                region: this.credentials.region,
+                endpoint: this.publicEndpoint, // 퍼블릭 엔드포인트 사용
+                credentials: {
+                    accessKeyId: this.credentials.accessKeyId,
+                    secretAccessKey: this.credentials.secretAccessKey
+                },
+                forcePathStyle: true
+            });
+
             const command = new GetObjectCommand({
                 Bucket: this.bucketName,
                 Key: key
             });
             
-            return await getSignedUrl(this.s3Client, command, { expiresIn });
+            const presignedUrl = await getSignedUrl(publicS3Client, command, { expiresIn });
+            
+            console.log(`✅ Presigned URL 생성 성공 (${key})`);
+            console.log(`   - 퍼블릭 엔드포인트: ${this.publicEndpoint}`);
+            console.log(`   - 만료시간: ${expiresIn}초`);
+            
+            return presignedUrl;
         } catch (error) {
             console.error(`❌ Presigned URL 생성 실패 (${key}):`, error.message);
             throw new Error(`Presigned URL 생성 실패: ${error.message}`);
