@@ -283,7 +283,7 @@ INSERT INTO products (id, title, subtitle, price, price_numeric, image, category
 (3, 'BigBoys Official Light Stick', 'Ver. 1.0', '42,000원', 42000, '../media/img/bb_prod3.png', 'bigboys', 'goods', 'LIMITED', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 (4, 'BigBoys Official T-Shirt', 'Black / White Available', '28,000원', 28000, '../media/img/bb_prod4.png', 'bigboys', 'goods', NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 (5, 'Cloudy 2nd Official Album [In the Sky]', 'Sky Blue Ver.', '16,800원', 16800, '../media/img/cloudy_prod1.png', 'cloudy', 'album', 'NEW', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(6, 'Cloudy 1st Official Album [FEARLESS]', 'Purple Ver.', '16,800원', 16800, '../media/img/cloudy_prod2.png', 'cloudy', 'album', NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(6, 'Cloudy 1st Official Album [JUMP]', 'Purple Ver.', '16,800원', 16800, '../media/img/cloudy_prod2.png', 'cloudy', 'album', NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 (7, 'Cloudy Official Merchandise', 'Eco Bag', '40,000원', 40000, '../media/img/cloudy_prod3.png', 'cloudy', 'goods', 'LIMITED', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 (8, 'Cloudy Official Light Stick', 'Ver. 2.0', '42,000원', 42000, '../media/img/cloudy_prod4.png', 'cloudy', 'goods', NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 ON CONFLICT (id) DO NOTHING;
