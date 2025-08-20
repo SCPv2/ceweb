@@ -136,26 +136,109 @@ else
     echo "⚠️ 데이터베이스 연결 테스트 실패 - 계속 진행"
 fi
 
-# PM2 프로세스 정리 및 재시작
-echo "9. PM2 프로세스 관리..."
-sudo -u $APP_USER bash -c "
-    cd $APP_DIR
+# PM2 프로세스 상태 확인 및 재시작
+echo "9. PM2 프로세스 상태 확인 및 재시작..."
+
+# 현재 애플리케이션 상태 확인
+APP_RUNNING=false
+PM2_PROCESS_STATUS=""
+
+if sudo -u $APP_USER pm2 list 2>/dev/null | grep -q "creative-energy-api"; then
+    PM2_PROCESS_STATUS=$(sudo -u $APP_USER pm2 jlist 2>/dev/null | jq -r '.[] | select(.name=="creative-energy-api") | .pm2_env.status' || echo "unknown")
+    echo "PM2 프로세스 상태: $PM2_PROCESS_STATUS"
     
-    # 기존 PM2 프로세스 정리
-    pm2 kill >/dev/null 2>&1 || true
+    if [[ "$PM2_PROCESS_STATUS" == "online" ]]; then
+        APP_RUNNING=true
+        echo "✅ 애플리케이션이 이미 실행 중입니다"
+    else
+        echo "⚠️ PM2 프로세스가 정지 상태입니다 ($PM2_PROCESS_STATUS)"
+    fi
+else
+    echo "⚠️ PM2에서 creative-energy-api 프로세스를 찾을 수 없습니다"
+fi
+
+# 포트 3000이 사용 중인지 확인
+PORT_ACTIVE=false
+if ss -tlnp | grep -q ':3000'; then
+    echo "✅ 포트 3000이 사용 중입니다"
+    PORT_ACTIVE=true
+else
+    echo "⚠️ 포트 3000이 비어있습니다"
+fi
+
+# Health Check API 응답 확인
+HEALTH_CHECK_OK=false
+if curl -f -s http://localhost:3000/health >/dev/null 2>&1; then
+    echo "✅ Health Check API가 응답합니다"
+    HEALTH_CHECK_OK=true
+else
+    echo "⚠️ Health Check API가 응답하지 않습니다"
+fi
+
+# 애플리케이션 재시작 필요 여부 판단
+RESTART_NEEDED=false
+if [[ "$APP_RUNNING" == false ]] || [[ "$PORT_ACTIVE" == false ]] || [[ "$HEALTH_CHECK_OK" == false ]]; then
+    RESTART_NEEDED=true
+    echo "🔄 애플리케이션 재시작이 필요합니다"
+    echo "   - PM2 프로세스 실행: $APP_RUNNING"
+    echo "   - 포트 3000 활성: $PORT_ACTIVE"
+    echo "   - Health Check 정상: $HEALTH_CHECK_OK"
+else
+    echo "✅ 애플리케이션이 정상 실행 중입니다"
+fi
+
+# 필요시 애플리케이션 재시작
+if [[ "$RESTART_NEEDED" == true ]]; then
+    echo "🔄 애플리케이션 재시작 중..."
     
-    # 잠시 대기
-    sleep 2
+    sudo -u $APP_USER bash -c "
+        cd $APP_DIR
+        
+        # 기존 PM2 프로세스 정리
+        echo '기존 PM2 프로세스 정리 중...'
+        pm2 delete creative-energy-api >/dev/null 2>&1 || true
+        pm2 kill >/dev/null 2>&1 || true
+        
+        # 잠시 대기 (프로세스 완전 종료 대기)
+        sleep 3
+        
+        # 포트 3000이 완전히 해제될 때까지 대기
+        for i in {1..10}; do
+            if ! ss -tlnp | grep -q ':3000'; then
+                echo 'Port 3000 해제 완료'
+                break
+            fi
+            echo \"포트 3000 해제 대기 중... (\$i/10)\"
+            sleep 1
+        done
+        
+        # PM2로 애플리케이션 시작
+        echo 'PM2로 애플리케이션 시작 중...'
+        pm2 start ecosystem.config.js
+        
+        # PM2 프로세스 상태 확인
+        pm2 status
+        
+        # PM2 자동 시작 설정 (이미 설정되어 있어도 재실행)
+        pm2 save
+        
+        echo '✅ 애플리케이션 재시작 완료'
+    "
     
-    # PM2로 애플리케이션 시작
-    pm2 start ecosystem.config.js
+    if [ $? -eq 0 ]; then
+        echo "✅ PM2 애플리케이션 재시작 성공"
+    else
+        echo "❌ PM2 애플리케이션 재시작 실패"
+    fi
+else
+    echo "ℹ️  재시작 불필요 - 현재 상태 유지"
     
-    # PM2 프로세스 상태 확인
-    pm2 status
-    
-    # PM2 자동 시작 설정 (이미 설정되어 있어도 재실행)
-    pm2 save
-"
+    # 기존 프로세스가 정상이면 PM2 설정만 확인
+    sudo -u $APP_USER bash -c "
+        cd $APP_DIR
+        pm2 save >/dev/null 2>&1 || true
+    "
+fi
 
 # 애플리케이션 포트 점검
 echo "10. 애플리케이션 포트 점검..."
