@@ -468,7 +468,56 @@ else
     warn "⚠️ bootstrap_app_vm.sh 스크립트를 찾을 수 없습니다: $BOOTSTRAP_SCRIPT"
 fi
 
-# 22. PM2 자동 시작 설정
+# 22. Object Storage URL 교체 (bucket_id.json 기반)
+log "Object Storage URL 교체 중..."
+
+BUCKET_CONFIG_FILE="/home/$APP_USER/ceweb/bucket_id.json"
+if [ -f "$BUCKET_CONFIG_FILE" ]; then
+    log "bucket_id.json 파일을 찾았습니다"
+    
+    # jq가 설치되어 있지 않으면 설치
+    if ! command -v jq >/dev/null 2>&1; then
+        log "jq 패키지 설치 중..."
+        dnf install -y jq
+    fi
+    
+    # bucket_id.json에서 설정값 읽기
+    BUCKET_STRING=$(jq -r '.object_storage.bucket_string' "$BUCKET_CONFIG_FILE")
+    PUBLIC_ENDPOINT=$(jq -r '.object_storage.public_endpoint' "$BUCKET_CONFIG_FILE")
+    BUCKET_NAME=$(jq -r '.object_storage.bucket_name' "$BUCKET_CONFIG_FILE")
+    
+    if [ "$BUCKET_STRING" != "null" ] && [ "$BUCKET_STRING" != "thisneedstobereplaced1234" ]; then
+        # Object Storage 미디어 베이스 URL 생성
+        MEDIA_BASE_URL="${PUBLIC_ENDPOINT}/${BUCKET_STRING}:${BUCKET_NAME}/media/img/"
+        FILES_BASE_URL="${PUBLIC_ENDPOINT}/${BUCKET_STRING}:${BUCKET_NAME}/files/audition/"
+        
+        log "Object Storage URL 교체 중:"
+        log "- 미디어 베이스 URL: $MEDIA_BASE_URL"
+        log "- 파일 베이스 URL: $FILES_BASE_URL"
+        
+        # 모든 *_obj.html 파일에서 placeholder를 실제 URL로 교체
+        find "/home/$APP_USER/ceweb" -name "*_obj.html" -type f | while read -r obj_file; do
+            log "URL 교체 중: $(basename "$obj_file")"
+            
+            # 미디어 URL 교체
+            sed -i "s|{{OBJECT_STORAGE_MEDIA_BASE}}|${MEDIA_BASE_URL}|g" "$obj_file"
+            
+            # 파일 URL 교체 (audition 파일용)
+            sed -i "s|{{OBJECT_STORAGE_FILES_BASE}}|${FILES_BASE_URL}|g" "$obj_file"
+        done
+        
+        log "✅ Object Storage URL 교체 완료"
+    else
+        warn "bucket_string이 기본값입니다. bucket_id.json 파일을 수정해주세요:"
+        warn "현재 bucket_string: $BUCKET_STRING"
+        warn "파일 위치: $BUCKET_CONFIG_FILE"
+    fi
+else
+    warn "bucket_id.json 파일을 찾을 수 없습니다: $BUCKET_CONFIG_FILE"
+    warn "Object Storage URL 교체를 건너뜁니다"
+fi
+
+# 23. PM2 자동 시작 설정
 log "PM2 자동 시작 설정 중..."
 sudo -u $APP_USER pm2 startup systemd --user $APP_USER 2>/dev/null || {
     log "PM2 startup 설정을 위해 다음 명령을 실행하세요:"

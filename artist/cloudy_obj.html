@@ -696,9 +696,6 @@
             </ul>
             <div class="nav-icons">
                 <div class="nav-icon">KOR</div>
-                <div class="nav-icon">ENG</div>
-                <div class="nav-icon">JPN</div>
-                <div class="nav-icon">CHN</div>
             </div>
         </nav>
     </header>
@@ -719,7 +716,7 @@
         <div class="container">
             <div class="profile-grid">
                 <div class="profile-image">
-                    <img src="../media/img/cloudy1.png" alt="Cloudy" 
+                    <img src="{{OBJECT_STORAGE_MEDIA_BASE}}cloudy1.png" alt="Cloudy" 
                          onerror="this.style.background='linear-gradient(135deg, #667eea 0%, #764ba2 100%)';">
                 </div>
                 <div class="profile-info">
@@ -758,7 +755,7 @@
             <div class="albums-grid">
                 <div class="album-card">
                     <div class="album-cover">
-                        <img src="../media/img/cloudy3.png" alt="DREAMSCAPE" 
+                        <img src="{{OBJECT_STORAGE_MEDIA_BASE}}cloudy3.png" alt="DREAMSCAPE" 
                              onerror="this.style.display='none';">
                     </div>
                     <div class="album-info">
@@ -770,7 +767,7 @@
                 
                 <div class="album-card">
                     <div class="album-cover">
-                        <img src="../media/img/cloudy_prod1.png" alt="DREAMSCAPE Vinyl" 
+                        <img src="{{OBJECT_STORAGE_MEDIA_BASE}}cloudy_prod1.png" alt="DREAMSCAPE Vinyl" 
                              onerror="this.style.display='none';">
                     </div>
                     <div class="album-info">
@@ -790,15 +787,15 @@
             <h2 class="section-title">Gallery</h2>
             <div class="gallery-grid">
                 <div class="gallery-item">
-                    <img src="../media/img/cloudy1.png" alt="Cloudy Gallery 1" 
+                    <img src="{{OBJECT_STORAGE_MEDIA_BASE}}cloudy1.png" alt="Cloudy Gallery 1" 
                          onerror="this.style.background='linear-gradient(45deg, #667eea, #764ba2)';">
                 </div>
                 <div class="gallery-item">
-                    <img src="../media/img/cloudy3.png" alt="Cloudy Gallery 2" 
+                    <img src="{{OBJECT_STORAGE_MEDIA_BASE}}cloudy3.png" alt="Cloudy Gallery 2" 
                          onerror="this.style.background='linear-gradient(45deg, #764ba2, #667eea)';">
                 </div>
                 <div class="gallery-item">
-                    <img src="../media/img/cloudy2.png" alt="Cloudy Gallery 3" 
+                    <img src="{{OBJECT_STORAGE_MEDIA_BASE}}cloudy2.png" alt="Cloudy Gallery 3" 
                          onerror="this.style.background='linear-gradient(45deg, #667eea, #764ba2)';">
                 </div>
             </div>
@@ -812,7 +809,7 @@
             <div class="video-grid">
                 <div class="video-card" onclick="openVideoModal('../media/img/cloudy_vid1.mp4', 'JUMP - Official MV')">
                     <div class="video-thumbnail">
-                        <img src="../media/img/cloudy_prod1.png" alt="JUMP MV Thumbnail" 
+                        <img src="{{OBJECT_STORAGE_MEDIA_BASE}}cloudy_prod1.png" alt="JUMP MV Thumbnail" 
                              onerror="this.style.background='linear-gradient(45deg, #667eea, #764ba2)';"
                              style="width: 100%; height: 100%; object-fit: cover;">
                         <div class="play-button">▶</div>
@@ -825,7 +822,7 @@
            
                 <div class="video-card" onclick="openVideoModal('../media/img/cloudy_vid1.mp4', 'In the Sky - Official MV')">
                     <div class="video-thumbnail">
-                        <img src="../media/img/cloudy_prod2.png" alt="In the Sky MV Thumbnail" 
+                        <img src="{{OBJECT_STORAGE_MEDIA_BASE}}cloudy_prod2.png" alt="In the Sky MV Thumbnail" 
                              onerror="this.style.background='linear-gradient(45deg, #764ba2, #667eea)';"
                              style="width: 100%; height: 100%; object-fit: cover;">
                         <div class="play-button">▶</div>

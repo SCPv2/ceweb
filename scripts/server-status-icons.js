@@ -37,15 +37,6 @@ class ServerStatusIcons {
 
         this.container.innerHTML = `
             <div class="server-status-container">
-                <!-- Load Balancer Info -->
-                <div class="load-balancer-info">
-                    <div class="lb-label">LB</div>
-                    <div class="lb-details">
-                        <div class="lb-item">WEB: ${this.loadBalancers.web.name}</div>
-                        <div class="lb-item">APP: ${this.loadBalancers.app.name}</div>
-                    </div>
-                </div>
-                
                 <!-- Web Servers -->
                 <div class="server-group">
                     <div class="server-group-label">WEB</div>
@@ -125,37 +116,6 @@ class ServerStatusIcons {
                 position: relative;
             }
 
-            .load-balancer-info {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 2px;
-                padding: 4px 8px;
-                background: rgba(255, 193, 7, 0.2);
-                border: 1px solid rgba(255, 193, 7, 0.3);
-                border-radius: 6px;
-                min-width: 80px;
-            }
-
-            .lb-label {
-                font-size: 0.6rem;
-                color: rgba(255, 193, 7, 0.9);
-                font-weight: bold;
-                text-align: center;
-            }
-
-            .lb-details {
-                display: flex;
-                flex-direction: column;
-                gap: 1px;
-            }
-
-            .lb-item {
-                font-size: 0.5rem;
-                color: rgba(255, 255, 255, 0.8);
-                text-align: center;
-                line-height: 1;
-            }
 
             .server-group {
                 display: flex;

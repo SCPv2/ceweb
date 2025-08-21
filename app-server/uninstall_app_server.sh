@@ -265,8 +265,25 @@ if id "$APP_USER" &>/dev/null; then
     done
 fi
 
-# 9. 환경 변수 파일 제거
-log "9. 환경 변수 파일 제거..."
+# 9. Object Storage 설정 파일 제거 (S3 App Server 전용)
+log "9. Object Storage 설정 파일 제거..."
+if id "$APP_USER" &>/dev/null; then
+    S3_CONFIG_FILES=(
+        "/home/$APP_USER/ceweb/credentials.json"
+        "/home/$APP_USER/ceweb/bucket_id.json"
+        "/home/$APP_USER/ceweb/s3-config.json"
+    )
+    
+    for s3_file in "${S3_CONFIG_FILES[@]}"; do
+        if [ -f "$s3_file" ]; then
+            rm -f "$s3_file"
+            log "✅ Object Storage 설정 제거됨: $s3_file"
+        fi
+    done
+fi
+
+# 10. 환경 변수 파일 제거
+log "10. 환경 변수 파일 제거..."
 if id "$APP_USER" &>/dev/null; then
     ENV_FILES=(
         "/home/$APP_USER/.ceweb/.env"
@@ -281,8 +298,8 @@ if id "$APP_USER" &>/dev/null; then
     done
 fi
 
-# 10. 방화벽 설정 정리
-log "10. 방화벽 설정 확인..."
+# 11. 방화벽 설정 정리
+log "11. 방화벽 설정 확인..."
 if command -v firewall-cmd &> /dev/null && systemctl is-active --quiet firewalld; then
     echo ""
     warn "방화벽에서 App Server 포트(3000)를 제거할지 선택하세요:"
@@ -302,8 +319,8 @@ else
     log "방화벽이 비활성화되어 있거나 설치되지 않았습니다"
 fi
 
-# 11. 사용자 권한 정리 (rocky 사용자는 유지)
-log "11. 사용자 권한 정리..."
+# 12. 사용자 권한 정리 (rocky 사용자는 유지)
+log "12. 사용자 권한 정리..."
 if id "$APP_USER" &>/dev/null; then
     echo ""
     warn "$APP_USER 사용자가 존재합니다."
@@ -313,13 +330,13 @@ if id "$APP_USER" &>/dev/null; then
     echo ""
 fi
 
-# 12. 임시 파일 및 캐시 정리
-log "12. 임시 파일 및 캐시 정리..."
+# 13. 임시 파일 및 캐시 정리
+log "13. 임시 파일 및 캐시 정리..."
 dnf clean all >/dev/null 2>&1 || true
 log "✅ 패키지 캐시 정리됨"
 
-# 13. 프로세스 확인
-log "13. 관련 프로세스 확인..."
+# 14. 프로세스 확인
+log "14. 관련 프로세스 확인..."
 if pgrep -f "node.*server.js" >/dev/null; then
     warn "⚠️ Node.js 서버 프로세스가 여전히 실행 중입니다"
     warn "수동으로 종료하세요: pkill -f 'node.*server.js'"
@@ -330,8 +347,8 @@ else
     log "✅ Node.js/PM2 프로세스가 완전히 종료됨"
 fi
 
-# 14. 포트 사용 상태 확인
-log "14. 포트 사용 상태 확인..."
+# 15. 포트 사용 상태 확인
+log "15. 포트 사용 상태 확인..."
 if netstat -tulpn 2>/dev/null | grep ":3000 " >/dev/null; then
     warn "⚠️ 포트 3000이 여전히 사용 중입니다"
     warn "다음 명령어로 확인하세요:"
@@ -352,6 +369,7 @@ log "- ✅ Node.js 런타임 (선택적)"
 log "- ✅ Creative Energy 애플리케이션 디렉토리 (선택적)"
 log "- ✅ VM Bootstrap 스크립트"
 log "- ✅ 테스트 및 모니터링 스크립트"
+log "- ✅ Object Storage 설정 파일 (credentials.json, bucket_id.json)"
 log "- ✅ 환경 변수 파일"
 log "- ✅ 사용자별 Node.js 설정"
 log ""
@@ -362,8 +380,14 @@ log "- App Server 포트(3000): 해제됨"
 log "- $APP_USER 사용자: 유지됨 (수동 제거 가능)"
 log ""
 log "🚀 재설치 방법:"
+log "표준 3Tier 환경:"
 log "1. 애플리케이션 파일을 서버에 업로드"
 log "2. sudo bash install_app_server.sh"
+log ""
+log "Object Storage 환경:"
+log "1. 애플리케이션 파일을 서버에 업로드"
+log "2. bucket_id.json 파일 설정 후 업로드"
+log "3. sudo bash install_app_server_s3.sh"
 log ""
 log "⚠️ 참고사항:"
 log "- $APP_USER 사용자는 다른 서비스에서 사용될 수 있으므로 유지되었습니다"
