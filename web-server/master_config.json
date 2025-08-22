@@ -1,0 +1,102 @@
+{
+  "config_metadata": {
+    "version": "1.0.0",
+    "created": "2025-08-21",
+    "description": "Samsung Cloud Platform 3-Tier Architecture Master Configuration",
+    "usage": "This file contains all environment-specific settings for the application deployment"
+  },
+  "infrastructure": {
+    "domain": {
+      "public_domain_name": "cesvc.net",
+      "private_domain_name": "cesvc.net",
+      "public_hosted_zone_id": "",
+      "private_hosted_zone_id": ""
+    },
+    "network": {
+      "vpc_cidr": "10.1.0.0/16",
+      "web_subnet_cidr": "10.1.1.0/24",
+      "app_subnet_cidr": "10.1.2.0/24",
+      "db_subnet_cidr": "10.1.3.0/24"
+    },
+    "load_balancer": {
+      "web_lb_service_ip": "10.1.1.100",
+      "app_lb_service_ip": "10.1.2.100"
+    },
+    "servers": {
+      "web_primary_ip": "10.1.1.111",
+      "web_secondary_ip": "10.1.1.112",
+      "app_primary_ip": "10.1.2.121",
+      "app_secondary_ip": "10.1.2.122",
+      "db_primary_ip": "10.1.3.131",
+      "bastion_ip": "10.1.1.110"
+    }
+  },
+  "application": {
+    "web_server": {
+      "nginx_port": 80,
+      "ssl_enabled": false,
+      "upstream_target": "app.cesvc.net:3000",
+      "fallback_target": "10.1.2.122:3000",
+      "health_check_path": "/health",
+      "api_proxy_path": "/api"
+    },
+    "app_server": {
+      "port": 3000,
+      "node_env": "production",
+      "database_host": "db.cesvc.net",
+      "database_port": 2866,
+      "database_name": "creative_energy_db",
+      "session_secret": "your-secret-key-change-in-production"
+    },
+    "database": {
+      "type": "postgresql",
+      "port": 2866,
+      "max_connections": 100,
+      "shared_buffers": "256MB",
+      "effective_cache_size": "1GB"
+    }
+  },
+  "security": {
+    "firewall": {
+      "allowed_public_ips": [
+        "0.0.0.0/0"
+      ],
+      "ssh_key_name": "your-ssh-key-name"
+    },
+    "ssl": {
+      "certificate_path": "/etc/ssl/certs/certificate.crt",
+      "private_key_path": "/etc/ssl/private/private.key"
+    }
+  },
+  "object_storage": {
+    "access_key_id": "your-access-key-here",
+    "secret_access_key": "your-secret-key-here",
+    "region": "kr-west1",
+    "bucket_name": "ceweb",
+    "bucket_string": "thisneedstobereplaced1234",
+    "private_endpoint": "https://object-store.private.kr-west1.e.samsungsdscloud.com",
+    "public_endpoint": "https://object-store.kr-west1.e.samsungsdscloud.com",
+    "folders": {
+      "media": "media/img",
+      "audition": "files/audition"
+    }
+  },
+  "deployment": {
+    "git_repository": "https://github.com/SCPv2/ceweb.git",
+    "git_branch": "main",
+    "auto_deployment": true,
+    "rollback_enabled": true
+  },
+  "monitoring": {
+    "log_level": "info",
+    "health_check_interval": 30,
+    "metrics_enabled": true
+  },
+  "user_customization": {
+    "_comment": "아래 섹션은 사용자가 직접 수정하는 영역입니다",
+    "company_name": "Creative Energy",
+    "admin_email": "admin@company.com",
+    "timezone": "Asia/Seoul",
+    "backup_retention_days": 30
+  }
+}

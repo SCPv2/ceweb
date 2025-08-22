@@ -33,8 +33,29 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 log "Creative Energy App Server 설치를 시작합니다..."
-log "서버 역할: API 처리 + 비즈니스 로직 (app.cesvc.net)"
-log "DB 서버: db.cesvc.net:2866"
+
+# Load master configuration
+WEB_DIR="/home/rocky/ceweb"
+MASTER_CONFIG_LOADER="$WEB_DIR/web-server/load_master_config.sh"
+
+if [ -f "$MASTER_CONFIG_LOADER" ]; then
+    log "Master configuration 로드 중..."
+    source "$MASTER_CONFIG_LOADER"
+    log "서버 역할: API 처리 + 비즈니스 로직 ($APP_SERVER_HOST)"
+    log "DB 서버: $DB_SERVER_HOST:$DB_PORT"
+else
+    warn "Master config loader not found. Using default values."
+    # 기본값 설정
+    export PUBLIC_DOMAIN_NAME="creative-energy.net"
+    export PRIVATE_DOMAIN_NAME="cesvc.net"
+    export APP_SERVER_HOST="app.cesvc.net"
+    export DB_SERVER_HOST="db.cesvc.net"
+    export APP_PORT="3000"
+    export DB_PORT="2866"
+    export APP_DATABASE_NAME="creative_energy_db"
+    log "서버 역할: API 처리 + 비즈니스 로직 (기본값 사용)"
+    log "DB 서버: $DB_SERVER_HOST:$DB_PORT"
+fi
 
 # 1. 시스템 업데이트
 log "시스템 업데이트 중..."

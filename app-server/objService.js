@@ -22,27 +22,37 @@ class ObjectStorageService {
     }
 
     /**
-     * Object Storage 인증 정보 로드
+     * Object Storage 인증 정보 로드 (master_config.json에서 로드)
      */
     loadCredentials() {
         try {
-            const credentialsPath = path.join(__dirname, 'credentials.json');
+            const masterConfigPath = path.join(__dirname, '../web-server/master_config.json');
             
-            if (!fs.existsSync(credentialsPath)) {
-                throw new Error(`Object Storage 인증 파일을 찾을 수 없습니다: ${credentialsPath}`);
+            if (!fs.existsSync(masterConfigPath)) {
+                throw new Error(`Master config file not found: ${masterConfigPath}`);
             }
             
-            const credentialsData = fs.readFileSync(credentialsPath, 'utf8');
-            this.credentials = JSON.parse(credentialsData);
+            console.log('Loading Object Storage configuration from master_config.json...');
+            const masterConfig = JSON.parse(fs.readFileSync(masterConfigPath, 'utf8'));
+            
+            this.credentials = {
+                accessKeyId: masterConfig.object_storage.access_key_id,
+                secretAccessKey: masterConfig.object_storage.secret_access_key,
+                region: masterConfig.object_storage.region,
+                bucketName: masterConfig.object_storage.bucket_name,
+                bucketString: masterConfig.object_storage.bucket_string,
+                privateEndpoint: masterConfig.object_storage.private_endpoint,
+                publicEndpoint: masterConfig.object_storage.public_endpoint,
+                folders: masterConfig.object_storage.folders
+            };
             
             this.bucketName = this.credentials.bucketName;
             this.bucketString = this.credentials.bucketString;
             this.publicEndpoint = this.credentials.publicEndpoint;
             this.privateEndpoint = this.credentials.privateEndpoint;
             
-            console.log('✅ Samsung Cloud Platform Object Storage 인증 정보 로드 완료');
-            console.log(`   - 버킷: ${this.bucketString}:${this.bucketName}`);
-            console.log(`   - 리전: ${this.credentials.region}`);
+            console.log(`✅ Master config loaded - Bucket: ${this.bucketName}, BucketString: ${this.bucketString}`);
+            console.log(`   - Region: ${this.credentials.region}`);
             console.log(`   - Private Endpoint: ${this.privateEndpoint}`);
             console.log(`   - Public Endpoint: ${this.publicEndpoint}`);
             

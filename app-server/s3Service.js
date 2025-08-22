@@ -21,28 +21,37 @@ class S3Service {
     }
 
     /**
-     * S3 인증 정보 로드
+     * S3 인증 정보 로드 (master_config.json 우선, credentials.json 백업)
      */
     loadCredentials() {
         try {
-            const credentialsPath = path.join(__dirname, 'credentials.json');
+            // 1순위: master_config.json에서 로드
+            const masterConfigPath = path.join(__dirname, '../web-server/master_config.json');
             
-            if (!fs.existsSync(credentialsPath)) {
-                throw new Error(`S3 인증 파일을 찾을 수 없습니다: ${credentialsPath}`);
+            if (fs.existsSync(masterConfigPath)) {
+                console.log('Loading S3 configuration from master_config.json...');
+                const masterConfig = JSON.parse(fs.readFileSync(masterConfigPath, 'utf8'));
+                
+                this.credentials = {
+                    accessKeyId: masterConfig.object_storage.access_key_id,
+                    secretAccessKey: masterConfig.object_storage.secret_access_key,
+                    region: masterConfig.object_storage.region,
+                    bucketName: masterConfig.object_storage.bucket_name,
+                    bucketString: masterConfig.object_storage.bucket_string,
+                    privateEndpoint: masterConfig.object_storage.private_endpoint,
+                    publicEndpoint: masterConfig.object_storage.public_endpoint,
+                    folders: masterConfig.object_storage.folders
+                };
+                
+                this.bucketName = this.credentials.bucketName;
+                this.publicEndpoint = this.credentials.publicEndpoint;
+                this.privateEndpoint = this.credentials.privateEndpoint;
+                
+                console.log(`✅ Master config loaded - Bucket: ${this.bucketName}, Region: ${this.credentials.region}`);
+                return;
+            } else {
+                throw new Error(`Master config file not found: ${masterConfigPath}`);
             }
-            
-            const credentialsData = fs.readFileSync(credentialsPath, 'utf8');
-            this.credentials = JSON.parse(credentialsData);
-            
-            this.bucketName = this.credentials.bucketName;
-            this.publicEndpoint = this.credentials.publicEndpoint;
-            this.privateEndpoint = this.credentials.privateEndpoint;
-            
-            console.log('✅ Samsung Cloud Platform Object Storage 인증 정보 로드 완료');
-            console.log(`   - 버킷: ${this.bucketName}`);
-            console.log(`   - 리전: ${this.credentials.region}`);
-            console.log(`   - Private Endpoint: ${this.privateEndpoint}`);
-            console.log(`   - Public Endpoint: ${this.publicEndpoint}`);
             
         } catch (error) {
             console.error('❌ S3 인증 정보 로드 실패:', error.message);

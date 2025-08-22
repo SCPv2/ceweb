@@ -43,6 +43,97 @@ echo -e "${BLUE}     Creative Energy Samsung Cloud Platform Installer${NC}"
 echo -e "${BLUE}================================================================${NC}"
 echo ""
 
+# 서버 역할 자동 감지 함수
+detect_server_role() {
+    local hostname_role=""
+    local ip_role=""
+    local detected_role=""
+    
+    # 1. 호스트명 기반 역할 감지
+    HOSTNAME=$(hostname)
+    case $HOSTNAME in
+        *web*vm*) hostname_role="web" ;;
+        *app*vm*) hostname_role="app" ;;
+        *db*vm*) hostname_role="db" ;;
+        *bastion*) hostname_role="bastion" ;;
+        *) hostname_role="unknown" ;;
+    esac
+    
+    # 3. IP 주소 기반 역할 감지
+    SERVER_IP=$(ip route get 1 2>/dev/null | awk '{print $NF;exit}' 2>/dev/null || echo "unknown")
+    case $SERVER_IP in
+        10.1.1.*) ip_role="web" ;;
+        10.1.2.*) ip_role="app" ;;
+        10.1.3.*) ip_role="db" ;;
+        *) ip_role="unknown" ;;
+    esac
+    
+    # 호스트명과 IP가 일치하는지 확인
+    if [[ "$hostname_role" != "unknown" && "$ip_role" != "unknown" && "$hostname_role" == "$ip_role" ]]; then
+        detected_role="$hostname_role"
+        info "🔍 서버 역할 자동 감지:"
+        info "- 호스트명: $HOSTNAME → $hostname_role 서버"
+        info "- IP 주소: $SERVER_IP → $ip_role 서버"
+        info "- 감지 결과: ✅ $detected_role 서버로 판단됨"
+        echo ""
+        
+        # 확인 질문
+        case $detected_role in
+            "web")
+                echo -n -e "${YELLOW}설치하고자 하는 서비스가 웹서버 서비스가 맞습니까? (y/n): ${NC}"
+                ;;
+            "app")
+                echo -n -e "${YELLOW}설치하고자 하는 서비스가 앱서버 서비스가 맞습니까? (y/n): ${NC}"
+                ;;
+            "db")
+                echo -n -e "${YELLOW}설치하고자 하는 서비스가 데이터베이스 서비스가 맞습니까? (y/n): ${NC}"
+                ;;
+        esac
+        
+        read -r ROLE_CONFIRM
+        echo ""
+        
+        if [[ $ROLE_CONFIRM =~ ^[Yy]$ ]]; then
+            echo "$detected_role"
+            return 0
+        else
+            warn "자동 감지된 역할이 맞지 않습니다. 수동 선택으로 진행합니다."
+            echo ""
+        fi
+    else
+        info "🔍 서버 역할 자동 감지:"
+        info "- 호스트명: $HOSTNAME → $hostname_role"
+        info "- IP 주소: $SERVER_IP → $ip_role"
+        info "- 감지 결과: ❓ 역할을 명확히 판단할 수 없음"
+        echo ""
+    fi
+    
+    # 2. 수동 선택 메뉴
+    info "서버 역할을 수동으로 선택해주세요:"
+    echo "1) Web Server (웹서버 - Nginx)"
+    echo "2) App Server (앱서버 - Node.js + PM2)"
+    echo "3) DB Server (데이터베이스 - PostgreSQL)"
+    echo "4) All-in-One (단일 서버 - 모든 서비스)"
+    echo ""
+    echo -n -e "${YELLOW}서버 역할을 선택하세요 (1-4): ${NC}"
+    read -r ROLE_CHOICE
+    echo ""
+    
+    case $ROLE_CHOICE in
+        1) echo "web" ;;
+        2) echo "app" ;;
+        3) echo "db" ;;
+        4) echo "all" ;;
+        *) 
+            error "잘못된 선택입니다. All-in-One으로 진행합니다."
+            echo "all"
+            ;;
+    esac
+}
+
+# 서버 역할 감지 실행
+SERVER_ROLE=$(detect_server_role)
+
 # 통합 메뉴 선택
 echo -e "${CYAN}=== Creative Energy Samsung Cloud Platform 통합 메뉴 ===${NC}"
 echo ""
@@ -258,95 +349,215 @@ case $ARCH_TYPE in
         
     "3tier-ha")
         log "=== 3Tier-HA 아키텍처 설치 시작 ==="
-        log "필요 구성요소: Web Server + App Server + DB Server"
+        log "감지된 서버 역할: $SERVER_ROLE"
         echo ""
         
-        # Web Server 설치
-        log "1/3: Web Server 설치 중..."
-        if [ -f "web-server/install_web_server.sh" ]; then
-            bash web-server/install_web_server.sh
-            log "✅ Web Server 설치 완료"
-        else
-            error "web-server/install_web_server.sh 파일을 찾을 수 없습니다"
-            exit 1
-        fi
-        
-        # App Server 설치  
-        log "2/3: App Server 설치 중..."
-        if [ -f "app-server/install_app_server.sh" ]; then
-            bash app-server/install_app_server.sh
-            log "✅ App Server 설치 완료"
-        else
-            error "app-server/install_app_server.sh 파일을 찾을 수 없습니다"
-            exit 1
-        fi
-        
-        # DB Server 설치
-        log "3/3: DB Server (PostgreSQL VM) 설치 중..."
-        if [ -f "db-server/vm_db/install_postgresql_vm.sh" ]; then
-            bash db-server/vm_db/install_postgresql_vm.sh
-            log "✅ DB Server 설치 완료"
-        else
-            error "db-server/vm_db/install_postgresql_vm.sh 파일을 찾을 수 없습니다"
-            exit 1
-        fi
+        case $SERVER_ROLE in
+            "web")
+                log "🌐 웹서버 전용 설치 시작"
+                log "구성요소: Nginx Web Server"
+                echo ""
+                
+                log "1/1: Web Server 설치 중..."
+                if [ -f "web-server/install_web_server.sh" ]; then
+                    bash web-server/install_web_server.sh
+                    log "✅ Web Server 설치 완료"
+                else
+                    error "web-server/install_web_server.sh 파일을 찾을 수 없습니다"
+                    exit 1
+                fi
+                ;;
+                
+            "app")
+                log "⚙️ 앱서버 전용 설치 시작"
+                log "구성요소: Node.js + PM2 App Server"
+                echo ""
+                
+                log "1/1: App Server 설치 중..."
+                if [ -f "app-server/install_app_server.sh" ]; then
+                    bash app-server/install_app_server.sh
+                    log "✅ App Server 설치 완료"
+                else
+                    error "app-server/install_app_server.sh 파일을 찾을 수 없습니다"
+                    exit 1
+                fi
+                ;;
+                
+            "db")
+                log "🗄️ 데이터베이스 서버 전용 설치 시작"
+                log "구성요소: PostgreSQL DB Server"
+                echo ""
+                
+                log "1/1: DB Server 설치 중..."
+                if [ -f "db-server/vm_db/install_postgresql_vm.sh" ]; then
+                    bash db-server/vm_db/install_postgresql_vm.sh
+                    log "✅ DB Server 설치 완료"
+                else
+                    error "db-server/vm_db/install_postgresql_vm.sh 파일을 찾을 수 없습니다"
+                    exit 1
+                fi
+                ;;
+                
+            "all")
+                log "🏗️ All-in-One 서버 설치 시작"
+                log "구성요소: Web Server + App Server + DB Server"
+                echo ""
+                
+                # Web Server 설치
+                log "1/3: Web Server 설치 중..."
+                if [ -f "web-server/install_web_server.sh" ]; then
+                    bash web-server/install_web_server.sh
+                    log "✅ Web Server 설치 완료"
+                else
+                    error "web-server/install_web_server.sh 파일을 찾을 수 없습니다"
+                    exit 1
+                fi
+                
+                # App Server 설치  
+                log "2/3: App Server 설치 중..."
+                if [ -f "app-server/install_app_server.sh" ]; then
+                    bash app-server/install_app_server.sh
+                    log "✅ App Server 설치 완료"
+                else
+                    error "app-server/install_app_server.sh 파일을 찾을 수 없습니다"
+                    exit 1
+                fi
+                
+                # DB Server 설치
+                log "3/3: DB Server (PostgreSQL VM) 설치 중..."
+                if [ -f "db-server/vm_db/install_postgresql_vm.sh" ]; then
+                    bash db-server/vm_db/install_postgresql_vm.sh
+                    log "✅ DB Server 설치 완료"
+                else
+                    error "db-server/vm_db/install_postgresql_vm.sh 파일을 찾을 수 없습니다"
+                    exit 1
+                fi
+                ;;
+                
+            *)
+                error "알 수 없는 서버 역할: $SERVER_ROLE"
+                exit 1
+                ;;
+        esac
         ;;
         
     "3tier-ha-as")
         log "=== 3Tier-HA-AS (Object Storage) 아키텍처 설치 시작 ==="
-        log "필요 구성요소: Web Server + App Server(S3) + DB Server(DBaaS)"
+        log "감지된 서버 역할: $SERVER_ROLE"
         echo ""
         
-        # Object Storage 설정 확인
-        BUCKET_CONFIG="/home/rocky/ceweb/bucket_id.json"
-        if [ -f "$BUCKET_CONFIG" ]; then
-            BUCKET_STRING=$(jq -r '.object_storage.bucket_string' "$BUCKET_CONFIG" 2>/dev/null || echo "thisneedstobereplaced1234")
-            if [ "$BUCKET_STRING" = "thisneedstobereplaced1234" ]; then
-                warn "bucket_id.json의 bucket_string을 실제 값으로 수정해주세요"
-                warn "파일 위치: $BUCKET_CONFIG"
-                warn "현재 값: $BUCKET_STRING"
-                echo ""
+        # Object Storage 설정 확인 (앱서버에만 해당)
+        if [[ "$SERVER_ROLE" == "app" || "$SERVER_ROLE" == "all" ]]; then
+            BUCKET_CONFIG="/home/rocky/ceweb/bucket_id.json"
+            if [ -f "$BUCKET_CONFIG" ]; then
+                BUCKET_STRING=$(jq -r '.object_storage.bucket_string' "$BUCKET_CONFIG" 2>/dev/null || echo "thisneedstobereplaced1234")
+                if [ "$BUCKET_STRING" = "thisneedstobereplaced1234" ]; then
+                    warn "bucket_id.json의 bucket_string을 실제 값으로 수정해주세요"
+                    warn "파일 위치: $BUCKET_CONFIG"
+                    warn "현재 값: $BUCKET_STRING"
+                    echo ""
+                fi
             fi
         fi
         
-        # Web Server 설치
-        log "1/3: Web Server 설치 중..."
-        if [ -f "web-server/install_web_server.sh" ]; then
-            bash web-server/install_web_server.sh
-            log "✅ Web Server 설치 완료"
-        else
-            error "web-server/install_web_server.sh 파일을 찾을 수 없습니다"
-            exit 1
-        fi
+        case $SERVER_ROLE in
+            "web")
+                log "🌐 웹서버 전용 설치 시작 (Object Storage 지원)"
+                log "구성요소: Nginx Web Server"
+                echo ""
+                
+                log "1/1: Web Server 설치 중..."
+                if [ -f "web-server/install_web_server.sh" ]; then
+                    bash web-server/install_web_server.sh
+                    log "✅ Web Server 설치 완료"
+                else
+                    error "web-server/install_web_server.sh 파일을 찾을 수 없습니다"
+                    exit 1
+                fi
+                ;;
+                
+            "app")
+                log "⚙️ 앱서버 전용 설치 시작 (Object Storage)"
+                log "구성요소: Node.js + PM2 + S3 App Server"
+                echo ""
+                
+                log "1/1: App Server (Object Storage) 설치 중..."
+                if [ -f "app-server/install_app_server_s3.sh" ]; then
+                    bash app-server/install_app_server_s3.sh
+                    log "✅ App Server (S3) 설치 완료"
+                else
+                    error "app-server/install_app_server_s3.sh 파일을 찾을 수 없습니다"
+                    exit 1
+                fi
+                ;;
+                
+            "db")
+                log "🗄️ 데이터베이스 서버 전용 설치 시작 (DBaaS)"
+                log "구성요소: PostgreSQL DBaaS 설정"
+                echo ""
+                
+                log "1/1: DB Server (DBaaS) 설정 중..."
+                if [ -f "db-server/dbaas_db/setup_postgresql_dbaas.sh" ]; then
+                    bash db-server/dbaas_db/setup_postgresql_dbaas.sh
+                    log "✅ DB Server (DBaaS) 설정 완료"
+                else
+                    error "db-server/dbaas_db/setup_postgresql_dbaas.sh 파일을 찾을 수 없습니다"
+                    exit 1
+                fi
+                ;;
+                
+            "all")
+                log "🏗️ All-in-One 서버 설치 시작 (Object Storage)"
+                log "구성요소: Web Server + App Server(S3) + DB Server(DBaaS)"
+                echo ""
+                
+                # Web Server 설치
+                log "1/3: Web Server 설치 중..."
+                if [ -f "web-server/install_web_server.sh" ]; then
+                    bash web-server/install_web_server.sh
+                    log "✅ Web Server 설치 완료"
+                else
+                    error "web-server/install_web_server.sh 파일을 찾을 수 없습니다"
+                    exit 1
+                fi
+                
+                # App Server (S3) 설치
+                log "2/3: App Server (Object Storage) 설치 중..."
+                if [ -f "app-server/install_app_server_s3.sh" ]; then
+                    bash app-server/install_app_server_s3.sh
+                    log "✅ App Server (S3) 설치 완료"
+                else
+                    error "app-server/install_app_server_s3.sh 파일을 찾을 수 없습니다"
+                    exit 1
+                fi
+                
+                # DB Server (DBaaS) 설정
+                log "3/3: DB Server (DBaaS) 설정 중..."
+                if [ -f "db-server/dbaas_db/setup_postgresql_dbaas.sh" ]; then
+                    bash db-server/dbaas_db/setup_postgresql_dbaas.sh
+                    log "✅ DB Server (DBaaS) 설정 완료"
+                else
+                    error "db-server/dbaas_db/setup_postgresql_dbaas.sh 파일을 찾을 수 없습니다"
+                    exit 1
+                fi
+                ;;
+                
+            *)
+                error "알 수 없는 서버 역할: $SERVER_ROLE"
+                exit 1
+                ;;
+        esac
         
-        # App Server (S3) 설치
-        log "2/3: App Server (Object Storage) 설치 중..."
-        if [ -f "app-server/install_app_server_s3.sh" ]; then
-            bash app-server/install_app_server_s3.sh
-            log "✅ App Server (S3) 설치 완료"
-        else
-            error "app-server/install_app_server_s3.sh 파일을 찾을 수 없습니다"
-            exit 1
-        fi
-        
-        # DB Server (DBaaS) 설정
-        log "3/3: DB Server (DBaaS) 설정 중..."
-        if [ -f "db-server/dbaas_db/setup_postgresql_dbaas.sh" ]; then
-            bash db-server/dbaas_db/setup_postgresql_dbaas.sh
-            log "✅ DB Server (DBaaS) 설정 완료"
-        else
-            error "db-server/dbaas_db/setup_postgresql_dbaas.sh 파일을 찾을 수 없습니다"
-            exit 1
-        fi
-        
-        # 아키텍처에 맞는 index.html 설정
-        log "Object Storage 아키텍처용 index.html 설정 중..."
-        WEBAPP_DIR="/home/rocky/ceweb"
-        if [ -f "${WEBAPP_DIR}/index_obj.html" ]; then
-            cp "${WEBAPP_DIR}/index_obj.html" "${WEBAPP_DIR}/index.html"
-            log "✅ index_obj.html → index.html 교체 완료"
-        else
-            warn "index_obj.html 파일을 찾을 수 없습니다"
+        # 아키텍처에 맞는 index.html 설정 (웹서버 또는 All-in-One에만 적용)
+        if [[ "$SERVER_ROLE" == "web" || "$SERVER_ROLE" == "all" ]]; then
+            log "Object Storage 아키텍처용 index.html 설정 중..."
+            WEBAPP_DIR="/home/rocky/ceweb"
+            if [ -f "${WEBAPP_DIR}/index_obj.html" ]; then
+                cp "${WEBAPP_DIR}/index_obj.html" "${WEBAPP_DIR}/index.html"
+                log "✅ index_obj.html → index.html 교체 완료"
+            else
+                warn "index_obj.html 파일을 찾을 수 없습니다"
+            fi
         fi
         ;;
 esac

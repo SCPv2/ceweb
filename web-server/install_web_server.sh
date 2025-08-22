@@ -33,7 +33,28 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 log "Creative Energy Web Server 설치를 시작합니다..."
-log "서버 역할: 정적 파일 서빙 + API 프록시 (www.cesvc.net, www.creative-energy.net)"
+
+# Load master configuration
+WEB_DIR="/home/rocky/ceweb"
+MASTER_CONFIG_LOADER="$WEB_DIR/web-server/load_master_config.sh"
+
+if [ -f "$MASTER_CONFIG_LOADER" ]; then
+    log "Master configuration 로드 중..."
+    source "$MASTER_CONFIG_LOADER"
+    log "서버 역할: 정적 파일 서빙 + API 프록시 (www.$PRIVATE_DOMAIN_NAME, www.$PUBLIC_DOMAIN_NAME)"
+else
+    warn "Master config loader not found. Using default values."
+    # 기본값 설정
+    export PUBLIC_DOMAIN_NAME="creative-energy.net"
+    export PRIVATE_DOMAIN_NAME="cesvc.net"
+    export WEB_LB_SERVICE_IP="10.1.1.100"
+    export APP_LB_SERVICE_IP="10.1.2.100"
+    export WEB_PRIMARY_IP="10.1.1.111"
+    export WEB_SECONDARY_IP="10.1.1.112"
+    export DEFAULT_SERVER_NAMES="www.$PRIVATE_DOMAIN_NAME www.$PUBLIC_DOMAIN_NAME"
+    export APP_SERVER_HOST="app.$PRIVATE_DOMAIN_NAME"
+    log "서버 역할: 정적 파일 서빙 + API 프록시 (기본값 사용)"
+fi
 
 # 1. 시스템 업데이트
 log "시스템 업데이트 중..."
@@ -52,7 +73,6 @@ systemctl start nginx
 systemctl enable nginx
 
 # 4. rocky 사용자 및 Web 디렉토리 설정
-WEB_DIR="/home/rocky/ceweb"
 log "rocky 사용자 설정 및 웹 디렉토리 생성: $WEB_DIR"
 
 # rocky 사용자가 없으면 생성
@@ -103,7 +123,7 @@ echo "================================================"
 echo "Public 도메인 설정"
 echo "================================================"
 echo "이 Web Server에서 사용할 Public 도메인을 입력하세요."
-echo "기본 허용 도메인: www.cesvc.net, www.creative-energy.net"
+echo "기본 허용 도메인: www.$PRIVATE_DOMAIN_NAME, www.$PUBLIC_DOMAIN_NAME"
 echo "추가로 사용할 도메인이 있다면 입력하세요 (없으면 Enter)."
 echo ""
 echo "예시: mysite.com 또는 subdomain.mysite.com"
@@ -112,8 +132,8 @@ echo -n "Public 도메인 입력: "
 # 사용자 입력 받기 (30초 타임아웃)
 read -t 30 CUSTOM_DOMAIN || CUSTOM_DOMAIN=""
 
-# 기본 서버명
-DEFAULT_SERVERS="www.cesvc.net www.creative-energy.net"
+# 기본 서버명 (master config에서 로드됨)
+# DEFAULT_SERVER_NAMES는 이미 load_master_config.sh에서 설정됨
 
 # 사용자가 입력한 도메인 추가
 if [[ -n "$CUSTOM_DOMAIN" ]]; then
@@ -125,11 +145,11 @@ if [[ -n "$CUSTOM_DOMAIN" ]]; then
     CUSTOM_DOMAIN=${CUSTOM_DOMAIN#https://}
     
     # 서버명 목록에 추가
-    SERVER_NAMES="$DEFAULT_SERVERS $CUSTOM_DOMAIN"
+    SERVER_NAMES="$DEFAULT_SERVER_NAMES $CUSTOM_DOMAIN"
     
     log "✅ 추가 Public 도메인 설정: $CUSTOM_DOMAIN"
 else
-    SERVER_NAMES="$DEFAULT_SERVERS"
+    SERVER_NAMES="$DEFAULT_SERVER_NAMES"
     log "기본 도메인만 사용합니다"
 fi
 
@@ -142,8 +162,12 @@ log "Nginx 설정 파일 생성 중..."
 if [ -f "$WEB_DIR/web-server/nginx-site.conf" ]; then
     log "Load Balancer 환경용 nginx-site.conf 파일을 사용합니다"
     
-    # server_name 설정 업데이트
-    sed "s/server_name www\.cesvc\.net;/server_name $SERVER_NAMES;/" "$WEB_DIR/web-server/nginx-site.conf" > /etc/nginx/conf.d/creative-energy.conf
+    # server_name 설정 업데이트 (nginx-site.conf를 동적으로 수정)
+    cp "$WEB_DIR/web-server/nginx-site.conf" /tmp/nginx-site.conf.tmp
+    sed -i "s/server_name www\.cesvc\.net;/server_name $SERVER_NAMES;/" /tmp/nginx-site.conf.tmp
+    sed -i "s/proxy_pass http:\/\/app\.cesvc\.net:3000/proxy_pass http:\/\/$APP_SERVER_HOST:$APP_PORT/g" /tmp/nginx-site.conf.tmp
+    cp /tmp/nginx-site.conf.tmp /etc/nginx/conf.d/creative-energy.conf
+    rm /tmp/nginx-site.conf.tmp
     
     log "✅ nginx-site.conf를 /etc/nginx/conf.d/creative-energy.conf로 적용 완료"
     log "서버명이 업데이트되었습니다: $SERVER_NAMES"
@@ -242,7 +266,7 @@ server {
     
     # API 프록시 (App Load Balancer로 전달)
     location /api/ {
-        proxy_pass http://app.cesvc.net:3000;
+        proxy_pass http://$APP_SERVER_HOST:$APP_PORT;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -269,7 +293,7 @@ server {
     
     # Health Check 엔드포인트 (App Load Balancer로 전달)
     location /health {
-        proxy_pass http://app.cesvc.net:3000/health;
+        proxy_pass http://$APP_SERVER_HOST:$APP_PORT/health;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -337,17 +361,17 @@ log "✅ 권한 설정 완료"
 # 11. App Server 연결 테스트 스크립트 생성
 log "App Server 연결 테스트 스크립트 생성 중..."
 
-cat > /root/test_app_server.sh << 'EOF'
+cat > /root/test_app_server.sh << EOF
 #!/bin/bash
 
 echo "=== App Server 연결 테스트 ==="
-echo "App 서버: app.cesvc.net:3000"
-echo "시간: $(date)"
+echo "App 서버: $APP_SERVER_HOST:$APP_PORT"
+echo "시간: \$(date)"
 echo ""
 
 # 1. 네트워크 연결 테스트
 echo "1. 네트워크 연결 테스트:"
-if ping -c 3 app.cesvc.net &>/dev/null; then
+if ping -c 3 $APP_SERVER_HOST &>/dev/null; then
     echo "✅ 네트워크 연결 성공"
 else
     echo "❌ 네트워크 연결 실패"
@@ -357,10 +381,10 @@ fi
 # 2. 포트 연결 테스트
 echo ""
 echo "2. 포트 연결 테스트:"
-if timeout 5 bash -c "cat < /dev/null > /dev/tcp/app.cesvc.net/3000" 2>/dev/null; then
-    echo "✅ 포트 3000 연결 성공"
+if timeout 5 bash -c "cat < /dev/null > /dev/tcp/$APP_SERVER_HOST/$APP_PORT" 2>/dev/null; then
+    echo "✅ 포트 $APP_PORT 연결 성공"
 else
-    echo "❌ 포트 3000 연결 실패"
+    echo "❌ 포트 $APP_PORT 연결 실패"
     echo "   App Server가 실행 중인지 확인해주세요."
     exit 1
 fi
@@ -368,9 +392,9 @@ fi
 # 3. API 응답 테스트
 echo ""
 echo "3. API 응답 테스트:"
-if curl -f -s http://app.cesvc.net:3000/health >/dev/null; then
+if curl -f -s http://$APP_SERVER_HOST:$APP_PORT/health >/dev/null; then
     echo "✅ API 헬스체크 성공"
-    curl -s http://app.cesvc.net:3000/health | head -3
+    curl -s http://$APP_SERVER_HOST:$APP_PORT/health | head -3
 else
     echo "❌ API 응답 실패"
 fi
@@ -436,20 +460,20 @@ cat > "$VM_INFO_FILE" << EOF
   "vm_number": "$VM_NUMBER",
   "server_type": "web-server",
   "load_balancer": {
-    "name": "www.cesvc.net",
-    "ip": "10.1.1.100",
+    "name": "www.$PRIVATE_DOMAIN_NAME",
+    "ip": "$WEB_LB_SERVICE_IP",
     "policy": "Round Robin"
   },
   "cluster": {
     "servers": [
       {
         "hostname": "webvm111r",
-        "ip": "10.1.1.111",
+        "ip": "$WEB_PRIMARY_IP",
         "vm_number": "1"
       },
       {
         "hostname": "webvm112r", 
-        "ip": "10.1.1.112",
+        "ip": "$WEB_SECONDARY_IP",
         "vm_number": "2"
       }
     ]
@@ -472,6 +496,8 @@ if [ -f "$API_CONFIG_FILE" ]; then
     log "api-config.js 파일을 찾았습니다: $API_CONFIG_FILE"
     
     # production baseURL을 '/api'로 수정 (Web-Server 프록시 사용)
+    sed -i "s|baseURL: 'http://$APP_SERVER_HOST:$APP_PORT/api'|baseURL: '/api'|g" "$API_CONFIG_FILE"
+    # 기존 하드코딩된 값도 처리
     sed -i "s|baseURL: 'http://app.cesvc.net:3000/api'|baseURL: '/api'|g" "$API_CONFIG_FILE"
     
     # 파일 수정 확인
@@ -497,7 +523,7 @@ log "================================================================"
 log ""
 log "🏗️ 설치된 구성:"
 log "- Web Server: Rocky Linux 9.4 + Nginx"
-log "- 도메인: www.cesvc.net, www.creative-energy.net"
+log "- 도메인: www.$PRIVATE_DOMAIN_NAME, www.$PUBLIC_DOMAIN_NAME"
 log "- 정적 파일 디렉토리: $WEB_DIR"
 log ""
 log "📋 다음 단계를 진행해주세요:"
@@ -518,9 +544,9 @@ log "4. DNS 설정 확인:"
 if [[ -n "$CUSTOM_DOMAIN" ]]; then
     log "   $CUSTOM_DOMAIN → 이 서버 IP"
 fi
-log "   www.cesvc.net → 이 서버 IP"
-log "   www.creative-energy.net → 이 서버 IP"
-log "   app.cesvc.net → App Server IP"
+log "   www.$PRIVATE_DOMAIN_NAME → 이 서버 IP"
+log "   www.$PUBLIC_DOMAIN_NAME → 이 서버 IP"
+log "   $APP_SERVER_HOST → App Server IP"
 log ""
 log "🔧 유틸리티 명령어:"
 log "- Nginx 상태: systemctl status nginx"
