@@ -1,4 +1,17 @@
 #!/bin/bash
+# ==============================================================================
+# Copyright (c) 2025 Stan H. All rights reserved.
+#
+# This software and its source code are the exclusive property of Stan H.
+#
+# Use is strictly limited to 2025 SCPv2 Advance training and education only.
+# Any reproduction, modification, distribution, or other use beyond this scope is
+# strictly prohibited without prior written permission from the copyright holder.
+#
+# Unauthorized use may lead to legal action under applicable law.
+#
+# Contact: ars4mundus@gmail.com
+# ==============================================================================
 
 # Creative Energy Web Server Installation Script
 # Rocky Linux 9.4 Web Server 설치 스크립트 (Nginx만)
@@ -45,8 +58,8 @@ if [ -f "$MASTER_CONFIG_LOADER" ]; then
 else
     warn "Master config loader not found. Using default values."
     # 기본값 설정
-    export PUBLIC_DOMAIN_NAME="creative-energy.net"
-    export PRIVATE_DOMAIN_NAME="cesvc.net"
+    export PUBLIC_DOMAIN_NAME="your_public_domain_name.net"
+    export PRIVATE_DOMAIN_NAME="your_private_domain_name.net"
     export WEB_LB_SERVICE_IP="10.1.1.100"
     export APP_LB_SERVICE_IP="10.1.2.100"
     export WEB_PRIMARY_IP="10.1.1.111"
@@ -116,43 +129,14 @@ else
     log "SELinux가 비활성화되어 있거나 설치되지 않았습니다"
 fi
 
-# 5. Public 도메인 입력 받기
+# 5. Web Server 도메인 설정 (master_config.json 기반)
 log "Web Server 도메인 설정 중..."
-echo ""
-echo "================================================"
-echo "Public 도메인 설정"
-echo "================================================"
-echo "이 Web Server에서 사용할 Public 도메인을 입력하세요."
-echo "기본 허용 도메인: www.$PRIVATE_DOMAIN_NAME, www.$PUBLIC_DOMAIN_NAME"
-echo "추가로 사용할 도메인이 있다면 입력하세요 (없으면 Enter)."
-echo ""
-echo "예시: mysite.com 또는 subdomain.mysite.com"
-echo -n "Public 도메인 입력: "
-
-# 사용자 입력 받기 (30초 타임아웃)
-read -t 30 CUSTOM_DOMAIN || CUSTOM_DOMAIN=""
 
 # 기본 서버명 (master config에서 로드됨)
 # DEFAULT_SERVER_NAMES는 이미 load_master_config.sh에서 설정됨
+SERVER_NAMES="$DEFAULT_SERVER_NAMES"
 
-# 사용자가 입력한 도메인 추가
-if [[ -n "$CUSTOM_DOMAIN" ]]; then
-    # 공백 제거 및 소문자 변환
-    CUSTOM_DOMAIN=$(echo "$CUSTOM_DOMAIN" | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]')
-    
-    # http:// 또는 https:// 제거 (있다면)
-    CUSTOM_DOMAIN=${CUSTOM_DOMAIN#http://}
-    CUSTOM_DOMAIN=${CUSTOM_DOMAIN#https://}
-    
-    # 서버명 목록에 추가
-    SERVER_NAMES="$DEFAULT_SERVER_NAMES $CUSTOM_DOMAIN"
-    
-    log "✅ 추가 Public 도메인 설정: $CUSTOM_DOMAIN"
-else
-    SERVER_NAMES="$DEFAULT_SERVER_NAMES"
-    log "기본 도메인만 사용합니다"
-fi
-
+log "✅ Web Server 도메인이 master_config.json 기반으로 설정되었습니다"
 log "Nginx 서버명 목록: $SERVER_NAMES"
 
 # 6. Nginx 설정 파일 생성
@@ -498,7 +482,7 @@ if [ -f "$API_CONFIG_FILE" ]; then
     # production baseURL을 '/api'로 수정 (Web-Server 프록시 사용)
     sed -i "s|baseURL: 'http://$APP_SERVER_HOST:$APP_PORT/api'|baseURL: '/api'|g" "$API_CONFIG_FILE"
     # 기존 하드코딩된 값도 처리
-    sed -i "s|baseURL: 'http://app.cesvc.net:3000/api'|baseURL: '/api'|g" "$API_CONFIG_FILE"
+    sed -i "s|baseURL: 'http://app.your_private_domain_name.net:3000/api'|baseURL: '/api'|g" "$API_CONFIG_FILE"
     
     # 파일 수정 확인
     if grep -q "baseURL: '/api'" "$API_CONFIG_FILE"; then
@@ -513,7 +497,7 @@ if [ -f "$API_CONFIG_FILE" ]; then
 else
     warn "⚠️ api-config.js 파일을 찾을 수 없습니다: $API_CONFIG_FILE"
     warn "   웹 파일 배포 후 수동으로 다음 명령어를 실행하세요:"
-    warn "   sed -i \"s|baseURL: 'http://app.cesvc.net:3000/api'|baseURL: '/api'|g\" $API_CONFIG_FILE"
+    warn "   sed -i \"s|baseURL: 'http://app.your_private_domain_name.net:3000/api'|baseURL: '/api'|g\" $API_CONFIG_FILE"
 fi
 
 # 13. 설치 완료 메시지
@@ -566,7 +550,7 @@ log "- API 타임아웃 최적화: 10초 연결, 30초 읽기/쓰기"
 log ""
 log "⚠️  중요 사항:"
 log "- 이 서버는 정적 파일 서빙과 API 프록시 역할만 수행합니다"
-log "- 실제 API 처리는 app.cesvc.net:3000에서 수행됩니다"
+log "- 실제 API 처리는 app.your_private_domain_name.net:3000에서 수행됩니다"
 log "- App Server가 실행 중이어야 API 요청이 정상 동작합니다"
 log "- SELinux 설정이 자동으로 구성되어 /media/ 및 /files/ 디렉토리 접근 가능"
 log "- 브라우저에서 API 연결 시 '/api' 경로를 통해 프록시됩니다"

@@ -1,4 +1,17 @@
 #!/bin/bash
+# ==============================================================================
+# Copyright (c) 2025 Stan H. All rights reserved.
+#
+# This software and its source code are the exclusive property of Stan H.
+#
+# Use is strictly limited to 2025 SCPv2 Advance training and education only.
+# Any reproduction, modification, distribution, or other use beyond this scope is
+# strictly prohibited without prior written permission from the copyright holder.
+#
+# Unauthorized use may lead to legal action under applicable law.
+#
+# Contact: ars4mundus@gmail.com
+# ==============================================================================
 #
 # 목적: PostgreSQL 16.8과 Creative Energy 데이터베이스를 완전히 제거하는 스크립트
 # 작동방식: PostgreSQL 서비스 중지 → 패키지 제거 → 데이터 디렉토리 삭제 → 사용자/그룹 제거 → 백업 파일 삭제

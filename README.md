@@ -227,3 +227,20 @@ npm start
 
 *Creative Energy Team - K-POP Artist Management Platform*  
 *🎵 BigBoys & ☁️ Cloudy Official Website*
+
+
+[//]: # (
+==============================================================================
+Copyright (c) 2025 Stan Hong. All rights reserved.
+
+This software and its source code are the exclusive property of Stan Hong.
+
+Permission is granted only for 2025 SCPv2 Advance training and education.
+Any reproduction, modification, distribution, or other use is strictly
+prohibited without prior written permission from the copyright holder.
+
+Unauthorized use will be subject to legal action under applicable law.
+
+Contact: ars4mundus@gmail.com
+==============================================================================
+)

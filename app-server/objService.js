@@ -1,3 +1,19 @@
+/*
+==============================================================================
+Copyright (c) 2025 Stan H. All rights reserved.
+
+This software and its source code are the exclusive property of Stan H.
+
+Use is strictly limited to 2025 SCPv2 Advance training and education only.
+Any reproduction, modification, distribution, or other use beyond this scope is
+strictly prohibited without prior written permission from the copyright holder.
+
+Unauthorized use may lead to legal action under applicable law.
+
+Contact: ars4mundus@gmail.com
+==============================================================================
+*/
+
 /**
  * Samsung Cloud Platform Object Storage Service (Object Storage Version)
  * S3 호환 스토리지를 위한 서비스 모듈 - Object Storage URL 생성 기능 포함
@@ -43,7 +59,13 @@ class ObjectStorageService {
                 bucketString: masterConfig.object_storage.bucket_string,
                 privateEndpoint: masterConfig.object_storage.private_endpoint,
                 publicEndpoint: masterConfig.object_storage.public_endpoint,
-                folders: masterConfig.object_storage.folders
+                folders: masterConfig.object_storage.folders,
+                // 도메인 및 서버 정보 추가
+                publicDomain: masterConfig.infrastructure?.domain?.public_domain_name || 'your_public_domain_name.net',
+                privateDomain: masterConfig.infrastructure?.domain?.private_domain_name || 'your_private_domain_name.net',
+                webPrimaryIp: masterConfig.infrastructure?.servers?.web_primary_ip || '10.1.1.111',
+                webSecondaryIp: masterConfig.infrastructure?.servers?.web_secondary_ip || '10.1.1.112',
+                masterConfig: masterConfig
             };
             
             this.bucketName = this.credentials.bucketName;
@@ -85,21 +107,25 @@ class ObjectStorageService {
     }
 
     /**
-     * CORS 설정 (Samsung Cloud Platform Object Storage용)
+     * CORS 설정 (Samsung Cloud Platform Object Storage용) - 동적 도메인 지원
      */
     async setBucketCORS() {
         const corsConfiguration = {
             CORSRules: [
                 {
                     AllowedOrigins: [
-                        'https://www.cesvc.net',
-                        'https://cesvc.net',
-                        'http://www.cesvc.net',
-                        'http://cesvc.net',
-                        'https://10.1.1.111',
-                        'https://10.1.1.112',
-                        'http://10.1.1.111',
-                        'http://10.1.1.112',
+                        `https://www.${this.credentials.privateDomain}`,
+                        `https://${this.credentials.privateDomain}`,
+                        `http://www.${this.credentials.privateDomain}`,
+                        `http://${this.credentials.privateDomain}`,
+                        `https://www.${this.credentials.publicDomain}`,
+                        `https://${this.credentials.publicDomain}`,
+                        `http://www.${this.credentials.publicDomain}`,
+                        `http://${this.credentials.publicDomain}`,
+                        `https://${this.credentials.webPrimaryIp}`,
+                        `https://${this.credentials.webSecondaryIp}`,
+                        `http://${this.credentials.webPrimaryIp}`,
+                        `http://${this.credentials.webSecondaryIp}`,
                         '*' // 개발 환경용 - 운영에서는 제거 권장
                     ],
                     AllowedMethods: ['GET', 'HEAD'],

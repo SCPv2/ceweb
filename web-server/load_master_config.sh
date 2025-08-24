@@ -1,4 +1,17 @@
 #!/bin/bash
+# ==============================================================================
+# Copyright (c) 2025 Stan H. All rights reserved.
+#
+# This software and its source code are the exclusive property of Stan H.
+#
+# Use is strictly limited to 2025 SCPv2 Advance training and education only.
+# Any reproduction, modification, distribution, or other use beyond this scope is
+# strictly prohibited without prior written permission from the copyright holder.
+#
+# Unauthorized use may lead to legal action under applicable law.
+#
+# Contact: ars4mundus@gmail.com
+# ==============================================================================
 
 # Master Configuration Loader for Samsung Cloud Platform
 # Loads configuration from master_config.json and exports as environment variables

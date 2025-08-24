@@ -1,9 +1,25 @@
+/*
+==============================================================================
+Copyright (c) 2025 Stan H. All rights reserved.
+
+This software and its source code are the exclusive property of Stan H.
+
+Use is strictly limited to 2025 SCPv2 Advance training and education only.
+Any reproduction, modification, distribution, or other use beyond this scope is
+strictly prohibited without prior written permission from the copyright holder.
+
+Unauthorized use may lead to legal action under applicable law.
+
+Contact: ars4mundus@gmail.com
+==============================================================================
+*/
+
 const { Pool } = require('pg');
 require('dotenv').config();
 
 // 외부 DB 서버용 PostgreSQL 연결 풀 설정
 const pool = new Pool({
-  host: process.env.DB_HOST || 'db.cesvc.net',
+  host: process.env.DB_HOST || 'db.your_private_domain_name.net',
   port: process.env.DB_PORT || 2866,
   database: process.env.DB_NAME || 'cedb',
   user: process.env.DB_USER || 'ceadmin',
@@ -27,7 +43,7 @@ const pool = new Pool({
 // 연결 풀 이벤트 리스너
 pool.on('connect', (client) => {
   console.log('✅ PostgreSQL 외부 DB 서버 연결 성공:', {
-    host: process.env.DB_HOST || 'db.cesvc.net',
+    host: process.env.DB_HOST || 'db.your_private_domain_name.net',
     port: process.env.DB_PORT || 2866,
     database: process.env.DB_NAME || 'cedb'
   });
@@ -36,7 +52,7 @@ pool.on('connect', (client) => {
 pool.on('error', (err, client) => {
   console.error('❌ PostgreSQL 연결 풀 오류:', err.message);
   console.error('연결 정보:', {
-    host: process.env.DB_HOST || 'db.cesvc.net',
+    host: process.env.DB_HOST || 'db.your_private_domain_name.net',
     port: process.env.DB_PORT || 2866,
     database: process.env.DB_NAME || 'cedb',
     user: process.env.DB_USER || 'ceadmin'
@@ -53,7 +69,7 @@ const testConnection = async () => {
   } catch (error) {
     console.error('❌ DB 연결 테스트 실패:', error.message);
     console.error('DB 서버 연결 정보를 확인해주세요:');
-    console.error('- Host:', process.env.DB_HOST || 'db.cesvc.net');
+    console.error('- Host:', process.env.DB_HOST || 'db.your_private_domain_name.net');
     console.error('- Port:', process.env.DB_PORT || 2866);
     console.error('- Database:', process.env.DB_NAME || 'cedb');
     console.error('- User:', process.env.DB_USER || 'ceadmin');

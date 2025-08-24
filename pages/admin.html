@@ -1,3 +1,18 @@
+<!--
+==============================================================================
+Copyright (c) 2025 Stan H. All rights reserved.
+
+This software and its source code are the exclusive property of Stan H.
+
+Use is strictly limited to 2025 SCPv2 Advance training and education only.
+Any reproduction, modification, distribution, or other use beyond this scope is
+strictly prohibited without prior written permission from the copyright holder.
+
+Unauthorized use may lead to legal action under applicable law.
+
+Contact: ars4mundus@gmail.com
+==============================================================================
+-->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1378,7 +1393,7 @@
 
         // 데이터베이스 연결 설정
         const DB_CONFIG = {
-            host: 'db.cesvc.net',
+            host: 'db.your_private_domain_name.net',
             port: 2866,
             database: 'cedb',
             user: 'ceadmin',
@@ -1404,7 +1419,7 @@
                 
                 if (data.success) {
                     statusElement.className = 'db-status connected';
-                    statusTextElement.textContent = 'DB 연결됨 (app.cesvc.net:3000)';
+                    statusTextElement.textContent = 'DB 연결됨 (app.your_private_domain_name.net:3000)';
                     console.log('데이터베이스 연결 성공', data);
                 } else {
                     statusElement.className = 'db-status disconnected';
@@ -2207,5 +2222,8 @@
             }
         });
     </script>
+
+    <!-- Master Variables Loader -->
+    <script src="../scripts/master-variables-loader.js"></script>
 </body>
 </html>

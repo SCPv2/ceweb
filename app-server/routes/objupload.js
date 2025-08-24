@@ -1,3 +1,19 @@
+/*
+==============================================================================
+Copyright (c) 2025 Stan H. All rights reserved.
+
+This software and its source code are the exclusive property of Stan H.
+
+Use is strictly limited to 2025 SCPv2 Advance training and education only.
+Any reproduction, modification, distribution, or other use beyond this scope is
+strictly prohibited without prior written permission from the copyright holder.
+
+Unauthorized use may lead to legal action under applicable law.
+
+Contact: ars4mundus@gmail.com
+==============================================================================
+*/
+
 /**
  * Samsung Cloud Platform Object Storage 업로드 라우터 (Object Storage Version)
  * S3 호환 스토리지 업로드를 위한 API 엔드포인트 - Object Storage URL 생성 기능 포함

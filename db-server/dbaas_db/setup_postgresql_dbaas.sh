@@ -1,8 +1,21 @@
 #!/bin/bash
+# ==============================================================================
+# Copyright (c) 2025 Stan H. All rights reserved.
+#
+# This software and its source code are the exclusive property of Stan H.
+#
+# Use is strictly limited to 2025 SCPv2 Advance training and education only.
+# Any reproduction, modification, distribution, or other use beyond this scope is
+# strictly prohibited without prior written permission from the copyright holder.
+#
+# Unauthorized use may lead to legal action under applicable law.
+#
+# Contact: ars4mundus@gmail.com
+# ==============================================================================
 
 # Creative Energy DBaaS Database Setup Script
-# Target: db.cesvc.net:2866, Database: cedb, User: ceadmin
-# Execute from: app.cesvc.net (app-server)
+# Target: db.your_private_domain_name.net:2866, Database: cedb, User: ceadmin
+# Execute from: app.your_private_domain_name.net (app-server)
 # Purpose: Complete database schema setup for DBaaS PostgreSQL server
 
 set -e  # Exit on any error
@@ -17,7 +30,7 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 # Configuration - DBaaS Database Connection
-DB_HOST="db.cesvc.net"
+DB_HOST="db.your_private_domain_name.net"
 DB_PORT="2866"
 DB_NAME="cedb"
 DB_USER="ceadmin"
@@ -25,7 +38,7 @@ DB_PASSWORD="ceadmin123!"
 SCHEMA_FILE="./postgresql_dbaas_init_schema.sql"
 
 # App Server Configuration
-APP_SERVER_HOST="app.cesvc.net"
+APP_SERVER_HOST="app.your_private_domain_name.net"
 APP_SERVER_PORT="3000"
 
 echo -e "${BLUE}================================================================${NC}"
@@ -301,7 +314,7 @@ BIND_HOST=0.0.0.0
 # =====================================
 # CORS Configuration
 # =====================================
-ALLOWED_ORIGINS=http://www.cesvc.net,https://www.cesvc.net,http://www.creative-energy.net,https://www.creative-energy.net
+ALLOWED_ORIGINS=http://www.your_private_domain_name.net,https://www.your_private_domain_name.net,http://www.your_public_domain_name.net,https://www.your_public_domain_name.net
 
 # =====================================
 # Security Configuration
@@ -393,7 +406,7 @@ show_setup_completion() {
     echo
     echo -e "${BLUE}🚀 Next Steps:${NC}"
     echo "   1. Copy .env.app_server to your app-server directory:"
-    echo "      scp .env.app_server user@app.cesvc.net:/path/to/app-server/.env"
+    echo "      scp .env.app_server user@app.your_private_domain_name.net:/path/to/app-server/.env"
     echo
     echo "   2. Install app-server dependencies:"
     echo "      cd /path/to/app-server && npm install"
@@ -402,7 +415,7 @@ show_setup_completion() {
     echo "      npm start"
     echo
     echo "   4. Test the connection from app-server:"
-    echo "      curl http://app.cesvc.net:3000/api/orders/products"
+    echo "      curl http://app.your_private_domain_name.net:3000/api/orders/products"
     echo
     echo -e "${BLUE}🔍 Verification Commands:${NC}"
     echo "   Database connection:"
@@ -412,7 +425,7 @@ show_setup_completion() {
     echo "   SELECT * FROM product_inventory_view LIMIT 5;"
     echo
     echo "   Monitor app server:"
-    echo "   curl http://app.cesvc.net:3000/health"
+    echo "   curl http://app.your_private_domain_name.net:3000/health"
     echo
     echo -e "${YELLOW}⚠️  Important Notes:${NC}"
     echo "   • Database credentials are stored in .env.app_server"

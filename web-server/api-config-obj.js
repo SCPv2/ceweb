@@ -1,3 +1,19 @@
+/*
+==============================================================================
+Copyright (c) 2025 Stan H. All rights reserved.
+
+This software and its source code are the exclusive property of Stan H.
+
+Use is strictly limited to 2025 SCPv2 Advance training and education only.
+Any reproduction, modification, distribution, or other use beyond this scope is
+strictly prohibited without prior written permission from the copyright holder.
+
+Unauthorized use may lead to legal action under applicable law.
+
+Contact: ars4mundus@gmail.com
+==============================================================================
+*/
+
 /**
  * Creative Energy Object Storage API Configuration
  * Samsung Cloud Platform Object Storage 전용 API 엔드포인트 및 설정 관리
@@ -473,8 +489,8 @@ async function getServerInfoObj() {
         
         return {
             loadBalancer: {
-                web: 'www.cesvc.net (10.1.1.100)',
-                app: 'app.cesvc.net (10.1.2.100)',
+                web: 'www.your_private_domain_name.net (10.1.1.100)',
+                app: 'app.your_private_domain_name.net (10.1.2.100)',
                 policy: 'Round Robin'
             },
             currentServing: {
@@ -506,8 +522,8 @@ async function getServerInfoObj() {
         console.error('서버 정보 조회 실패:', error);
         return {
             loadBalancer: {
-                web: 'www.cesvc.net (10.1.1.100)',
-                app: 'app.cesvc.net (10.1.2.100)',
+                web: 'www.your_private_domain_name.net (10.1.1.100)',
+                app: 'app.your_private_domain_name.net (10.1.2.100)',
                 status: 'error'
             },
             currentServing: {

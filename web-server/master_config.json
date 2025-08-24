@@ -7,8 +7,8 @@
   },
   "infrastructure": {
     "domain": {
-      "public_domain_name": "cesvc.net",
-      "private_domain_name": "cesvc.net",
+      "public_domain_name": "your_public_domain_name.net",
+      "private_domain_name": "your_private_domain_name.net",
       "public_hosted_zone_id": "",
       "private_hosted_zone_id": ""
     },
@@ -35,7 +35,7 @@
     "web_server": {
       "nginx_port": 80,
       "ssl_enabled": false,
-      "upstream_target": "app.cesvc.net:3000",
+      "upstream_target": "app.your_private_domain_name.net:3000",
       "fallback_target": "10.1.2.122:3000",
       "health_check_path": "/health",
       "api_proxy_path": "/api"
@@ -43,7 +43,7 @@
     "app_server": {
       "port": 3000,
       "node_env": "production",
-      "database_host": "db.cesvc.net",
+      "database_host": "db.your_private_domain_name.net",
       "database_port": 2866,
       "database_name": "creative_energy_db",
       "session_secret": "your-secret-key-change-in-production"

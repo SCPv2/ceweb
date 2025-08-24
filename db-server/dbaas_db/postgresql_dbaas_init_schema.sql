@@ -1,8 +1,8 @@
 --
 -- Creative Energy Database Initialization Schema - External DB
 -- Compatible with PostgreSQL 16.8
--- Target: db.cesvc.net:2866, Database: cedb, User: ceadmin
--- Optimized for app.cesvc.net app-server connection
+-- Target: db.your_private_domain_name.net:2866 (기본값), Database: cedb, User: ceadmin
+-- Optimized for app.your_private_domain_name.net app-server connection
 --
 
 SET client_encoding = 'UTF8';
@@ -11,8 +11,8 @@ SET statement_timeout = 0;
 SET client_min_messages = warning;
 
 -- External Database Connection Info:
--- Host: db.cesvc.net
--- Port: 2866
+-- Host: db.your_private_domain_name.net
+-- Port: 2866 (기본값)
 -- Database: cedb
 -- User: ceadmin (admin/app user)
 -- Password: ceadmin123!
@@ -414,7 +414,7 @@ ORDER BY p.id;
 
 SELECT 
     'Creative Energy External Database Setup Complete!' as setup_status,
-    'db.cesvc.net:2866' as database_server,
+    'db.your_private_domain_name.net:2866 (기본값)' as database_server,
     'cedb' as database_name,
     'ceadmin' as database_user,
     current_timestamp as completion_time;

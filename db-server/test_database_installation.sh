@@ -1,4 +1,17 @@
 #!/bin/bash
+# ==============================================================================
+# Copyright (c) 2025 Stan H. All rights reserved.
+#
+# This software and its source code are the exclusive property of Stan H.
+#
+# Use is strictly limited to 2025 SCPv2 Advance training and education only.
+# Any reproduction, modification, distribution, or other use beyond this scope is
+# strictly prohibited without prior written permission from the copyright holder.
+#
+# Unauthorized use may lead to legal action under applicable law.
+#
+# Contact: ars4mundus@gmail.com
+# ==============================================================================
 
 # Database Installation Test Script
 # Creative Energy Database Verification
@@ -14,7 +27,7 @@ BLUE='\033[0;34m'
 NC='\033[0m'
 
 # Configuration variables
-DB_HOST="${DB_HOST:-db.cesvc.net}"
+DB_HOST="${DB_HOST:-db.your_private_domain_name.net}"
 DB_PORT="${DB_PORT:-2866}"
 DB_NAME="${DB_NAME:-cedb}"
 DB_USER="${DB_USER:-ceadmin}"

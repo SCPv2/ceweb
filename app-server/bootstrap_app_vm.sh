@@ -1,4 +1,17 @@
 #!/bin/bash
+# ==============================================================================
+# Copyright (c) 2025 Stan H. All rights reserved.
+#
+# This software and its source code are the exclusive property of Stan H.
+#
+# Use is strictly limited to 2025 SCPv2 Advance training and education only.
+# Any reproduction, modification, distribution, or other use beyond this scope is
+# strictly prohibited without prior written permission from the copyright holder.
+#
+# Unauthorized use may lead to legal action under applicable law.
+#
+# Contact: ars4mundus@gmail.com
+# ==============================================================================
 
 # Creative Energy App VM Bootstrap Script  
 # Samsung Cloud Platform VM 이미지 부팅 시 자동 실행 스크립트
@@ -190,7 +203,7 @@ execute_and_log "VM 정보 파일 생성" "sudo -u $APP_USER bash -c \"cat > '$V
     \\\"node_version\\\": \\\"$(node --version)\\\",
     \\\"pm2_version\\\": \\\"$(pm2 --version)\\\",
     \\\"load_balancer\\\": {
-        \\\"name\\\": \\\"app.cesvc.net\\\",
+        \\\"name\\\": \\\"app.${private_domain_name}\\\",
         \\\"ip\\\": \\\"10.1.2.100\\\",
         \\\"policy\\\": \\\"Round Robin\\\",
         \\\"pool\\\": [\\\"appvm121r (10.1.2.121)\\\", \\\"appvm122r (10.1.2.122)\\\"]
@@ -198,7 +211,7 @@ execute_and_log "VM 정보 파일 생성" "sudo -u $APP_USER bash -c \"cat > '$V
     \\\"architecture\\\": {
         \\\"tier\\\": \\\"App Server\\\",
         \\\"role\\\": \\\"API Processing + Business Logic\\\",
-        \\\"database\\\": \\\"db.cesvc.net:2866\\\"
+        \\\"database\\\": \\\"db.${private_domain_name}:2866\\\"
     },
     \\\"region\\\": \\\"samsung-cloud\\\",
     \\\"last_health_check\\\": \\\"$(date -Iseconds)\\\",

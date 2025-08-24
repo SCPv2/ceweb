@@ -1,3 +1,19 @@
+/*
+==============================================================================
+Copyright (c) 2025 Stan H. All rights reserved.
+
+This software and its source code are the exclusive property of Stan H.
+
+Use is strictly limited to 2025 SCPv2 Advance training and education only.
+Any reproduction, modification, distribution, or other use beyond this scope is
+strictly prohibited without prior written permission from the copyright holder.
+
+Unauthorized use may lead to legal action under applicable law.
+
+Contact: ars4mundus@gmail.com
+==============================================================================
+*/
+
 /**
  * Samsung Cloud Platform Object Storage Service
  * S3 호환 스토리지를 위한 서비스 모듈
@@ -40,7 +56,11 @@ class S3Service {
                     bucketString: masterConfig.object_storage.bucket_string,
                     privateEndpoint: masterConfig.object_storage.private_endpoint,
                     publicEndpoint: masterConfig.object_storage.public_endpoint,
-                    folders: masterConfig.object_storage.folders
+                    folders: masterConfig.object_storage.folders,
+                    // 도메인 정보 추가
+                    publicDomain: masterConfig.infrastructure?.domain?.public_domain_name || 'your_public_domain_name.net',
+                    privateDomain: masterConfig.infrastructure?.domain?.private_domain_name || 'your_private_domain_name.net',
+                    masterConfig: masterConfig // 전체 설정 참조용
                 };
                 
                 this.bucketName = this.credentials.bucketName;
@@ -85,14 +105,26 @@ class S3Service {
      * CORS 설정 (Samsung Cloud Platform Object Storage용)
      */
     async setBucketCORS() {
+        // master_config.json에서 동적으로 도메인 가져오기
+        const publicDomain = this.credentials?.publicDomain || 
+                            (this.credentials?.masterConfig?.infrastructure?.domain?.public_domain_name) || 
+                            'your_public_domain_name.net';
+        const privateDomain = this.credentials?.privateDomain ||
+                             (this.credentials?.masterConfig?.infrastructure?.domain?.private_domain_name) ||
+                             'your_private_domain_name.net';
+
         const corsConfiguration = {
             CORSRules: [
                 {
                     AllowedOrigins: [
-                        'https://www.creative-energy.net',
-                        'https://creative-energy.net',
-                        'http://www.creative-energy.net',
-                        'http://creative-energy.net',
+                        `https://www.${publicDomain}`,
+                        `https://${publicDomain}`,
+                        `http://www.${publicDomain}`,
+                        `http://${publicDomain}`,
+                        `https://www.${privateDomain}`,
+                        `https://${privateDomain}`,
+                        `http://www.${privateDomain}`,
+                        `http://${privateDomain}`,
                         '*' // 개발 환경용 - 운영에서는 제거 권장
                     ],
                     AllowedMethods: ['GET', 'HEAD'],

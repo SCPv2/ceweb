@@ -4,20 +4,20 @@
   "vm_number": "{{VM_NUMBER}}",
   "server_type": "web-server",
   "load_balancer": {
-    "name": "www.cesvc.net",
-    "ip": "10.1.1.100",
+    "name": "www.{{PRIVATE_DOMAIN_NAME}}",
+    "ip": "{{WEB_LB_SERVICE_IP}}",
     "policy": "Round Robin"
   },
   "cluster": {
     "servers": [
       {
         "hostname": "webvm111r",
-        "ip": "10.1.1.111",
+        "ip": "{{WEB_PRIMARY_IP}}",
         "vm_number": "1"
       },
       {
         "hostname": "webvm112r", 
-        "ip": "10.1.1.112",
+        "ip": "{{WEB_SECONDARY_IP}}",
         "vm_number": "2"
       }
     ]

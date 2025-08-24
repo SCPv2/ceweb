@@ -1,8 +1,21 @@
 #!/bin/bash
+# ==============================================================================
+# Copyright (c) 2025 Stan H. All rights reserved.
+#
+# This software and its source code are the exclusive property of Stan H.
+#
+# Use is strictly limited to 2025 SCPv2 Advance training and education only.
+# Any reproduction, modification, distribution, or other use beyond this scope is
+# strictly prohibited without prior written permission from the copyright holder.
+#
+# Unauthorized use may lead to legal action under applicable law.
+#
+# Contact: ars4mundus@gmail.com
+# ==============================================================================
 
 # PostgreSQL 16.8 Installation Script for Rocky Linux 9.4
 # Creative Energy Database Server Setup
-# Server: db.cesvc.net
+# Server: db.your_private_domain_name.net
 #
 # Usage:
 #   sudo bash install_postgresql_vm.sh           # Interactive mode (prompts for passwords)
@@ -280,7 +293,7 @@ display_final_info() {
     echo -e "${GREEN}========================================${NC}"
     echo
     echo -e "${BLUE}Database Information:${NC}"
-    echo "  Host: db.cesvc.net ($(hostname -I | awk '{print $1}'))"
+    echo "  Host: db.your_private_domain_name.net ($(hostname -I | awk '{print $1}'))"
     echo "  Port: 2866"
     echo "  Database: $DB_NAME"
     echo "  Application User: $DB_USER"
@@ -291,7 +304,7 @@ display_final_info() {
     echo
     echo -e "${BLUE}Connection Examples:${NC}"
     echo "  Local: sudo -u postgres psql -p 2866 -d $DB_NAME"
-    echo "  Remote: psql -h db.cesvc.net -p 2866 -U $DB_USER -d $DB_NAME"
+    echo "  Remote: psql -h db.your_private_domain_name.net -p 2866 -U $DB_USER -d $DB_NAME"
     echo
     echo -e "${BLUE}Backup:${NC}"
     echo "  Manual backup: /usr/local/bin/backup_creative_energy.sh"

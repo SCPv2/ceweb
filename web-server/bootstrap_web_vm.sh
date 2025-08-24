@@ -1,4 +1,17 @@
 #!/bin/bash
+# ==============================================================================
+# Copyright (c) 2025 Stan H. All rights reserved.
+#
+# This software and its source code are the exclusive property of Stan H.
+#
+# Use is strictly limited to 2025 SCPv2 Advance training and education only.
+# Any reproduction, modification, distribution, or other use beyond this scope is
+# strictly prohibited without prior written permission from the copyright holder.
+#
+# Unauthorized use may lead to legal action under applicable law.
+#
+# Contact: ars4mundus@gmail.com
+# ==============================================================================
 
 # Creative Energy Web VM Bootstrap Script
 # Samsung Cloud Platform VM 이미지 부팅 시 자동 실행 스크립트
@@ -100,8 +113,8 @@ fi
 
 # App Server 연결 테스트
 echo "8. App Server 연결성 테스트..."
-if timeout 5 bash -c "cat < /dev/null > /dev/tcp/app.cesvc.net/3000" 2>/dev/null; then
-    echo "✅ App Server 연결 정상 (app.cesvc.net:3000)"
+if timeout 5 bash -c "cat < /dev/null > /dev/tcp/app.your_private_domain_name.net/3000" 2>/dev/null; then
+    echo "✅ App Server 연결 정상 (app.your_private_domain_name.net:3000)"
 else
     echo "⚠️ App Server 연결 불가 - Load Balancer 설정 확인 필요"
 fi
@@ -147,7 +160,7 @@ cat > "$VM_INFO_FILE" << EOF
     "nginx_status": "$(systemctl is-active nginx)",
     "nginx_port": "80",
     "load_balancer": {
-        "name": "www.cesvc.net",
+        "name": "www.your_private_domain_name.net",
         "ip": "10.1.1.100",
         "policy": "Round Robin",
         "pool": ["webvm111r (10.1.1.111)", "webvm112r (10.1.1.112)"]
@@ -155,7 +168,7 @@ cat > "$VM_INFO_FILE" << EOF
     "architecture": {
         "tier": "Web Server",
         "role": "Static files + API Proxy",
-        "upstream": "app.cesvc.net (10.1.2.100)"
+        "upstream": "app.your_private_domain_name.net (10.1.2.100)"
     },
     "region": "$(curl -s http://169.254.169.254/latest/meta-data/placement/region 2>/dev/null || echo 'samsung-cloud')",
     "last_health_check": "$(date -Iseconds)"

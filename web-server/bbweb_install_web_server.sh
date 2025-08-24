@@ -1,4 +1,17 @@
 #!/bin/bash
+# ==============================================================================
+# Copyright (c) 2025 Stan H. All rights reserved.
+#
+# This software and its source code are the exclusive property of Stan H.
+#
+# Use is strictly limited to 2025 SCPv2 Advance training and education only.
+# Any reproduction, modification, distribution, or other use beyond this scope is
+# strictly prohibited without prior written permission from the copyright holder.
+#
+# Unauthorized use may lead to legal action under applicable law.
+#
+# Contact: ars4mundus@gmail.com
+# ==============================================================================
 
 # Creative Energy BBWEB Server Installation Script
 # Rocky Linux 9.4 Static Web Server 설치 스크립트 (Nginx만)
@@ -97,43 +110,14 @@ else
     log "SELinux가 비활성화되어 있거나 설치되지 않았습니다"
 fi
 
-# 5. Public 도메인 입력 받기
+# 5. BBWEB Server 도메인 설정 (master_config.json 기반)
 log "Web Server 도메인 설정 중..."
-echo ""
-echo "================================================"
-echo "Public 도메인 설정"
-echo "================================================"
-echo "이 BBWEB Server에서 사용할 Public 도메인을 입력하세요."
-echo "기본 허용 도메인: www.cesvc.net, www.creative-energy.net"
-echo "추가로 사용할 도메인이 있다면 입력하세요 (없으면 Enter)."
-echo ""
-echo "예시: mysite.com 또는 subdomain.mysite.com"
-echo -n "Public 도메인 입력: "
 
-# 사용자 입력 받기 (30초 타임아웃)
-read -t 30 CUSTOM_DOMAIN || CUSTOM_DOMAIN=""
+# 기본 서버명 (master_config.json에서 참조)
+DEFAULT_SERVERS="www.your_private_domain_name.net www.your_public_domain_name.net"
+SERVER_NAMES="$DEFAULT_SERVERS"
 
-# 기본 서버명
-DEFAULT_SERVERS="www.cesvc.net www.creative-energy.net"
-
-# 사용자가 입력한 도메인 추가
-if [[ -n "$CUSTOM_DOMAIN" ]]; then
-    # 공백 제거 및 소문자 변환
-    CUSTOM_DOMAIN=$(echo "$CUSTOM_DOMAIN" | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]')
-    
-    # http:// 또는 https:// 제거 (있다면)
-    CUSTOM_DOMAIN=${CUSTOM_DOMAIN#http://}
-    CUSTOM_DOMAIN=${CUSTOM_DOMAIN#https://}
-    
-    # 서버명 목록에 추가
-    SERVER_NAMES="$DEFAULT_SERVERS $CUSTOM_DOMAIN"
-    
-    log "✅ 추가 Public 도메인 설정: $CUSTOM_DOMAIN"
-else
-    SERVER_NAMES="$DEFAULT_SERVERS"
-    log "기본 도메인만 사용합니다"
-fi
-
+log "✅ BBWEB Server 도메인이 master_config.json 기반으로 설정되었습니다"
 log "Nginx 서버명 목록: $SERVER_NAMES"
 
 # 6. Nginx 설정 파일 생성 (BBWEB 전용)
@@ -359,7 +343,7 @@ cat > "$VM_INFO_FILE" << EOF
   "vm_number": "$VM_NUMBER",
   "server_type": "bbweb-server",
   "load_balancer": {
-    "name": "www.cesvc.net",
+    "name": "www.your_private_domain_name.net",
     "ip": "10.1.1.100",
     "policy": "Round Robin"
   },
@@ -411,7 +395,7 @@ log ""
 log "🏗️ 설치된 구성:"
 log "- Web Server: Rocky Linux 9.4 + Nginx (Static Files Only)"
 log "- 서버 타입: BBWEB 전용 서버"
-log "- 도메인: www.cesvc.net, www.creative-energy.net"
+log "- 도메인: www.your_private_domain_name.net, www.your_public_domain_name.net"
 log "- 정적 파일 디렉토리: $WEB_DIR"
 log "- BBWEB 디렉토리: $WEB_DIR/artist/bbweb/"
 log ""
@@ -439,8 +423,8 @@ log "4. DNS 설정 확인:"
 if [[ -n "$CUSTOM_DOMAIN" ]]; then
     log "   $CUSTOM_DOMAIN → 이 서버 IP"
 fi
-log "   www.cesvc.net → 이 서버 IP"
-log "   www.creative-energy.net → 이 서버 IP"
+log "   www.your_private_domain_name.net → 이 서버 IP"
+log "   www.your_public_domain_name.net → 이 서버 IP"
 log ""
 log "🔧 유틸리티 명령어:"
 log "- Nginx 상태: systemctl status nginx"
@@ -479,7 +463,7 @@ log "/usr/local/bin/bootstrap_web_vm.sh"
 log ""
 log "🎯 로드밸런서 데모 테스트:"
 log "- Public IP 접근: http://서버IP/ → /artist/bbweb/index_lb.html로 리다이렉트"
-log "- 도메인 접근: http://www.creative-energy.net/artist/bbweb/index_lb.html"
+log "- 도메인 접근: http://www.your_public_domain_name.net/artist/bbweb/index_lb.html"
 log "- 경로 분기 확인: curl -I http://서버IP/ (301 리다이렉트 확인)"
 log ""
 log "================================================================"

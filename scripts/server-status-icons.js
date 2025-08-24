@@ -1,3 +1,19 @@
+/*
+==============================================================================
+Copyright (c) 2025 Stan H. All rights reserved.
+
+This software and its source code are the exclusive property of Stan H.
+
+Use is strictly limited to 2025 SCPv2 Advance training and education only.
+Any reproduction, modification, distribution, or other use beyond this scope is
+strictly prohibited without prior written permission from the copyright holder.
+
+Unauthorized use may lead to legal action under applicable law.
+
+Contact: ars4mundus@gmail.com
+==============================================================================
+*/
+
 /**
  * Creative Energy Server Status Icons Component
  * Load Balancer 환경에서 Web/App 서버 상태를 아이콘으로 표시
@@ -6,24 +22,64 @@
 class ServerStatusIcons {
     constructor(containerId) {
         this.container = document.getElementById(containerId);
-        // Load Balancer 아키텍처 정의
-        this.loadBalancers = {
-            web: { name: 'www.cesvc.net', ip: '10.1.1.100', policy: 'Round Robin' },
-            app: { name: 'app.cesvc.net', ip: '10.1.2.100', policy: 'Round Robin' }
-        };
-        this.servers = {
-            web: [
-                { id: 'web1', name: 'Web-1', hostname: 'webvm111r', ip: '10.1.1.111', status: 'unknown' },
-                { id: 'web2', name: 'Web-2', hostname: 'webvm112r', ip: '10.1.1.112', status: 'unknown' }
-            ],
-            app: [
-                { id: 'app1', name: 'App-1', hostname: 'appvm121r', ip: '10.1.2.121', status: 'unknown' },
-                { id: 'app2', name: 'App-2', hostname: 'appvm122r', ip: '10.1.2.122', status: 'unknown' }
-            ]
-        };
+        this.config = null;
+        this.loadBalancers = {};
+        this.servers = {};
         this.updateInterval = null;
         
-        this.init();
+        this.initializeConfig().then(() => {
+            this.init();
+        });
+    }
+
+    async initializeConfig() {
+        try {
+            // master-variables-loader.js 사용하여 설정 로드
+            if (window.MasterVariablesLoader) {
+                this.config = await window.MasterVariablesLoader.getAllConfig();
+            } else {
+                // fallback: master_config.json 직접 로드
+                const response = await fetch('./web-server/master_config.json');
+                const masterConfig = await response.json();
+                this.config = {
+                    privateDomain: masterConfig.infrastructure?.domain?.private_domain_name || 'your_private_domain_name.net',
+                    webLbServiceIp: masterConfig.infrastructure?.load_balancer?.web_lb_service_ip || '10.1.1.100',
+                    appLbServiceIp: masterConfig.infrastructure?.load_balancer?.app_lb_service_ip || '10.1.2.100',
+                    webPrimaryIp: masterConfig.infrastructure?.servers?.web_primary_ip || '10.1.1.111',
+                    webSecondaryIp: masterConfig.infrastructure?.servers?.web_secondary_ip || '10.1.1.112',
+                    appPrimaryIp: masterConfig.infrastructure?.servers?.app_primary_ip || '10.1.2.121',
+                    appSecondaryIp: masterConfig.infrastructure?.servers?.app_secondary_ip || '10.1.2.122'
+                };
+            }
+        } catch (error) {
+            console.warn('Failed to load configuration, using defaults:', error.message);
+            this.config = {
+                privateDomain: 'your_private_domain_name.net',
+                webLbServiceIp: '10.1.1.100',
+                appLbServiceIp: '10.1.2.100',
+                webPrimaryIp: '10.1.1.111',
+                webSecondaryIp: '10.1.1.112',
+                appPrimaryIp: '10.1.2.121',
+                appSecondaryIp: '10.1.2.122'
+            };
+        }
+
+        // Load Balancer 아키텍처 동적 설정
+        this.loadBalancers = {
+            web: { name: `www.${this.config.privateDomain}`, ip: this.config.webLbServiceIp, policy: 'Round Robin' },
+            app: { name: `app.${this.config.privateDomain}`, ip: this.config.appLbServiceIp, policy: 'Round Robin' }
+        };
+        
+        this.servers = {
+            web: [
+                { id: 'web1', name: 'Web-1', hostname: 'webvm111r', ip: this.config.webPrimaryIp, status: 'unknown' },
+                { id: 'web2', name: 'Web-2', hostname: 'webvm112r', ip: this.config.webSecondaryIp, status: 'unknown' }
+            ],
+            app: [
+                { id: 'app1', name: 'App-1', hostname: 'appvm121r', ip: this.config.appPrimaryIp, status: 'unknown' },
+                { id: 'app2', name: 'App-2', hostname: 'appvm122r', ip: this.config.appSecondaryIp, status: 'unknown' }
+            ]
+        };
     }
 
     init() {

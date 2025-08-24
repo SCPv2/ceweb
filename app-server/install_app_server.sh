@@ -1,4 +1,17 @@
 #!/bin/bash
+# ==============================================================================
+# Copyright (c) 2025 Stan H. All rights reserved.
+#
+# This software and its source code are the exclusive property of Stan H.
+#
+# Use is strictly limited to 2025 SCPv2 Advance training and education only.
+# Any reproduction, modification, distribution, or other use beyond this scope is
+# strictly prohibited without prior written permission from the copyright holder.
+#
+# Unauthorized use may lead to legal action under applicable law.
+#
+# Contact: ars4mundus@gmail.com
+# ==============================================================================
 
 # Creative Energy App Server Installation Script
 # Rocky Linux 9.4 App Server 설치 스크립트 (Node.js + API)
@@ -32,30 +45,61 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-log "Creative Energy App Server 설치를 시작합니다..."
-
 # Load master configuration
-WEB_DIR="/home/rocky/ceweb"
-MASTER_CONFIG_LOADER="$WEB_DIR/web-server/load_master_config.sh"
+MASTER_CONFIG_FILE="/home/rocky/ceweb/web-server/master_config.json"
 
-if [ -f "$MASTER_CONFIG_LOADER" ]; then
-    log "Master configuration 로드 중..."
-    source "$MASTER_CONFIG_LOADER"
-    log "서버 역할: API 처리 + 비즈니스 로직 ($APP_SERVER_HOST)"
-    log "DB 서버: $DB_SERVER_HOST:$DB_PORT"
+# Configuration variables with defaults
+PRIVATE_DOMAIN_NAME="your_private_domain_name.net"
+PUBLIC_DOMAIN_NAME="your_public_domain_name.net"
+APP_SERVER_HOST="app.your_private_domain_name.net"
+DB_SERVER_HOST="db.your_private_domain_name.net"
+DB_PORT="2866"
+WEB_LB_SERVICE_IP="10.1.1.100"
+APP_LB_SERVICE_IP="10.1.2.100"
+WEB_PRIMARY_IP="10.1.1.111"
+WEB_SECONDARY_IP="10.1.1.112"
+APP_PRIMARY_IP="10.1.2.121"
+APP_SECONDARY_IP="10.1.2.122"
+DB_PRIMARY_IP="10.1.3.131"
+BASTION_IP="10.1.1.110"
+
+# Load configuration from master_config.json if available
+if [ -f "$MASTER_CONFIG_FILE" ]; then
+    log "Loading configuration from master_config.json..."
+    
+    # Check if jq is available
+    if command -v jq >/dev/null 2>&1; then
+        PRIVATE_DOMAIN_NAME=$(jq -r '.infrastructure.domain.private_domain_name // "your_private_domain_name.net"' "$MASTER_CONFIG_FILE")
+        PUBLIC_DOMAIN_NAME=$(jq -r '.infrastructure.domain.public_domain_name // "your_public_domain_name.net"' "$MASTER_CONFIG_FILE")
+        DB_PORT=$(jq -r '.application.database.port // "2866"' "$MASTER_CONFIG_FILE")
+        WEB_LB_SERVICE_IP=$(jq -r '.infrastructure.load_balancer.web_lb_service_ip // "10.1.1.100"' "$MASTER_CONFIG_FILE")
+        APP_LB_SERVICE_IP=$(jq -r '.infrastructure.load_balancer.app_lb_service_ip // "10.1.2.100"' "$MASTER_CONFIG_FILE")
+        WEB_PRIMARY_IP=$(jq -r '.infrastructure.servers.web_primary_ip // "10.1.1.111"' "$MASTER_CONFIG_FILE")
+        WEB_SECONDARY_IP=$(jq -r '.infrastructure.servers.web_secondary_ip // "10.1.1.112"' "$MASTER_CONFIG_FILE")
+        APP_PRIMARY_IP=$(jq -r '.infrastructure.servers.app_primary_ip // "10.1.2.121"' "$MASTER_CONFIG_FILE")
+        APP_SECONDARY_IP=$(jq -r '.infrastructure.servers.app_secondary_ip // "10.1.2.122"' "$MASTER_CONFIG_FILE")
+        DB_PRIMARY_IP=$(jq -r '.infrastructure.servers.db_primary_ip // "10.1.3.131"' "$MASTER_CONFIG_FILE")
+        BASTION_IP=$(jq -r '.infrastructure.servers.bastion_ip // "10.1.1.110"' "$MASTER_CONFIG_FILE")
+        
+        # Construct server hosts
+        APP_SERVER_HOST="app.${PRIVATE_DOMAIN_NAME}"
+        DB_SERVER_HOST="db.${PRIVATE_DOMAIN_NAME}"
+        
+        log "✅ Configuration loaded from master_config.json"
+        log "   - Private Domain: $PRIVATE_DOMAIN_NAME"
+        log "   - Public Domain: $PUBLIC_DOMAIN_NAME"
+        log "   - App Server: $APP_SERVER_HOST"
+        log "   - DB Server: $DB_SERVER_HOST:$DB_PORT"
+    else
+        warn "jq not available, will install and retry loading configuration"
+    fi
 else
-    warn "Master config loader not found. Using default values."
-    # 기본값 설정
-    export PUBLIC_DOMAIN_NAME="creative-energy.net"
-    export PRIVATE_DOMAIN_NAME="cesvc.net"
-    export APP_SERVER_HOST="app.cesvc.net"
-    export DB_SERVER_HOST="db.cesvc.net"
-    export APP_PORT="3000"
-    export DB_PORT="2866"
-    export APP_DATABASE_NAME="creative_energy_db"
-    log "서버 역할: API 처리 + 비즈니스 로직 (기본값 사용)"
-    log "DB 서버: $DB_SERVER_HOST:$DB_PORT"
+    warn "master_config.json not found, using default configuration"
 fi
+
+log "Creative Energy App Server 설치를 시작합니다..."
+log "서버 역할: API 처리 + 비즈니스 로직 ($APP_SERVER_HOST)"
+log "DB 서버: $DB_SERVER_HOST:$DB_PORT"
 
 # 1. 시스템 업데이트
 log "시스템 업데이트 중..."
@@ -86,21 +130,36 @@ log "PostgreSQL 클라이언트 설치 중..."
 PSQL_VERSION=$(psql --version)
 log "PostgreSQL 클라이언트 설치 완료: $PSQL_VERSION"
 
-# 6. DB 서버 연결 테스트
-log "DB 서버 연결 테스트 중..."
-DB_HOST="db.cesvc.net"
-DB_PORT="2866"
-
-if ping -c 3 $DB_HOST &>/dev/null; then
-    log "✅ DB 서버 네트워크 연결 성공: $DB_HOST"
-else
-    warn "⚠️  DB 서버 네트워크 연결 확인 필요: $DB_HOST"
+# 6. jq가 없었다면 설치 후 설정 재로딩
+if [ -f "$MASTER_CONFIG_FILE" ] && ! command -v jq >/dev/null 2>&1; then
+    log "jq 패키지 설치 중..."
+    dnf install -y jq
+    
+    # jq 설치 후 설정 재로딩
+    if command -v jq >/dev/null 2>&1; then
+        log "jq 설치 완료, 설정 재로딩 중..."
+        PRIVATE_DOMAIN_NAME=$(jq -r '.infrastructure.domain.private_domain_name // "your_private_domain_name.net"' "$MASTER_CONFIG_FILE")
+        PUBLIC_DOMAIN_NAME=$(jq -r '.infrastructure.domain.public_domain_name // "your_public_domain_name.net"' "$MASTER_CONFIG_FILE")
+        DB_PORT=$(jq -r '.application.database.port // "2866"' "$MASTER_CONFIG_FILE")
+        APP_SERVER_HOST="app.${PRIVATE_DOMAIN_NAME}"
+        DB_SERVER_HOST="db.${PRIVATE_DOMAIN_NAME}"
+        log "✅ Configuration reloaded after jq installation"
+    fi
 fi
 
-if timeout 10 bash -c "cat < /dev/null > /dev/tcp/$DB_HOST/$DB_PORT" 2>/dev/null; then
-    log "✅ DB 서버 포트 연결 성공: $DB_HOST:$DB_PORT"
+# 7. DB 서버 연결 테스트
+log "DB 서버 연결 테스트 중..."
+
+if ping -c 3 $DB_SERVER_HOST &>/dev/null; then
+    log "✅ DB 서버 네트워크 연결 성공: $DB_SERVER_HOST"
 else
-    warn "⚠️  DB 서버 포트 연결 확인 필요: $DB_HOST:$DB_PORT"
+    warn "⚠️  DB 서버 네트워크 연결 확인 필요: $DB_SERVER_HOST"
+fi
+
+if timeout 10 bash -c "cat < /dev/null > /dev/tcp/$DB_SERVER_HOST/$DB_PORT" 2>/dev/null; then
+    log "✅ DB 서버 포트 연결 성공: $DB_SERVER_HOST:$DB_PORT"
+else
+    warn "⚠️  DB 서버 포트 연결 확인 필요: $DB_SERVER_HOST:$DB_PORT"
 fi
 
 # 7. rocky 사용자 생성
@@ -140,43 +199,13 @@ else
     JWT_SECRET="your_jwt_secret_key_minimum_32_characters_long_change_this_in_production"
 fi
 
-# 10. Public 도메인 입력 받기
+# 10. CORS 허용 도메인 설정 (master_config.json 기반)
 log "CORS 허용 도메인 설정 중..."
-echo ""
-echo "================================================"
-echo "Public 도메인 설정"
-echo "================================================"
-echo "이 App Server에 접근할 Public 도메인을 입력하세요."
-echo "기본 허용 도메인: www.cesvc.net, www.creative-energy.net"
-echo "추가로 허용할 도메인이 있다면 입력하세요 (없으면 Enter)."
-echo ""
-echo "예시: mysite.com 또는 subdomain.mysite.com"
-echo -n "Public 도메인 입력: "
 
-# 사용자 입력 받기 (30초 타임아웃)
-read -t 30 CUSTOM_DOMAIN || CUSTOM_DOMAIN=""
+# 허용 도메인 목록 (동적 생성)
+ALLOWED_ORIGINS="http://www.${PRIVATE_DOMAIN_NAME},https://www.${PRIVATE_DOMAIN_NAME},http://www.${PUBLIC_DOMAIN_NAME},https://www.${PUBLIC_DOMAIN_NAME}"
 
-# 기본 허용 도메인 목록
-DEFAULT_ORIGINS="http://www.cesvc.net,https://www.cesvc.net,http://www.creative-energy.net,https://www.creative-energy.net"
-
-# 사용자가 입력한 도메인 추가
-if [[ -n "$CUSTOM_DOMAIN" ]]; then
-    # 공백 제거 및 소문자 변환
-    CUSTOM_DOMAIN=$(echo "$CUSTOM_DOMAIN" | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]')
-    
-    # http:// 또는 https:// 제거 (있다면)
-    CUSTOM_DOMAIN=${CUSTOM_DOMAIN#http://}
-    CUSTOM_DOMAIN=${CUSTOM_DOMAIN#https://}
-    
-    # 허용 도메인 목록에 추가
-    ALLOWED_ORIGINS="$DEFAULT_ORIGINS,http://$CUSTOM_DOMAIN,https://$CUSTOM_DOMAIN"
-    
-    log "✅ 추가 Public 도메인 설정: $CUSTOM_DOMAIN"
-else
-    ALLOWED_ORIGINS="$DEFAULT_ORIGINS"
-    log "기본 도메인만 사용합니다"
-fi
-
+log "✅ CORS 허용 도메인이 master_config.json 기반으로 설정되었습니다"
 log "CORS 허용 도메인 목록: $ALLOWED_ORIGINS"
 
 # 11. 환경 설정 파일 생성
@@ -184,8 +213,8 @@ log "App Server용 환경 설정 파일 생성 중..."
 
 cat > $APP_DIR/.env << EOF
 # External Database Configuration
-DB_HOST=db.cesvc.net
-DB_PORT=2866
+DB_HOST=$DB_SERVER_HOST
+DB_PORT=$DB_PORT
 DB_NAME=cedb
 DB_USER=ceadmin
 DB_PASSWORD=ceadmin123!
@@ -253,13 +282,13 @@ cat > /home/$APP_USER/test_db_connection.sh << 'EOF'
 #!/bin/bash
 
 echo "=== DB 서버 연결 테스트 ==="
-echo "DB 서버: db.cesvc.net:2866"
+echo "DB 서버: db.your_private_domain_name.net:2866"
 echo "시간: $(date)"
 echo ""
 
 # 1. 네트워크 연결 테스트
 #echo "1. 네트워크 연결 테스트:"
-#if ping -c 3 db.cesvc.net &>/dev/null; then
+#if ping -c 3 db.your_private_domain_name.net &>/dev/null; then
 #    echo "✅ 네트워크 연결 성공"
 #else
 #    echo "❌ 네트워크 연결 실패"
@@ -269,7 +298,7 @@ echo ""
 # 2. 포트 연결 테스트
 echo ""
 echo "2. 포트 연결 테스트:"
-if timeout 5 bash -c "cat < /dev/null > /dev/tcp/db.cesvc.net/2866" 2>/dev/null; then
+if timeout 5 bash -c "cat < /dev/null > /dev/tcp/db.your_private_domain_name.net/2866" 2>/dev/null; then
     echo "✅ 포트 2866 연결 성공"
 else
     echo "❌ 포트 2866 연결 실패"
@@ -279,7 +308,7 @@ fi
 # 3. PostgreSQL 연결 테스트
 echo ""
 echo "3. PostgreSQL 연결 테스트 (계정 정보 필요):"
-echo "   psql -h db.cesvc.net -p 2866 -U ceadmin -d cedb -c \"SELECT 1;\""
+echo "   psql -h db.your_private_domain_name.net -p 2866 -U ceadmin -d cedb -c \"SELECT 1;\""
 
 echo ""
 echo "=== 연결 테스트 완료 ==="
@@ -417,7 +446,7 @@ cat > "$VM_INFO_FILE" << EOF
   "vm_number": "$VM_NUMBER",
   "server_type": "app-server",
   "load_balancer": {
-    "name": "app.cesvc.net",
+    "name": "app.your_private_domain_name.net",
     "ip": "10.1.2.100",
     "policy": "Round Robin"
   },
@@ -494,8 +523,8 @@ log "================================================================"
 log ""
 log "🏗️ 설치된 구성:"
 log "- App Server: Rocky Linux 9.4 + Node.js $NODE_VERSION"
-log "- DB 서버: db.cesvc.net:2866 (외부)"
-log "- 서버 주소: app.cesvc.net:3000"
+log "- DB 서버: db.your_private_domain_name.net:2866 (외부)"
+log "- 서버 주소: app.your_private_domain_name.net:3000"
 log ""
 log "✅ 설치 및 설정 완료 상태:"
 log ""
@@ -552,8 +581,8 @@ log "/usr/local/bin/bootstrap_app_vm.sh"
 log ""
 log "⚠️  중요 사항:"
 log "- 이 서버는 API 처리만 담당합니다 (정적 파일 서빙 없음)"
-log "- Web Server(www.cesvc.net)에서 이 서버로 API 요청을 프록시합니다"
-log "- DB는 별도 서버(db.cesvc.net:2866)에 위치합니다"
+log "- Web Server(www.your_private_domain_name.net)에서 이 서버로 API 요청을 프록시합니다"
+log "- DB는 별도 서버(db.your_private_domain_name.net:2866)에 위치합니다"
 log "- /health 엔드포인트에서 서버 식별 정보(VM 번호, IP 등) 제공"
 log ""
 log "================================================================"

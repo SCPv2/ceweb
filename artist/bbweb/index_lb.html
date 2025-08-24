@@ -1,3 +1,18 @@
+<!--
+==============================================================================
+Copyright (c) 2025 Stan H. All rights reserved.
+
+This software and its source code are the exclusive property of Stan H.
+
+Use is strictly limited to 2025 SCPv2 Advance training and education only.
+Any reproduction, modification, distribution, or other use beyond this scope is
+strictly prohibited without prior written permission from the copyright holder.
+
+Unauthorized use may lead to legal action under applicable law.
+
+Contact: ars4mundus@gmail.com
+==============================================================================
+-->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -208,7 +223,7 @@
         /* Hero Section */
         .hero {
             background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.7)), 
-                        url('http://www.creative-energy.net/media/img/bb_prod0.png') center/cover;
+                        url('../../media/img/bb_prod0.png') center/cover;
             background-attachment: fixed;
         }
 
@@ -251,7 +266,7 @@
         /* Album Section */
         .album-section {
             background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), 
-                        url('http://www.creative-energy.net/media/img/bb_prod1.png') center/cover;
+                        url('../../media/img/bb_prod1.png') center/cover;
             background-attachment: fixed;
         }
 
@@ -336,7 +351,7 @@
         /* Performance Section */
         .performance-section {
             background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), 
-                        url('http://www.creative-energy.net/media/img/bb_prod2.png') center/cover;
+                        url('../../media/img/bb_prod2.png') center/cover;
             background-attachment: fixed;
         }
 
@@ -390,7 +405,7 @@
         /* Behind Section */
         .behind-section {
             background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), 
-                        url('http://www.creative-energy.net/media/img/bb_prod3.png') center/cover;
+                        url('../../media/img/bb_prod3.png') center/cover;
             background-attachment: fixed;
         }
 
@@ -639,18 +654,18 @@
     <!-- Header -->
     <header class="header">
         <nav class="nav-container">
-            <a href="http://www.creative-energy.net/index.html" class="logo">BIG ENTERTAINMENT</a>
+            <a href="{{PUBLIC_DOMAIN}}/index.html" class="logo">BIG ENTERTAINMENT</a>
             <ul class="nav-menu">
-                <li class="nav-item"><a href="http://www.creative-energy.net/index.html#company">Company</a></li>
-                <li class="nav-item"><a href="http://www.creative-energy.net/pages/notice_lb.html">Notice</a></li>
+                <li class="nav-item"><a href="{{PUBLIC_DOMAIN}}/index.html#company">Company</a></li>
+                <li class="nav-item"><a href="{{PUBLIC_DOMAIN}}/pages/notice_lb.html">Notice</a></li>
                 <li class="nav-item dropdown">
                     <a href="#projects" class="active">Artists<span class="dropdown-arrow">▼</span></a>
                     <div class="dropdown-content">
-                        <a href="http://www.creative-energy.net/artist/cloudy_lb.html" class="dropdown-item">Cloudy</a>
-                        <a href="http://www.creative-energy.net/artist/bbweb/index_lb.html" class="dropdown-item active">Big Boys</a>
+                        <a href="{{PUBLIC_DOMAIN}}/artist/cloudy_lb.html" class="dropdown-item">Cloudy</a>
+                        <a href="{{PUBLIC_DOMAIN}}/artist/bbweb/index_lb.html" class="dropdown-item active">Big Boys</a>
                     </div>
                 </li>
-                <li class="nav-item"><a href="http://www.creative-energy.net/pages/shop_lb.html">Shop</a></li>
+                <li class="nav-item"><a href="{{PUBLIC_DOMAIN}}/pages/shop_lb.html">Shop</a></li>
             </ul>
             <div class="nav-icons">
                 <div class="nav-icon">KOR</div>
@@ -797,19 +812,19 @@
                 <div class="behind-visual">
                     <div class="visual-grid">
                         <div class="visual-item">
-                            <img src="http://www.creative-energy.net/media/img/bb_prod1.png" alt="Big Boys 1" 
+                            <img src="{{OBJECT_STORAGE_MEDIA_BASE}}bb_prod1.png" alt="Big Boys 1" 
                                  onerror="this.style.display='none';">
                         </div>
                         <div class="visual-item">
-                            <img src="http://www.creative-energy.net/media/img/bb_prod2.png" alt="Big Boys 2" 
+                            <img src="{{OBJECT_STORAGE_MEDIA_BASE}}bb_prod2.png" alt="Big Boys 2" 
                                  onerror="this.style.display='none';">
                         </div>
                         <div class="visual-item">
-                            <img src="http://www.creative-energy.net/media/img/bb_prod3.png" alt="Big Boys 3" 
+                            <img src="{{OBJECT_STORAGE_MEDIA_BASE}}bb_prod3.png" alt="Big Boys 3" 
                                  onerror="this.style.display='none';">
                         </div>
                         <div class="visual-item">
-                            <img src="http://www.creative-energy.net/media/img/bb_prod4.png" alt="Big Boys 4" 
+                            <img src="{{OBJECT_STORAGE_MEDIA_BASE}}bb_prod4.png" alt="Big Boys 4" 
                                  onerror="this.style.display='none';">
                         </div>
                     </div>
@@ -1006,5 +1021,8 @@
             observer.observe(el);
         });
     </script>
+
+    <!-- Master Variables Loader -->
+    <script src="../../scripts/master-variables-loader.js"></script>
 </body>
 </html>

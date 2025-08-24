@@ -1,3 +1,19 @@
+/*
+==============================================================================
+Copyright (c) 2025 Stan H. All rights reserved.
+
+This software and its source code are the exclusive property of Stan H.
+
+Use is strictly limited to 2025 SCPv2 Advance training and education only.
+Any reproduction, modification, distribution, or other use beyond this scope is
+strictly prohibited without prior written permission from the copyright holder.
+
+Unauthorized use may lead to legal action under applicable law.
+
+Contact: ars4mundus@gmail.com
+==============================================================================
+*/
+
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -53,12 +69,38 @@ const corsOptions = {
       return callback(null, true);
     }
     
-    // 허용된 도메인들
-    const allowedDomains = [
-      'www.cesvc.net',
-      'app.cesvc.net', 
-      'www.creative-energy.net'
+    // 허용된 도메인들 (master_config.json에서 동적 로딩)
+    let allowedDomains = [
+      'www.your_private_domain_name.net',
+      'app.your_private_domain_name.net', 
+      'www.your_public_domain_name.net'
     ];
+
+    // master_config.json에서 도메인 설정 로드 시도
+    try {
+      const fs = require('fs');
+      const path = require('path');
+      const masterConfigPath = path.join(__dirname, '../web-server/master_config.json');
+      
+      if (fs.existsSync(masterConfigPath)) {
+        const masterConfig = JSON.parse(fs.readFileSync(masterConfigPath, 'utf8'));
+        const publicDomain = masterConfig.infrastructure?.domain?.public_domain_name;
+        const privateDomain = masterConfig.infrastructure?.domain?.private_domain_name;
+        
+        if (publicDomain && privateDomain) {
+          allowedDomains = [
+            `www.${privateDomain}`,
+            `app.${privateDomain}`,
+            `www.${publicDomain}`,
+            `${privateDomain}`,
+            `${publicDomain}`
+          ];
+          console.log(`CORS domains loaded from master_config: ${allowedDomains.join(', ')}`);
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to load master_config.json for CORS domains, using defaults:', error.message);
+    }
     
     if (allowedDomains.includes(hostname)) {
       console.log(`CORS 허용: 허용된 도메인 ${origin}`);
@@ -146,14 +188,14 @@ app.get('/health', async (req, res) => {
       vm_number: vmNumber,
       vm_type: 'app',
       load_balancer: {
-        name: 'app.cesvc.net',
-        ip: '10.1.2.100',
+        name: process.env.APP_SERVER_HOST || 'app.your_private_domain_name.net',
+        ip: process.env.APP_LB_SERVICE_IP || '10.1.2.100',
         policy: 'Round Robin'
       },
       architecture: {
         tier: 'App Server',
         role: 'API Processing + Business Logic',
-        database: 'db.cesvc.net:2866'
+        database: `${process.env.DB_HOST || 'db.your_private_domain_name.net'}:${process.env.DB_PORT || '2866'}`
       },
       performance: {
         uptime: process.uptime(),
@@ -234,8 +276,8 @@ app.listen(PORT, BIND_HOST, () => {
   console.log(`Host: ${BIND_HOST}`);
   console.log(`Port: ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`Database: ${process.env.DB_HOST || 'db.cesvc.net'}`);
-  console.log(`Server URL: http://${BIND_HOST === '0.0.0.0' ? 'app.cesvc.net' : BIND_HOST}:${PORT}`);
+  console.log(`Database: ${process.env.DB_HOST || 'db.your_private_domain_name.net'}`);
+  console.log(`Server URL: http://${BIND_HOST === '0.0.0.0' ? (process.env.APP_SERVER_HOST || 'app.your_private_domain_name.net') : BIND_HOST}:${PORT}`);
   console.log(`Started at: ${new Date().toISOString()}`);
   console.log(`=================================`);
 });
