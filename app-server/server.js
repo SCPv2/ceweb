@@ -142,6 +142,34 @@ app.use('/api/orders', ordersRoutes);
 app.use('/api/audition', auditionRoutes);
 app.use('/api/s3', s3UploadRoutes);
 
+// API 헬스체크 엔드포인트 (프론트엔드가 /api/health를 호출하므로)
+app.get('/api/health', async (req, res) => {
+  try {
+    await pool.query('SELECT 1');
+    
+    const os = require('os');
+    const hostname = os.hostname();
+    const internalIp = Object.values(os.networkInterfaces()).flat().find(i => !i.internal && i.family === 'IPv4')?.address || 'unknown';
+    
+    res.json({
+      success: true,
+      message: 'API Server is healthy',
+      database: 'Connected',
+      hostname: hostname,
+      ip: internalIp,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Database connection failed',
+      error: error.message,
+      hostname: require('os').hostname(),
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 // 기본 라우트
 app.get('/', (req, res) => {
   res.json({
