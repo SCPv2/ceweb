@@ -148,7 +148,7 @@ if [ -f "$WEB_DIR/web-server/nginx-site.conf" ]; then
     
     # server_name 설정 업데이트 (nginx-site.conf를 동적으로 수정)
     cp "$WEB_DIR/web-server/nginx-site.conf" /tmp/nginx-site.conf.tmp
-    sed -i "s/server_name www\.cesvc\.net;/server_name $SERVER_NAMES;/" /tmp/nginx-site.conf.tmp
+    sed -i "s/server_name www\.cesvc\.net.*/server_name $SERVER_NAMES;/" /tmp/nginx-site.conf.tmp
     sed -i "s/proxy_pass http:\/\/app\.cesvc\.net:3000/proxy_pass http:\/\/$APP_SERVER_HOST:$APP_PORT/g" /tmp/nginx-site.conf.tmp
     cp /tmp/nginx-site.conf.tmp /etc/nginx/conf.d/creative-energy.conf
     rm /tmp/nginx-site.conf.tmp
