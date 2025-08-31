@@ -23,8 +23,8 @@
 #   sudo bash install_postgresql_vm.sh -a        # Same as --auto
 #
 # Default passwords (automatic mode):
-#   postgres superuser: ceadmin123!
-#   ceadmin user: ceadmin123!
+#   postgres superuser: cedbadmin123!
+#   cedbadmin user: cedbadmin123!
 
 set -e  # Exit on any error
 
@@ -37,7 +37,7 @@ NC='\033[0m' # No Color
 
 # Configuration variables
 DB_NAME="cedb"
-DB_USER="ceadmin"
+DB_USER="cedbadmin"
 POSTGRES_PASSWORD=""
 APP_USER_PASSWORD=""
 BACKUP_DIR="/var/backups/postgresql"
@@ -72,13 +72,13 @@ check_root() {
 set_default_passwords() {
     echo -e "${BLUE}Password Configuration${NC}"
     echo -e "Using default passwords for automatic installation:"
-    echo -e "- postgres superuser: ceadmin123!"
-    echo -e "- $DB_USER user: ceadmin123!"
+    echo -e "- postgres superuser: cedbadmin123!"
+    echo -e "- $DB_USER user: cedbadmin123!"
     echo
     
     # Set default passwords
-    POSTGRES_PASSWORD="ceadmin123!"
-    APP_USER_PASSWORD="ceadmin123!"
+    POSTGRES_PASSWORD="cedbadmin123!"
+    APP_USER_PASSWORD="cedbadmin123!"
     
     print_status "Default passwords configured"
     echo

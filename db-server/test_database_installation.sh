@@ -30,7 +30,7 @@ NC='\033[0m'
 DB_HOST="${DB_HOST:-db.your_private_domain_name.net}"
 DB_PORT="${DB_PORT:-2866}"
 DB_NAME="${DB_NAME:-cedb}"
-DB_USER="${DB_USER:-ceadmin}"
+DB_USER="${DB_USER:-cedbadmin}"
 DB_ADMIN="${DB_ADMIN:-postgres}"
 
 # Test mode: local or remote

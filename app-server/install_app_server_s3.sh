@@ -228,8 +228,8 @@ cat > $APP_DIR/.env << EOF
 DB_HOST=$DB_SERVER_HOST
 DB_PORT=$DB_PORT
 DB_NAME=cedb
-DB_USER=ceadmin
-DB_PASSWORD=ceadmin123!
+DB_USER=cedbadmin
+DB_PASSWORD=cedbadmin123!
 DB_SSL=false
 
 # Connection Pool Settings
@@ -334,7 +334,7 @@ fi
 # 3. PostgreSQL 연결 테스트
 echo ""
 echo "3. PostgreSQL 연결 테스트 (계정 정보 필요):"
-echo "   psql -h $DB_SERVER_HOST -p $DB_PORT -U ceadmin -d cedb -c \"SELECT 1;\""
+echo "   psql -h $DB_SERVER_HOST -p $DB_PORT -U cedbadmin -d cedb -c \"SELECT 1;\""
 
 echo ""
 echo "=== 연결 테스트 완료 ==="

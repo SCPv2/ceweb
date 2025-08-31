@@ -1,7 +1,7 @@
 --
 -- Creative Energy Database Initialization Schema - External DB (Object Storage Version)
 -- Compatible with PostgreSQL 16.8
--- Target: db.your_private_domain_name.net:2866 (기본값), Database: cedb_obj, User: ceadmin
+-- Target: db.your_private_domain_name.net:2866 (기본값), Database: cedb_obj, User: cedbadmin
 -- Object Storage URL 적용 버전
 --
 
@@ -14,8 +14,8 @@ SET client_min_messages = warning;
 -- Host: db.your_private_domain_name.net
 -- Port: 2866 (기본값)
 -- Database: cedb_obj (Object Storage 버전용 새 데이터베이스)
--- User: ceadmin (admin/app user)
--- Password: ceadmin123!
+-- User: cedbadmin (admin/app user)
+-- Password: cedbadmin123!
 -- This schema will be applied to the new cedb_obj database
 
 -- =====================================
@@ -436,6 +436,6 @@ SELECT
     'Creative Energy External Database (Object Storage Version) Setup Complete!' as setup_status,
     'db.your_private_domain_name.net:2866 (기본값)' as database_server,
     'cedb_obj' as database_name,
-    'ceadmin' as database_user,
+    'cedbadmin' as database_user,
     'Object Storage URL 적용됨' as special_feature,
     current_timestamp as completion_time;

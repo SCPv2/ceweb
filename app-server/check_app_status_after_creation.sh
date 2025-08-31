@@ -70,7 +70,7 @@ load_app_config() {
         DB_HOST=$(jq -r '.ceweb_required_variables.database_host // "db.cesvc.net"' "$MASTER_CONFIG")
         DB_PORT=$(jq -r '.ceweb_required_variables.database_port // "2866"' "$MASTER_CONFIG")
         DB_NAME=$(jq -r '.ceweb_required_variables.database_name // "cedb"' "$MASTER_CONFIG")
-        DB_USER=$(jq -r '.ceweb_required_variables.database_user // "ceadmin"' "$MASTER_CONFIG")
+        DB_USER=$(jq -r '.ceweb_required_variables.database_user // "cedbadmin"' "$MASTER_CONFIG")
         NODE_ENV=$(jq -r '.ceweb_required_variables.node_env // "production"' "$MASTER_CONFIG")
         
         log_info "App server configuration loaded:"
@@ -85,7 +85,7 @@ load_app_config() {
         DB_HOST="db.cesvc.net"
         DB_PORT="2866"
         DB_NAME="cedb"
-        DB_USER="ceadmin"
+        DB_USER="cedbadmin"
         NODE_ENV="production"
         return 1
     fi

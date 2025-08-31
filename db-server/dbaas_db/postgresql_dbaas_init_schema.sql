@@ -1,7 +1,7 @@
 --
 -- Creative Energy Database Initialization Schema - External DB
 -- Compatible with PostgreSQL 16.8
--- Target: db.your_private_domain_name.net:2866 (기본값), Database: cedb, User: ceadmin
+-- Target: db.your_private_domain_name.net:2866 (기본값), Database: cedb, User: cedbadmin
 -- Optimized for app.your_private_domain_name.net app-server connection
 --
 
@@ -14,8 +14,8 @@ SET client_min_messages = warning;
 -- Host: db.your_private_domain_name.net
 -- Port: 2866 (기본값)
 -- Database: cedb
--- User: ceadmin (admin/app user)
--- Password: ceadmin123!
+-- User: cedbadmin (admin/app user)
+-- Password: cedbadmin123!
 -- This schema will be applied to the existing cedb database
 
 -- =====================================
@@ -416,5 +416,5 @@ SELECT
     'Creative Energy External Database Setup Complete!' as setup_status,
     'db.your_private_domain_name.net:2866 (기본값)' as database_server,
     'cedb' as database_name,
-    'ceadmin' as database_user,
+    'cedbadmin' as database_user,
     current_timestamp as completion_time;

@@ -15,6 +15,7 @@ Contact: ars4mundus@gmail.com
 -->
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -36,7 +37,7 @@ Contact: ars4mundus@gmail.com
         /* Header */
         .header {
             background: white;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             position: fixed;
             width: 100%;
             top: 0;
@@ -111,7 +112,7 @@ Contact: ars4mundus@gmail.com
             left: 0;
             background: white;
             min-width: 200px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
             border-radius: 8px;
             padding: 1rem 0;
             z-index: 1001;
@@ -128,6 +129,7 @@ Contact: ars4mundus@gmail.com
                 opacity: 0;
                 transform: translateY(-10px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -218,7 +220,7 @@ Contact: ars4mundus@gmail.com
             background: white;
             border-radius: 10px;
             padding: 2rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             height: fit-content;
             position: sticky;
             top: 120px;
@@ -266,7 +268,7 @@ Contact: ars4mundus@gmail.com
             background: white;
             border-radius: 10px;
             padding: 2rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
         .section-title {
@@ -343,7 +345,7 @@ Contact: ars4mundus@gmail.com
             width: 100%;
             border-collapse: collapse;
             background: white;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             border-radius: 10px;
             overflow: hidden;
         }
@@ -430,7 +432,7 @@ Contact: ars4mundus@gmail.com
             background: white;
             border-radius: 10px;
             padding: 1rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s ease;
         }
 
@@ -481,7 +483,7 @@ Contact: ars4mundus@gmail.com
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.5);
+            background-color: rgba(0, 0, 0, 0.5);
         }
 
         .modal-content {
@@ -538,7 +540,7 @@ Contact: ars4mundus@gmail.com
             background: white;
             border-radius: 25px;
             padding: 8px 16px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
             font-size: 0.8rem;
             font-weight: 500;
             display: flex;
@@ -570,9 +572,17 @@ Contact: ars4mundus@gmail.com
         }
 
         @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+
+            100% {
+                opacity: 1;
+            }
         }
 
         .spinner {
@@ -586,8 +596,13 @@ Contact: ars4mundus@gmail.com
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         /* Status badges */
@@ -776,6 +791,7 @@ Contact: ars4mundus@gmail.com
         }
     </style>
 </head>
+
 <body>
     <!-- Header -->
     <header class="header">
@@ -830,7 +846,7 @@ Contact: ars4mundus@gmail.com
             <div id="products-section" class="section">
                 <h1 class="section-title">상품 관리</h1>
                 <p class="section-subtitle">상품을 등록, 수정, 삭제할 수 있습니다.</p>
-                
+
                 <div style="margin-bottom: 2rem;">
                     <button class="btn btn-primary" onclick="openProductModal()">+ 새 상품 등록</button>
                 </div>
@@ -844,7 +860,7 @@ Contact: ars4mundus@gmail.com
             <div id="inventory-section" class="section" style="display: none;">
                 <h1 class="section-title">재고 관리</h1>
                 <p class="section-subtitle">각 상품의 재고 수량을 관리할 수 있습니다.</p>
-                
+
                 <div style="margin-bottom: 2rem;">
                     <button class="btn btn-secondary" onclick="resetAllInventory()">전체 재고 리셋 (100개)</button>
                 </div>
@@ -870,7 +886,7 @@ Contact: ars4mundus@gmail.com
             <div id="orders-section" class="section" style="display: none;">
                 <h1 class="section-title">주문 관리</h1>
                 <p class="section-subtitle">고객 주문 내역을 확인하고 관리할 수 있습니다.</p>
-                
+
                 <div class="table-container">
                     <table class="data-table" id="orders-table">
                         <thead>
@@ -901,10 +917,10 @@ Contact: ars4mundus@gmail.com
                 <h2 class="modal-title" id="productModalTitle">새 상품 등록</h2>
                 <span class="close" onclick="closeProductModal()">&times;</span>
             </div>
-            
+
             <form id="productForm">
                 <input type="hidden" id="productId" value="">
-                
+
                 <div class="form-row">
                     <div class="form-col">
                         <div class="form-group">
@@ -961,21 +977,21 @@ Contact: ars4mundus@gmail.com
 
                 <div class="form-group">
                     <label class="form-label">상품 이미지</label>
-                    
+
                     <!-- 이미지 업로드 영역 -->
                     <div class="image-upload-area" id="imageUploadArea">
                         <div class="upload-icon">📁</div>
                         <div class="upload-text">상품 이미지를 업로드하세요</div>
                         <div class="upload-subtext">파일을 드래그 앤 드롭하거나 아래 버튼을 클릭하세요<br>
-                        (JPG, PNG 파일 지원, 최대 10MB)</div>
-                        <button type="button" class="upload-btn" onclick="document.getElementById('imageFileInput').click()">
+                            (JPG, PNG 파일 지원, 최대 10MB)</div>
+                        <button type="button" class="upload-btn"
+                            onclick="document.getElementById('imageFileInput').click()">
                             파일 선택
                         </button>
-                        <input type="file" id="imageFileInput" class="file-input" 
-                               accept=".jpg,.jpeg,.png" 
-                               onchange="handleImageUpload(event)">
+                        <input type="file" id="imageFileInput" class="file-input" accept=".jpg,.jpeg,.png"
+                            onchange="handleImageUpload(event)">
                     </div>
-                    
+
                     <!-- 업로드된 이미지 미리보기 -->
                     <div class="image-preview-section" id="imagePreviewSection" style="display: none;">
                         <div class="image-preview-title">업로드된 이미지</div>
@@ -990,7 +1006,7 @@ Contact: ars4mundus@gmail.com
                             </button>
                         </div>
                     </div>
-                    
+
                     <!-- 숨겨진 이미지 경로 입력 (기존 호환성 유지) -->
                     <input type="hidden" id="productImage" value="">
                 </div>
@@ -1009,7 +1025,7 @@ Contact: ars4mundus@gmail.com
         // Fallback API configuration in case api-config.js fails to load
         if (typeof API_CONFIG === 'undefined') {
             console.warn('api-config.js 로드 실패, 직접 API 설정 사용');
-            
+
             // API 기본 설정 (api-config.js와 동일)
             const API_CONFIG = {
                 development: {
@@ -1022,14 +1038,14 @@ Contact: ars4mundus@gmail.com
                 },
                 getCurrentEnv() {
                     // 로컬 개발환경 감지
-                    if (window.location.hostname === 'localhost' || 
+                    if (window.location.hostname === 'localhost' ||
                         window.location.hostname === '127.0.0.1' ||
                         window.location.hostname.includes('192.168.') ||
                         window.location.hostname.includes('10.0.') ||
                         window.location.hostname.includes('172.16.')) {
                         return 'development';
                     }
-                    
+
                     // 로드밸런서 환경에서 내부 IP 대역 체크
                     const hostname = window.location.hostname;
                     const internalNetworks = [
@@ -1040,14 +1056,14 @@ Contact: ars4mundus@gmail.com
                         '172.30.',    // Kubernetes 내부 네트워크
                         '10.'         // 기타 사설망 대역
                     ];
-                    
+
                     // 내부 IP 대역인 경우 development로 처리
                     for (const network of internalNetworks) {
                         if (hostname.startsWith(network)) {
                             return 'development';
                         }
                     }
-                    
+
                     return 'production';
                 },
                 get current() {
@@ -1091,7 +1107,7 @@ Contact: ars4mundus@gmail.com
             async function apiRequest(endpoint, options = {}) {
                 const config = API_CONFIG.current;
                 const url = config.baseURL + endpoint;
-                
+
                 const defaultOptions = {
                     method: 'GET',
                     headers: {
@@ -1099,42 +1115,42 @@ Contact: ars4mundus@gmail.com
                     },
                     timeout: config.timeout
                 };
-                
+
                 const requestOptions = { ...defaultOptions, ...options };
-                
+
                 try {
                     console.log(`API 요청: ${requestOptions.method} ${url}`);
-                    
+
                     const controller = new AbortController();
                     const timeoutId = setTimeout(() => controller.abort(), requestOptions.timeout);
-                    
+
                     const response = await fetch(url, {
                         ...requestOptions,
                         signal: controller.signal
                     });
-                    
+
                     clearTimeout(timeoutId);
-                    
+
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
-                    
+
                     const data = await response.json();
                     console.log('API 응답:', data);
-                    
+
                     return data;
-                    
+
                 } catch (error) {
                     console.error('API 요청 실패:', error);
-                    
+
                     if (error.name === 'AbortError') {
                         throw new Error('요청 시간이 초과되었습니다.');
                     }
-                    
+
                     if (error.message.includes('Failed to fetch')) {
                         throw new Error('서버에 연결할 수 없습니다. 네트워크 연결을 확인해주세요.');
                     }
-                    
+
                     throw error;
                 }
             }
@@ -1209,27 +1225,27 @@ Contact: ars4mundus@gmail.com
 
             console.log('Fallback API 설정 완료');
         }
-        
+
         // 상품 이미지 업로드 API 함수 (전역 함수로 정의)
         async function uploadProductImage(file) {
             const formData = new FormData();
             formData.append('file', file);
-            
+
             const config = API_CONFIG.current;
             const url = config.baseURL + '/audition/upload-product-image';
-            
+
             try {
                 console.log('상품 이미지 업로드 중:', file.name);
-                
+
                 const response = await fetch(url, {
                     method: 'POST',
                     body: formData
                 });
-                
+
                 if (!response.ok) {
                     const errorText = await response.text();
                     console.error(`이미지 업로드 HTTP ${response.status}: ${errorText}`);
-                    
+
                     if (response.status === 413) {
                         throw new Error(`파일이 너무 큽니다. (현재 파일: ${(file.size / 1024 / 1024).toFixed(1)}MB, 최대: 10MB)`);
                     } else if (response.status === 403) {
@@ -1238,16 +1254,16 @@ Contact: ars4mundus@gmail.com
                         throw new Error(`서버 오류 (${response.status}): ${response.statusText}`);
                     }
                 }
-                
+
                 const contentType = response.headers.get('content-type');
                 if (!contentType || !contentType.includes('application/json')) {
                     const responseText = await response.text();
                     console.error('JSON이 아닌 응답:', responseText.substring(0, 200));
                     throw new Error(`서버에서 잘못된 응답 형식을 반환했습니다`);
                 }
-                
+
                 const result = await response.json();
-                
+
                 if (result.success) {
                     return {
                         success: true,
@@ -1260,7 +1276,7 @@ Contact: ars4mundus@gmail.com
                 } else {
                     throw new Error(result.message || '파일 업로드에 실패했습니다.');
                 }
-                
+
             } catch (error) {
                 console.error('상품 이미지 업로드 오류:', error);
                 throw error;
@@ -1270,7 +1286,7 @@ Contact: ars4mundus@gmail.com
     <script>
         // API 설정은 api-config.js에서 처리됨
         console.log('admin.html 로드됨 - API 설정 확인중...');
-        
+
         // api-config.js가 로드되었는지 확인
         if (typeof getProducts === 'undefined') {
             console.error('api-config.js가 로드되지 않았습니다!');
@@ -1280,20 +1296,20 @@ Contact: ars4mundus@gmail.com
             console.log('api-config.js 로드 완료');
             console.log('API_CONFIG:', typeof API_CONFIG !== 'undefined' ? API_CONFIG.current : 'undefined');
             console.log('getProducts 함수:', getProducts);
-            
+
             // admin 함수들이 누락되었는지 확인하고 정의
             const requiredAdminFunctions = [
                 'getAdminProducts', 'createAdminProduct', 'updateAdminProduct', 'deleteAdminProduct',
                 'getAdminInventory', 'addAdminInventory', 'resetAdminInventory',
                 'getAdminOrders', 'deleteAdminOrder'
             ];
-            
+
             const missingFunctions = requiredAdminFunctions.filter(funcName => typeof window[funcName] === 'undefined');
-            
+
             if (missingFunctions.length > 0) {
                 console.warn('누락된 admin 함수들:', missingFunctions);
                 console.log('admin 함수들을 정의합니다...');
-                
+
                 // API_ENDPOINTS가 정의되지 않은 경우 정의
                 if (typeof API_ENDPOINTS === 'undefined') {
                     console.log('API_ENDPOINTS 정의 중...');
@@ -1327,77 +1343,77 @@ Contact: ars4mundus@gmail.com
                         }
                     };
                 }
-                
+
                 // 누락된 admin 함수들 정의 (하드코딩된 엔드포인트 사용)
                 if (typeof window.getAdminProducts === 'undefined') {
-                    window.getAdminProducts = async function() {
+                    window.getAdminProducts = async function () {
                         return await apiRequest('/orders/admin/products');
                     };
                 }
-                
+
                 if (typeof window.createAdminProduct === 'undefined') {
-                    window.createAdminProduct = async function(productData) {
+                    window.createAdminProduct = async function (productData) {
                         return await apiRequest('/orders/admin/products', {
                             method: 'POST',
                             body: JSON.stringify(productData)
                         });
                     };
                 }
-                
+
                 if (typeof window.updateAdminProduct === 'undefined') {
-                    window.updateAdminProduct = async function(productId, productData) {
+                    window.updateAdminProduct = async function (productId, productData) {
                         return await apiRequest(`/orders/admin/products/${productId}`, {
                             method: 'PUT',
                             body: JSON.stringify(productData)
                         });
                     };
                 }
-                
+
                 if (typeof window.deleteAdminProduct === 'undefined') {
-                    window.deleteAdminProduct = async function(productId) {
+                    window.deleteAdminProduct = async function (productId) {
                         return await apiRequest(`/orders/admin/products/${productId}`, {
                             method: 'DELETE'
                         });
                     };
                 }
-                
+
                 if (typeof window.getAdminInventory === 'undefined') {
-                    window.getAdminInventory = async function() {
+                    window.getAdminInventory = async function () {
                         return await apiRequest('/orders/admin/inventory');
                     };
                 }
-                
+
                 if (typeof window.addAdminInventory === 'undefined') {
-                    window.addAdminInventory = async function(productId, quantity) {
+                    window.addAdminInventory = async function (productId, quantity) {
                         return await apiRequest(`/orders/admin/inventory/${productId}/add`, {
                             method: 'POST',
                             body: JSON.stringify({ quantity })
                         });
                     };
                 }
-                
+
                 if (typeof window.resetAdminInventory === 'undefined') {
-                    window.resetAdminInventory = async function() {
+                    window.resetAdminInventory = async function () {
                         return await apiRequest('/orders/admin/reset-inventory', {
                             method: 'POST'
                         });
                     };
                 }
-                
+
                 if (typeof window.getAdminOrders === 'undefined') {
-                    window.getAdminOrders = async function() {
+                    window.getAdminOrders = async function () {
                         return await apiRequest('/orders/list');
                     };
                 }
-                
+
                 if (typeof window.deleteAdminOrder === 'undefined') {
-                    window.deleteAdminOrder = async function(orderId) {
+                    window.deleteAdminOrder = async function (orderId) {
                         return await apiRequest(`/orders/admin/orders/${orderId}`, {
                             method: 'DELETE'
                         });
                     };
                 }
-                
+
                 console.log('✅ 모든 admin 함수들이 정의되었습니다.');
             } else {
                 console.log('✅ 모든 admin 함수들이 이미 로드되어 있습니다.');
@@ -1409,8 +1425,8 @@ Contact: ars4mundus@gmail.com
             host: 'db.your_private_domain_name.net',
             port: 2866,
             database: 'cedb',
-            user: 'ceadmin',
-            password: 'ceadmin123!'
+            user: 'cedbadmin',
+            password: 'cedbadmin123!'
         };
 
         // 전역 변수
@@ -1425,11 +1441,11 @@ Contact: ars4mundus@gmail.com
         async function checkDatabaseConnection() {
             const statusElement = document.getElementById('dbStatus');
             const statusTextElement = document.getElementById('dbStatusText');
-            
+
             try {
                 // api-config.js의 getProducts 함수 사용
                 const data = await getProducts();
-                
+
                 if (data.success) {
                     statusElement.className = 'db-status connected';
                     statusTextElement.textContent = 'DB 연결됨 (app.your_private_domain_name.net:3000)';
@@ -1442,7 +1458,7 @@ Contact: ars4mundus@gmail.com
                 console.error('Database connection check failed:', error);
                 statusElement.className = 'db-status disconnected';
                 statusTextElement.textContent = 'DB 서버 연결 불가';
-                
+
                 // 연결 재시도 버튼 추가
                 setTimeout(() => {
                     if (statusTextElement.textContent.includes('연결 불가')) {
@@ -1456,7 +1472,7 @@ Contact: ars4mundus@gmail.com
         function updateDatabaseStatus(status, message) {
             const statusElement = document.getElementById('dbStatus');
             const statusTextElement = document.getElementById('dbStatusText');
-            
+
             statusElement.className = `db-status ${status}`;
             statusTextElement.textContent = message;
         }
@@ -1465,7 +1481,7 @@ Contact: ars4mundus@gmail.com
         function showSection(section) {
             // 모든 섹션 숨기기
             document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
-            
+
             // 사이드바 활성화 상태 변경
             document.querySelectorAll('.sidebar-item').forEach(item => {
                 item.classList.remove('active');
@@ -1477,7 +1493,7 @@ Contact: ars4mundus@gmail.com
             currentSection = section;
 
             // 섹션별 데이터 로드
-            switch(section) {
+            switch (section) {
                 case 'products':
                     loadProducts();
                     break;
@@ -1504,7 +1520,7 @@ Contact: ars4mundus@gmail.com
             showLoading();
             try {
                 const data = await getProducts();
-                
+
                 if (data.success && data.products) {
                     products = data.products;
                     renderProducts();
@@ -1617,7 +1633,7 @@ Contact: ars4mundus@gmail.com
         // 상품 목록 렌더링
         function renderProducts() {
             const container = document.getElementById('products-grid');
-            
+
             if (products.length === 0) {
                 container.innerHTML = '<p>등록된 상품이 없습니다.</p>';
                 return;
@@ -1646,11 +1662,11 @@ Contact: ars4mundus@gmail.com
             const modal = document.getElementById('productModal');
             const form = document.getElementById('productForm');
             const title = document.getElementById('productModalTitle');
-            
+
             // 폼 초기화
             form.reset();
             document.getElementById('productId').value = '';
-            
+
             // 이미지 미리보기 초기화
             removeImage();
 
@@ -1667,7 +1683,7 @@ Contact: ars4mundus@gmail.com
                     document.getElementById('productType').value = product.type;
                     document.getElementById('productBadge').value = product.badge || '';
                     document.getElementById('productImage').value = product.image;
-                    
+
                     // 기존 이미지가 있으면 미리보기 표시
                     if (product.image) {
                         showExistingImagePreview(product.image);
@@ -1702,7 +1718,7 @@ Contact: ars4mundus@gmail.com
             showLoading();
             try {
                 const data = await deleteAdminProduct(productId);
-                
+
                 if (data.success) {
                     alert('상품이 데이터베이스에서 삭제되었습니다.');
                     await loadProducts(); // 상품 목록 새로고침
@@ -1718,28 +1734,28 @@ Contact: ars4mundus@gmail.com
         }
 
         // 상품 폼 제출 - 실제 데이터베이스에 저장
-        document.getElementById('productForm').addEventListener('submit', async function(e) {
+        document.getElementById('productForm').addEventListener('submit', async function (e) {
             e.preventDefault();
-            
+
             const productId = document.getElementById('productId').value;
             const priceValue = parseInt(document.getElementById('productPrice').value);
-            
+
             // 입력값 유효성 검사
             if (!document.getElementById('productTitle').value.trim()) {
                 alert('상품명을 입력해주세요.');
                 return;
             }
-            
+
             if (!priceValue || priceValue < 0) {
                 alert('올바른 가격을 입력해주세요.');
                 return;
             }
-            
+
             if (!document.getElementById('productCategory').value) {
                 alert('카테고리를 선택해주세요.');
                 return;
             }
-            
+
             const formData = {
                 title: document.getElementById('productTitle').value.trim(),
                 subtitle: document.getElementById('productSubtitle').value.trim() || null,
@@ -1752,10 +1768,10 @@ Contact: ars4mundus@gmail.com
             };
 
             const isEdit = productId && productId !== '';
-            const confirmMessage = isEdit 
+            const confirmMessage = isEdit
                 ? `상품을 수정하시겠습니까?\n\n상품명: ${formData.title}\n가격: ${formData.price}\n카테고리: ${formData.category}\n\n주의: 실제 데이터베이스에 반영됩니다.`
                 : `새 상품을 등록하시겠습니까?\n\n상품명: ${formData.title}\n가격: ${formData.price}\n카테고리: ${formData.category}\n\n주의: 실제 데이터베이스에 저장됩니다.`;
-            
+
             if (!confirm(confirmMessage)) {
                 return;
             }
@@ -1768,16 +1784,16 @@ Contact: ars4mundus@gmail.com
                 } else {
                     data = await createAdminProduct(formData);
                 }
-                
+
                 if (data.success) {
-                    const successMessage = isEdit 
+                    const successMessage = isEdit
                         ? '✅ 상품이 수정되어 데이터베이스에 저장되었습니다.'
                         : '✅ 새 상품이 등록되어 데이터베이스에 저장되었습니다.';
-                    
+
                     alert(successMessage);
                     closeProductModal();
                     await loadProducts(); // 상품 목록 새로고침
-                    
+
                     // 새 상품 등록 시 재고도 자동 생성되므로 재고 목록도 새로고침
                     if (!isEdit && currentSection === 'inventory') {
                         await loadInventory();
@@ -1809,13 +1825,13 @@ Contact: ars4mundus@gmail.com
         async function loadProductsForInventory() {
             try {
                 const data = await getProducts();
-                
+
                 if (data.success && data.products) {
                     // 각 상품의 실제 재고 정보 조회
                     const inventoryPromises = data.products.map(async (product) => {
                         try {
                             const invData = await getProductInventory(product.id);
-                            
+
                             if (invData.success && invData.product) {
                                 return {
                                     product_id: product.id,
@@ -1850,7 +1866,7 @@ Contact: ars4mundus@gmail.com
                             };
                         }
                     });
-                    
+
                     inventory = await Promise.all(inventoryPromises);
                     renderInventory();
                 } else {
@@ -1875,7 +1891,7 @@ Contact: ars4mundus@gmail.com
         // 재고 목록 렌더링
         function renderInventory() {
             const tbody = document.querySelector('#inventory-table tbody');
-            
+
             if (inventory.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="4">재고 데이터가 없습니다.</td></tr>';
                 return;
@@ -1907,7 +1923,7 @@ Contact: ars4mundus@gmail.com
         async function addStock(productId) {
             const input = document.getElementById(`add-stock-${productId}`);
             const addQuantity = parseInt(input.value);
-            
+
             if (!addQuantity || addQuantity < 1) {
                 alert('추가할 재고 수량을 정확히 입력해주세요.');
                 return;
@@ -1920,7 +1936,7 @@ Contact: ars4mundus@gmail.com
             showLoading();
             try {
                 const data = await addAdminInventory(productId, addQuantity);
-                
+
                 if (data.success) {
                     alert(`재고가 ${addQuantity}개 추가되어 데이터베이스에 저장되었습니다.`);
                     input.value = '10'; // 입력값 초기화
@@ -1949,7 +1965,7 @@ Contact: ars4mundus@gmail.com
             showLoading();
             try {
                 const data = await resetAdminInventory();
-                
+
                 if (data.success) {
                     alert('✅ 모든 상품의 재고가 100개로 리셋되어 데이터베이스에 저장되었습니다.');
                     await loadInventory(); // 재고 목록 새로고침
@@ -1968,7 +1984,7 @@ Contact: ars4mundus@gmail.com
             showLoading();
             try {
                 const data = await getAdminOrders();
-                
+
                 if (data.success && data.orders) {
                     orders = data.orders;
                     renderOrders();
@@ -2011,7 +2027,7 @@ Contact: ars4mundus@gmail.com
         // 주문 목록 렌더링
         function renderOrders() {
             const tbody = document.querySelector('#orders-table tbody');
-            
+
             if (orders.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="8">주문 데이터가 없습니다.</td></tr>';
                 return;
@@ -2019,11 +2035,11 @@ Contact: ars4mundus@gmail.com
 
             const rows = orders.map(order => {
                 const orderDate = new Date(order.order_date).toLocaleString('ko-KR');
-                const statusClass = order.status === 'completed' ? 'status-completed' : 
-                                   order.status === 'pending' ? 'status-pending' : 'status-cancelled';
-                const statusText = order.status === 'completed' ? '완료' : 
-                                  order.status === 'pending' ? '대기' : '취소';
-                
+                const statusClass = order.status === 'completed' ? 'status-completed' :
+                    order.status === 'pending' ? 'status-pending' : 'status-cancelled';
+                const statusText = order.status === 'completed' ? '완료' :
+                    order.status === 'pending' ? '대기' : '취소';
+
                 return `
                     <tr>
                         <td>#${order.id}</td>
@@ -2053,7 +2069,7 @@ Contact: ars4mundus@gmail.com
             showLoading();
             try {
                 const data = await deleteAdminOrder(orderId);
-                
+
                 if (data.success) {
                     alert('주문이 데이터베이스에서 삭제되었습니다.');
                     await loadOrders(); // 주문 목록 새로고침
@@ -2074,39 +2090,39 @@ Contact: ars4mundus@gmail.com
                 validateAndUploadImage(file);
             }
         }
-        
+
         function validateAndUploadImage(file) {
             // 파일 검증
             const maxSize = 10 * 1024 * 1024; // 10MB
             const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
-            
+
             if (file.size > maxSize) {
                 alert(`파일 크기는 10MB를 초과할 수 없습니다. (현재: ${(file.size / 1024 / 1024).toFixed(1)}MB)`);
                 return;
             }
-            
+
             if (!allowedTypes.includes(file.type)) {
                 alert('지원하지 않는 파일 형식입니다. JPG, PNG 파일만 업로드 가능합니다.');
                 return;
             }
-            
+
             // 파일 업로드 실행
             uploadImageFile(file);
         }
-        
+
         async function uploadImageFile(file) {
             showLoading();
-            
+
             try {
                 const result = await uploadProductImage(file);
-                
+
                 if (result.success) {
                     // 이미지 미리보기 표시
                     showImagePreview(file, result.file);
-                    
+
                     // 숨겨진 input에 이미지 경로 저장
                     document.getElementById('productImage').value = result.file.path;
-                    
+
                     alert('이미지가 성공적으로 업로드되었습니다!');
                 } else {
                     alert('이미지 업로드에 실패했습니다.');
@@ -2115,86 +2131,86 @@ Contact: ars4mundus@gmail.com
                 console.error('이미지 업로드 오류:', error);
                 alert(`이미지 업로드 중 오류가 발생했습니다: ${error.message}`);
             }
-            
+
             hideLoading();
-            
+
             // 파일 입력 초기화
             document.getElementById('imageFileInput').value = '';
         }
-        
+
         function showImagePreview(file, uploadedFile) {
             const previewSection = document.getElementById('imagePreviewSection');
             const imagePreview = document.getElementById('imagePreview');
             const imageName = document.getElementById('imageName');
             const imagePath = document.getElementById('imagePath');
-            
+
             // 파일을 읽어서 미리보기 이미지 설정
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = function (e) {
                 imagePreview.src = e.target.result;
             };
             reader.readAsDataURL(file);
-            
+
             // 파일 정보 표시
             imageName.textContent = file.name;
             imagePath.textContent = uploadedFile.path;
-            
+
             // 미리보기 섹션 표시
             previewSection.style.display = 'block';
         }
-        
+
         function removeImage() {
             // 미리보기 숨기기
             document.getElementById('imagePreviewSection').style.display = 'none';
-            
+
             // 숨겨진 input 초기화
             document.getElementById('productImage').value = '';
-            
+
             // 파일 입력 초기화
             document.getElementById('imageFileInput').value = '';
         }
-        
+
         function showExistingImagePreview(imagePath) {
             const previewSection = document.getElementById('imagePreviewSection');
             const imagePreview = document.getElementById('imagePreview');
             const imageName = document.getElementById('imageName');
             const imagePathElement = document.getElementById('imagePath');
-            
+
             // 기존 이미지 미리보기 설정
             imagePreview.src = imagePath;
-            
+
             // 파일 정보 표시
             const fileName = imagePath.split('/').pop();
             imageName.textContent = fileName;
             imagePathElement.textContent = imagePath;
-            
+
             // 미리보기 섹션 표시
             previewSection.style.display = 'block';
         }
-        
+
         // 페이지 초기화 - 기존 DOMContentLoaded 이벤트 수정
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             checkDatabaseConnection();
             loadProducts();
-            
+
             // 이미지 드래그 앤 드롭 기능 추가
             const uploadArea = document.getElementById('imageUploadArea');
-            
+
             if (uploadArea) {
-                uploadArea.addEventListener('dragover', function(e) {
+                uploadArea.addEventListener('dragover', function (e) {
                     e.preventDefault();
                     uploadArea.classList.add('dragover');
                 });
-                
-                uploadArea.addEventListener('dragleave', function(e) {
+
+                uploadArea.addEventListener('dragleave', function (e) {
                     e.preventDefault();
                     uploadArea.classList.remove('dragover');
                 });
-                
-                uploadArea.addEventListener('drop', function(e) {
+
+                uploadArea.addEventListener('drop', function (e) {
                     e.preventDefault();
                     uploadArea.classList.remove('dragover');
-                    
+
                     const files = e.dataTransfer.files;
                     if (files.length > 0) {
                         const file = files[0];
@@ -2205,19 +2221,19 @@ Contact: ars4mundus@gmail.com
                         }
                     }
                 });
-                
+
                 // 클릭으로도 파일 선택 가능
-                uploadArea.addEventListener('click', function(e) {
-                    if (e.target === uploadArea || e.target.classList.contains('upload-icon') || 
+                uploadArea.addEventListener('click', function (e) {
+                    if (e.target === uploadArea || e.target.classList.contains('upload-icon') ||
                         e.target.classList.contains('upload-text') || e.target.classList.contains('upload-subtext')) {
                         document.getElementById('imageFileInput').click();
                     }
                 });
             }
         });
-        
+
         // 모달 외부 클릭 시 닫기
-        window.onclick = function(event) {
+        window.onclick = function (event) {
             const modal = document.getElementById('productModal');
             if (event.target === modal) {
                 closeProductModal();
@@ -2228,7 +2244,7 @@ Contact: ars4mundus@gmail.com
     <!-- Load Balancer 서버 상태 아이콘 -->
     <script src="../scripts/server-status-icons.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             // 서버 상태 아이콘 초기화
             if (typeof initServerStatusIcons === 'function') {
                 initServerStatusIcons('serverStatusIcons');
@@ -2239,4 +2255,5 @@ Contact: ars4mundus@gmail.com
     <!-- Master Variables Loader -->
     <script src="../scripts/master-variables-loader.js"></script>
 </body>
+
 </html>

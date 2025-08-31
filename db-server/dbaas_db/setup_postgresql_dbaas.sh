@@ -14,7 +14,7 @@
 # ==============================================================================
 
 # Creative Energy DBaaS Database Setup Script
-# Target: db.your_private_domain_name.net:2866, Database: cedb, User: ceadmin
+# Target: db.your_private_domain_name.net:2866, Database: cedb, User: cedbadmin
 # Execute from: app.your_private_domain_name.net (app-server)
 # Purpose: Complete database schema setup for DBaaS PostgreSQL server
 
@@ -33,8 +33,8 @@ NC='\033[0m' # No Color
 DB_HOST="db.your_private_domain_name.net"
 DB_PORT="2866"
 DB_NAME="cedb"
-DB_USER="ceadmin"
-DB_PASSWORD="ceadmin123!"
+DB_USER="cedbadmin"
+DB_PASSWORD="cedbadmin123!"
 SCHEMA_FILE="./postgresql_dbaas_init_schema.sql"
 
 # App Server Configuration

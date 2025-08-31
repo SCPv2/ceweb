@@ -28,21 +28,21 @@ class TemplateVariablesLoader {
             // 도메인 설정
             publicDomain: 'your_public_domain_name.net',
             privateDomain: 'your_private_domain_name.net',
-            
+
             // 서버 설정
             webServerHost: 'www.your_private_domain_name.net',
-            appServerHost: 'app.your_private_domain_name.net', 
+            appServerHost: 'app.your_private_domain_name.net',
             dbServerHost: 'db.your_private_domain_name.net',
-            
+
             // 포트 설정
             webPort: '80',
             appPort: '3000',
             dbPort: '2866',
-            
+
             // Load Balancer 설정
             webLbServiceIp: '10.1.1.100',
             appLbServiceIp: '10.1.2.100',
-            
+
             // IP 설정
             webPrimaryIp: '10.1.1.111',
             webSecondaryIp: '10.1.1.112',
@@ -50,11 +50,11 @@ class TemplateVariablesLoader {
             appSecondaryIp: '10.1.2.122',
             dbPrimaryIp: '10.1.3.131',
             bastionIp: '10.1.1.110',
-            
+
             // 데이터베이스 설정
             databaseName: 'creative_energy_db',
-            databaseUser: 'ceadmin',
-            
+            databaseUser: 'cedbadmin',
+
             // Object Storage 설정
             objectStorageUrl: './media/img/',
             bucketName: 'ceweb',
@@ -78,12 +78,12 @@ class TemplateVariablesLoader {
             }
 
             const masterConfig = await response.json();
-            
+
             // Object Storage URL 생성
             let objectStorageUrl = './media/img/';
             let objectStorageFilesUrl = './files/audition/';
-            
-            if (masterConfig.object_storage && 
+
+            if (masterConfig.object_storage &&
                 masterConfig.object_storage.bucket_string !== 'thisneedstobereplaced1234') {
                 const bucketString = masterConfig.object_storage.bucket_string;
                 const bucketName = masterConfig.object_storage.bucket_name;
@@ -97,21 +97,21 @@ class TemplateVariablesLoader {
                 // 도메인 설정
                 publicDomain: masterConfig.infrastructure?.domain?.public_domain_name || this.fallbackConfig.publicDomain,
                 privateDomain: masterConfig.infrastructure?.domain?.private_domain_name || this.fallbackConfig.privateDomain,
-                
+
                 // 서버 호스트 설정
                 webServerHost: `www.${masterConfig.infrastructure?.domain?.private_domain_name || this.fallbackConfig.privateDomain}`,
                 appServerHost: `app.${masterConfig.infrastructure?.domain?.private_domain_name || this.fallbackConfig.privateDomain}`,
                 dbServerHost: `db.${masterConfig.infrastructure?.domain?.private_domain_name || this.fallbackConfig.privateDomain}`,
-                
+
                 // 포트 설정  
                 webPort: masterConfig.application?.web_server?.nginx_port?.toString() || this.fallbackConfig.webPort,
                 appPort: masterConfig.application?.app_server?.port?.toString() || this.fallbackConfig.appPort,
                 dbPort: masterConfig.application?.database?.port?.toString() || this.fallbackConfig.dbPort,
-                
+
                 // Load Balancer 설정
                 webLbServiceIp: masterConfig.infrastructure?.load_balancer?.web_lb_service_ip || this.fallbackConfig.webLbServiceIp,
                 appLbServiceIp: masterConfig.infrastructure?.load_balancer?.app_lb_service_ip || this.fallbackConfig.appLbServiceIp,
-                
+
                 // IP 설정
                 webPrimaryIp: masterConfig.infrastructure?.servers?.web_primary_ip || this.fallbackConfig.webPrimaryIp,
                 webSecondaryIp: masterConfig.infrastructure?.servers?.web_secondary_ip || this.fallbackConfig.webSecondaryIp,
@@ -119,17 +119,17 @@ class TemplateVariablesLoader {
                 appSecondaryIp: masterConfig.infrastructure?.servers?.app_secondary_ip || this.fallbackConfig.appSecondaryIp,
                 dbPrimaryIp: masterConfig.infrastructure?.servers?.db_primary_ip || this.fallbackConfig.dbPrimaryIp,
                 bastionIp: masterConfig.infrastructure?.servers?.bastion_ip || this.fallbackConfig.bastionIp,
-                
+
                 // 데이터베이스 설정
                 databaseName: masterConfig.application?.app_server?.database_name || this.fallbackConfig.databaseName,
-                databaseUser: 'ceadmin', // 보안상 하드코딩 유지
-                
+                databaseUser: 'cedbadmin', // 보안상 하드코딩 유지
+
                 // Object Storage 설정
                 objectStorageUrl: objectStorageUrl,
                 objectStorageFilesUrl: objectStorageFilesUrl,
                 bucketName: masterConfig.object_storage?.bucket_name || this.fallbackConfig.bucketName,
                 region: masterConfig.object_storage?.region || this.fallbackConfig.region,
-                
+
                 // 네트워크 설정
                 vpcCidr: masterConfig.infrastructure?.network?.vpc_cidr || '10.1.0.0/16',
                 webSubnetCidr: masterConfig.infrastructure?.network?.web_subnet_cidr || '10.1.1.0/24',
@@ -155,7 +155,7 @@ class TemplateVariablesLoader {
      */
     async replaceAllVariables(options = {}) {
         const config = await this.loadConfig();
-        
+
         const defaultOptions = {
             replaceTemplateVariables: true,
             replaceObjectStorage: true,
@@ -172,12 +172,12 @@ class TemplateVariablesLoader {
             this.replaceInElements('a[href*="{{PUBLIC_DOMAIN}}"]', 'href',
                 /\{\{PUBLIC_DOMAIN\}\}/g,
                 `http://www.${config.publicDomain}`, opts.logChanges);
-                
+
             // PRIVATE_DOMAIN 변수 교체
             this.replaceInElements('a[href*="{{PRIVATE_DOMAIN}}"]', 'href',
                 /\{\{PRIVATE_DOMAIN\}\}/g,
                 `http://www.${config.privateDomain}`, opts.logChanges);
-                
+
             // DOMAIN_NAME 변수 교체 (이메일 등)
             this.replaceTextContent(/\{\{DOMAIN_NAME\}\}/g, config.publicDomain, opts.logChanges);
         }
@@ -196,7 +196,7 @@ class TemplateVariablesLoader {
             // CSS background-image 변수 교체
             this.replaceInStyleElements(/\{\{OBJECT_STORAGE_MEDIA_BASE\}\}/g,
                 config.objectStorageUrl, opts.logChanges);
-                
+
             // 파일 업로드 URL 교체
             this.replaceInElements('[src*="{{OBJECT_STORAGE_FILES_BASE}}"]', 'src',
                 /\{\{OBJECT_STORAGE_FILES_BASE\}\}/g,
@@ -206,9 +206,9 @@ class TemplateVariablesLoader {
         // 3. 서버 IP 및 호스트 템플릿 변수 교체
         if (opts.replaceServerIps) {
             // APP_SERVER_URL 변수 교체
-            this.replaceTextContent(/\{\{APP_SERVER_URL\}\}/g, 
+            this.replaceTextContent(/\{\{APP_SERVER_URL\}\}/g,
                 `http://${config.appServerHost}:${config.appPort}`, opts.logChanges);
-                
+
             // DB_SERVER_URL 변수 교체
             this.replaceTextContent(/\{\{DB_SERVER_URL\}\}/g,
                 `postgresql://${config.dbServerHost}:${config.dbPort}/${config.databaseName}`, opts.logChanges);
@@ -232,7 +232,7 @@ class TemplateVariablesLoader {
             if (oldValue && pattern.test(oldValue)) {
                 const newValue = oldValue.replace(pattern, replacement);
                 element.setAttribute(attribute, newValue);
-                
+
                 if (logChanges) {
                     console.log(`🔄 Template variable replacement: ${selector} ${attribute}`, {
                         old: oldValue,
@@ -257,7 +257,7 @@ class TemplateVariablesLoader {
             if (oldValue && pattern.test(oldValue)) {
                 const newValue = oldValue.replace(pattern, replacement);
                 element.setAttribute(attributeName, newValue);
-                
+
                 if (logChanges) {
                     console.log(`🔄 Template variable in attribute: ${attributeName}`, {
                         element: element.tagName,
@@ -283,7 +283,7 @@ class TemplateVariablesLoader {
             if (oldContent && pattern.test(oldContent)) {
                 const newContent = oldContent.replace(pattern, replacement);
                 styleElement.textContent = newContent;
-                
+
                 if (logChanges) {
                     console.log('🔄 CSS style replacement:', {
                         pattern: pattern.toString(),
@@ -300,7 +300,7 @@ class TemplateVariablesLoader {
             if (oldStyle && pattern.test(oldStyle)) {
                 const newStyle = oldStyle.replace(pattern, replacement);
                 element.setAttribute('style', newStyle);
-                
+
                 if (logChanges) {
                     console.log('🔄 Inline style replacement:', {
                         element: element.tagName,
@@ -326,7 +326,7 @@ class TemplateVariablesLoader {
             if (oldContent && pattern.test(oldContent)) {
                 const newContent = oldContent.replace(pattern, replacement);
                 scriptElement.textContent = newContent;
-                
+
                 if (logChanges) {
                     console.log('🔄 Script content replacement:', {
                         pattern: pattern.toString(),
@@ -343,7 +343,7 @@ class TemplateVariablesLoader {
                 if (attr.name.startsWith('data-') && pattern.test(attr.value)) {
                     const newValue = attr.value.replace(pattern, replacement);
                     element.setAttribute(attr.name, newValue);
-                    
+
                     if (logChanges) {
                         console.log('🔄 Data attribute replacement:', {
                             element: element.tagName,
@@ -451,7 +451,7 @@ class TemplateVariablesLoader {
     getCorsOrigins() {
         const publicDomain = this.getConfig('publicDomain');
         const privateDomain = this.getConfig('privateDomain');
-        
+
         return [
             `http://www.${publicDomain}`,
             `https://www.${publicDomain}`,
@@ -473,7 +473,7 @@ window.MasterVariablesLoader = window.TemplateVariablesLoader; // 하위 호환�
  * 페이지 로드 시 자동 실행 함수
  * @param {Object} options 실행 옵션
  */
-window.initTemplateVariables = async function(options = {}) {
+window.initTemplateVariables = async function (options = {}) {
     try {
         await window.TemplateVariablesLoader.replaceAllVariables(options);
     } catch (error) {
@@ -489,7 +489,7 @@ window.initMasterVariables = window.initTemplateVariables;
  * @param {string} key 설정 키
  * @returns {any} 설정값
  */
-window.getConfigValue = function(key) {
+window.getConfigValue = function (key) {
     return window.TemplateVariablesLoader.getConfig(key);
 };
 
@@ -511,7 +511,7 @@ window.TemplateVariables = {
 window.MasterVariables = window.TemplateVariables;
 
 // DOM 로드 완료 시 자동 실행 (옵션)
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // 자동 실행을 원하지 않는 페이지는 data-no-auto-variables 속성 추가
     if (document.documentElement.hasAttribute('data-no-auto-variables')) {
         console.log('🔧 Template Variables Loader: Auto-execution disabled');
@@ -519,9 +519,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // 개발 환경에서는 로그 출력
-    const isDevelopment = window.location.hostname === 'localhost' || 
-                         window.location.hostname === '127.0.0.1' ||
-                         window.location.hostname.startsWith('192.168.');
+    const isDevelopment = window.location.hostname === 'localhost' ||
+        window.location.hostname === '127.0.0.1' ||
+        window.location.hostname.startsWith('192.168.');
 
     window.initTemplateVariables({
         logChanges: isDevelopment

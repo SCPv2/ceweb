@@ -67,8 +67,8 @@ load_db_config() {
     if [[ -f "$MASTER_CONFIG" ]]; then
         DB_PORT=$(jq -r '.ceweb_required_variables.database_port // "2866"' "$MASTER_CONFIG")
         DB_NAME=$(jq -r '.ceweb_required_variables.database_name // "cedb"' "$MASTER_CONFIG")
-        DB_USER=$(jq -r '.ceweb_required_variables.database_user // "ceadmin"' "$MASTER_CONFIG")
-        DB_PASSWORD=$(jq -r '.ceweb_required_variables.database_password // "ceadmin123!"' "$MASTER_CONFIG")
+        DB_USER=$(jq -r '.ceweb_required_variables.database_user // "cedbadmin"' "$MASTER_CONFIG")
+        DB_PASSWORD=$(jq -r '.ceweb_required_variables.database_password // "cedbadmin123!"' "$MASTER_CONFIG")
         DB_HOST=$(jq -r '.ceweb_required_variables.database_host // "localhost"' "$MASTER_CONFIG")
         
         log_info "Database configuration loaded:"
@@ -81,8 +81,8 @@ load_db_config() {
         log_warning "Using default database configuration"
         DB_PORT="2866"
         DB_NAME="cedb"
-        DB_USER="ceadmin"
-        DB_PASSWORD="ceadmin123!"
+        DB_USER="cedbadmin"
+        DB_PASSWORD="cedbadmin123!"
         DB_HOST="localhost"
         return 1
     fi

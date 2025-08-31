@@ -22,20 +22,20 @@ const pool = new Pool({
   host: process.env.DB_HOST || 'db.your_private_domain_name.net',
   port: process.env.DB_PORT || 2866,
   database: process.env.DB_NAME || 'cedb',
-  user: process.env.DB_USER || 'ceadmin',
+  user: process.env.DB_USER || 'cedbadmin',
   password: process.env.DB_PASSWORD,
   ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
-  
+
   // 연결 풀 설정
   min: parseInt(process.env.DB_POOL_MIN) || 2,
   max: parseInt(process.env.DB_POOL_MAX) || 10,
   idleTimeoutMillis: parseInt(process.env.DB_POOL_IDLE_TIMEOUT) || 30000,
   connectionTimeoutMillis: parseInt(process.env.DB_POOL_CONNECTION_TIMEOUT) || 5000,
-  
+
   // 네트워크 지연을 고려한 타임아웃 설정
   query_timeout: 60000,
   statement_timeout: 60000,
-  
+
   // 에러 핸들링
   allowExitOnIdle: true
 });
@@ -55,7 +55,7 @@ pool.on('error', (err, client) => {
     host: process.env.DB_HOST || 'db.your_private_domain_name.net',
     port: process.env.DB_PORT || 2866,
     database: process.env.DB_NAME || 'cedb',
-    user: process.env.DB_USER || 'ceadmin'
+    user: process.env.DB_USER || 'cedbadmin'
   });
 });
 
@@ -72,7 +72,7 @@ const testConnection = async () => {
     console.error('- Host:', process.env.DB_HOST || 'db.your_private_domain_name.net');
     console.error('- Port:', process.env.DB_PORT || 2866);
     console.error('- Database:', process.env.DB_NAME || 'cedb');
-    console.error('- User:', process.env.DB_USER || 'ceadmin');
+    console.error('- User:', process.env.DB_USER || 'cedbadmin');
   }
 };
 
