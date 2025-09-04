@@ -45,29 +45,105 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-log "Creative Energy Web Server 설치를 시작합니다..."
+# Function to get domain configuration interactively
+get_domain_configuration() {
+    echo
+    echo -e "${BLUE}================================================================${NC}"
+    echo -e "${BLUE} Domain Configuration Setup${NC}"
+    echo -e "${BLUE}================================================================${NC}"
+    echo
+    
+    # Load master configuration file if available
+    MASTER_CONFIG_FILE="/home/rocky/ceweb/web-server/master_config.json"
+    local auto_detected_private=""
+    local auto_detected_public=""
+    
+    # Try to auto-detect from master_config.json if exists
+    if [ -f "$MASTER_CONFIG_FILE" ] && command -v jq >/dev/null 2>&1; then
+        auto_detected_private=$(jq -r '.infrastructure.domain.private_domain_name // empty' "$MASTER_CONFIG_FILE" 2>/dev/null || echo "")
+        auto_detected_public=$(jq -r '.infrastructure.domain.public_domain_name // empty' "$MASTER_CONFIG_FILE" 2>/dev/null || echo "")
+        
+        if [ -n "$auto_detected_private" ] && [ -n "$auto_detected_public" ] && [ "$auto_detected_private" != "null" ] && [ "$auto_detected_public" != "null" ]; then
+            log "Auto-detected domains from master_config.json:"
+            log "  Private: $auto_detected_private"
+            log "  Public: $auto_detected_public"
+            echo -n "Use these domains? [Y/n]: "
+            read -r use_auto
+            if [[ "$use_auto" =~ ^[Yy]$|^$ ]]; then
+                PRIVATE_DOMAIN_NAME="$auto_detected_private"
+                PUBLIC_DOMAIN_NAME="$auto_detected_public"
+            else
+                auto_detected_private=""
+                auto_detected_public=""
+            fi
+        fi
+    fi
+    
+    # Get private domain
+    if [ -z "$auto_detected_private" ]; then
+        echo "Please enter your private domain name"
+        echo "Examples: cesvc.net, internal.local, company.local"
+        echo -n "Private domain [cesvc.net]: "
+        read -r input_private
+        PRIVATE_DOMAIN_NAME="${input_private:-cesvc.net}"
+    fi
+    
+    # Get public domain  
+    if [ -z "$auto_detected_public" ]; then
+        echo
+        echo "Please enter your public domain name"
+        echo "Examples: creative-energy.net, yourdomain.com"
+        echo -n "Public domain [creative-energy.net]: "
+        read -r input_public
+        PUBLIC_DOMAIN_NAME="${input_public:-creative-energy.net}"
+    fi
+    
+    # Validate inputs
+    if [ -z "$PRIVATE_DOMAIN_NAME" ]; then
+        error "Private domain name cannot be empty!"
+        exit 1
+    fi
+    
+    if [ -z "$PUBLIC_DOMAIN_NAME" ]; then
+        error "Public domain name cannot be empty!"
+        exit 1
+    fi
+    
+    # Set server hostnames based on domains
+    APP_SERVER_HOST="app.${PRIVATE_DOMAIN_NAME}"
+    DEFAULT_SERVER_NAMES="www.$PRIVATE_DOMAIN_NAME www.$PUBLIC_DOMAIN_NAME"
+    
+    # Display final configuration
+    echo
+    log "Domain Configuration:"
+    log "  Private Domain: $PRIVATE_DOMAIN_NAME"
+    log "  Public Domain: $PUBLIC_DOMAIN_NAME"
+    log "  Web Server Names: $DEFAULT_SERVER_NAMES"
+    log "  App Server: $APP_SERVER_HOST"
+    echo
+    echo -n "Confirm this configuration? [Y/n]: "
+    read -r confirm
+    if [[ ! "$confirm" =~ ^[Yy]$|^$ ]]; then
+        log "Configuration cancelled by user. Please restart the script."
+        exit 0
+    fi
+    
+    log "✅ Domain configuration confirmed!"
+}
 
-# Load master configuration
+# Get domain configuration first
+get_domain_configuration
+
+# Other configuration variables with defaults
 WEB_DIR="/home/rocky/ceweb"
-MASTER_CONFIG_LOADER="$WEB_DIR/web-server/load_master_config.sh"
+WEB_LB_SERVICE_IP="10.1.1.100"
+APP_LB_SERVICE_IP="10.1.2.100"
+WEB_PRIMARY_IP="10.1.1.111"
+WEB_SECONDARY_IP="10.1.1.112"
+APP_PORT="3000"
 
-if [ -f "$MASTER_CONFIG_LOADER" ]; then
-    log "Master configuration 로드 중..."
-    source "$MASTER_CONFIG_LOADER"
-    log "서버 역할: 정적 파일 서빙 + API 프록시 (www.$PRIVATE_DOMAIN_NAME, www.$PUBLIC_DOMAIN_NAME)"
-else
-    warn "Master config loader not found. Using default values."
-    # 기본값 설정
-    export PUBLIC_DOMAIN_NAME="your_public_domain_name.net"
-    export PRIVATE_DOMAIN_NAME="your_private_domain_name.net"
-    export WEB_LB_SERVICE_IP="10.1.1.100"
-    export APP_LB_SERVICE_IP="10.1.2.100"
-    export WEB_PRIMARY_IP="10.1.1.111"
-    export WEB_SECONDARY_IP="10.1.1.112"
-    export DEFAULT_SERVER_NAMES="www.$PRIVATE_DOMAIN_NAME www.$PUBLIC_DOMAIN_NAME"
-    export APP_SERVER_HOST="app.$PRIVATE_DOMAIN_NAME"
-    log "서버 역할: 정적 파일 서빙 + API 프록시 (기본값 사용)"
-fi
+log "Creative Energy Web Server 설치를 시작합니다..."
+log "서버 역할: 정적 파일 서빙 + API 프록시 (www.$PRIVATE_DOMAIN_NAME, www.$PUBLIC_DOMAIN_NAME)"
 
 # 1. 시스템 업데이트
 log "시스템 업데이트 중..."
@@ -129,14 +205,13 @@ else
     log "SELinux가 비활성화되어 있거나 설치되지 않았습니다"
 fi
 
-# 5. Web Server 도메인 설정 (master_config.json 기반)
+# 5. Web Server 도메인 설정 (대화형 설정 기반)
 log "Web Server 도메인 설정 중..."
 
-# 기본 서버명 (master config에서 로드됨)
-# DEFAULT_SERVER_NAMES는 이미 load_master_config.sh에서 설정됨
+# 기본 서버명 (대화형 설정에서 로드됨)
 SERVER_NAMES="$DEFAULT_SERVER_NAMES"
 
-log "✅ Web Server 도메인이 master_config.json 기반으로 설정되었습니다"
+log "✅ Web Server 도메인이 대화형으로 설정되었습니다"
 log "Nginx 서버명 목록: $SERVER_NAMES"
 
 # 6. Nginx 설정 파일 생성
@@ -482,7 +557,7 @@ if [ -f "$API_CONFIG_FILE" ]; then
     # production baseURL을 '/api'로 수정 (Web-Server 프록시 사용)
     sed -i "s|baseURL: 'http://$APP_SERVER_HOST:$APP_PORT/api'|baseURL: '/api'|g" "$API_CONFIG_FILE"
     # 기존 하드코딩된 값도 처리
-    sed -i "s|baseURL: 'http://app.your_private_domain_name.net:3000/api'|baseURL: '/api'|g" "$API_CONFIG_FILE"
+    sed -i "s|baseURL: 'http://app.${PRIVATE_DOMAIN_NAME}:3000/api'|baseURL: '/api'|g" "$API_CONFIG_FILE"
     
     # 파일 수정 확인
     if grep -q "baseURL: '/api'" "$API_CONFIG_FILE"; then
@@ -497,7 +572,7 @@ if [ -f "$API_CONFIG_FILE" ]; then
 else
     warn "⚠️ api-config.js 파일을 찾을 수 없습니다: $API_CONFIG_FILE"
     warn "   웹 파일 배포 후 수동으로 다음 명령어를 실행하세요:"
-    warn "   sed -i \"s|baseURL: 'http://app.your_private_domain_name.net:3000/api'|baseURL: '/api'|g\" $API_CONFIG_FILE"
+    warn "   sed -i \"s|baseURL: 'http://app.${PRIVATE_DOMAIN_NAME}:3000/api'|baseURL: '/api'|g\" $API_CONFIG_FILE"
 fi
 
 # 13. 설치 완료 메시지
@@ -550,7 +625,7 @@ log "- API 타임아웃 최적화: 10초 연결, 30초 읽기/쓰기"
 log ""
 log "⚠️  중요 사항:"
 log "- 이 서버는 정적 파일 서빙과 API 프록시 역할만 수행합니다"
-log "- 실제 API 처리는 app.your_private_domain_name.net:3000에서 수행됩니다"
+log "- 실제 API 처리는 app.${PRIVATE_DOMAIN_NAME}:3000에서 수행됩니다"
 log "- App Server가 실행 중이어야 API 요청이 정상 동작합니다"
 log "- SELinux 설정이 자동으로 구성되어 /media/ 및 /files/ 디렉토리 접근 가능"
 log "- 브라우저에서 API 연결 시 '/api' 경로를 통해 프록시됩니다"

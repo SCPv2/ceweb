@@ -45,14 +45,96 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-# Load master configuration
-MASTER_CONFIG_FILE="/home/rocky/ceweb/web-server/master_config.json"
+# Function to get domain configuration interactively
+get_domain_configuration() {
+    echo
+    echo -e "${BLUE}================================================================${NC}"
+    echo -e "${BLUE} Domain Configuration Setup${NC}"
+    echo -e "${BLUE}================================================================${NC}"
+    echo
+    
+    # Load master configuration file if available
+    MASTER_CONFIG_FILE="/home/rocky/ceweb/web-server/master_config.json"
+    local auto_detected_private=""
+    local auto_detected_public=""
+    
+    # Try to auto-detect from master_config.json if exists
+    if [ -f "$MASTER_CONFIG_FILE" ] && command -v jq >/dev/null 2>&1; then
+        auto_detected_private=$(jq -r '.user_input_variables.private_domain_name // empty' "$MASTER_CONFIG_FILE" 2>/dev/null || echo "")
+        auto_detected_public=$(jq -r '.user_input_variables.public_domain_name // empty' "$MASTER_CONFIG_FILE" 2>/dev/null || echo "")
+        
+        if [ -n "$auto_detected_private" ] && [ -n "$auto_detected_public" ]; then
+            log "Auto-detected domains from master_config.json:"
+            log "  Private: $auto_detected_private"
+            log "  Public: $auto_detected_public"
+            echo -n "Use these domains? [Y/n]: "
+            read -r use_auto
+            if [[ "$use_auto" =~ ^[Yy]$|^$ ]]; then
+                PRIVATE_DOMAIN_NAME="$auto_detected_private"
+                PUBLIC_DOMAIN_NAME="$auto_detected_public"
+            else
+                auto_detected_private=""
+                auto_detected_public=""
+            fi
+        fi
+    fi
+    
+    # Get private domain
+    if [ -z "$auto_detected_private" ]; then
+        echo "Please enter your private domain name"
+        echo "Examples: cesvc.net, internal.local, company.local"
+        echo -n "Private domain [cesvc.net]: "
+        read -r input_private
+        PRIVATE_DOMAIN_NAME="${input_private:-cesvc.net}"
+    fi
+    
+    # Get public domain  
+    if [ -z "$auto_detected_public" ]; then
+        echo
+        echo "Please enter your public domain name"
+        echo "Examples: creative-energy.net, yourdomain.com"
+        echo -n "Public domain [creative-energy.net]: "
+        read -r input_public
+        PUBLIC_DOMAIN_NAME="${input_public:-creative-energy.net}"
+    fi
+    
+    # Validate inputs
+    if [ -z "$PRIVATE_DOMAIN_NAME" ]; then
+        error "Private domain name cannot be empty!"
+        exit 1
+    fi
+    
+    if [ -z "$PUBLIC_DOMAIN_NAME" ]; then
+        error "Public domain name cannot be empty!"
+        exit 1
+    fi
+    
+    # Set server hostnames based on domains
+    APP_SERVER_HOST="app.${PRIVATE_DOMAIN_NAME}"
+    DB_SERVER_HOST="db.${PRIVATE_DOMAIN_NAME}"
+    
+    # Display final configuration
+    echo
+    log "Domain Configuration:"
+    log "  Private Domain: $PRIVATE_DOMAIN_NAME"
+    log "  Public Domain: $PUBLIC_DOMAIN_NAME"
+    log "  App Server: $APP_SERVER_HOST"
+    log "  DB Server: $DB_SERVER_HOST"
+    echo
+    echo -n "Confirm this configuration? [Y/n]: "
+    read -r confirm
+    if [[ ! "$confirm" =~ ^[Yy]$|^$ ]]; then
+        log "Configuration cancelled by user. Please restart the script."
+        exit 0
+    fi
+    
+    log "✅ Domain configuration confirmed!"
+}
 
-# Configuration variables with defaults
-PRIVATE_DOMAIN_NAME="your_private_domain_name.net"
-PUBLIC_DOMAIN_NAME="your_public_domain_name.net"
-APP_SERVER_HOST="app.your_private_domain_name.net"
-DB_SERVER_HOST="db.your_private_domain_name.net"
+# Get domain configuration first
+get_domain_configuration
+
+# Other configuration variables with defaults  
 DB_PORT="2866"
 WEB_LB_SERVICE_IP="10.1.1.100"
 APP_LB_SERVICE_IP="10.1.2.100"
@@ -62,40 +144,6 @@ APP_PRIMARY_IP="10.1.2.121"
 APP_SECONDARY_IP="10.1.2.122"
 DB_PRIMARY_IP="10.1.3.131"
 BASTION_IP="10.1.1.110"
-
-# Load configuration from master_config.json if available
-if [ -f "$MASTER_CONFIG_FILE" ]; then
-    log "Loading configuration from master_config.json..."
-    
-    # Check if jq is available
-    if command -v jq >/dev/null 2>&1; then
-        PRIVATE_DOMAIN_NAME=$(jq -r '.infrastructure.domain.private_domain_name // "your_private_domain_name.net"' "$MASTER_CONFIG_FILE")
-        PUBLIC_DOMAIN_NAME=$(jq -r '.infrastructure.domain.public_domain_name // "your_public_domain_name.net"' "$MASTER_CONFIG_FILE")
-        DB_PORT=$(jq -r '.application.database.port // "2866"' "$MASTER_CONFIG_FILE")
-        WEB_LB_SERVICE_IP=$(jq -r '.infrastructure.load_balancer.web_lb_service_ip // "10.1.1.100"' "$MASTER_CONFIG_FILE")
-        APP_LB_SERVICE_IP=$(jq -r '.infrastructure.load_balancer.app_lb_service_ip // "10.1.2.100"' "$MASTER_CONFIG_FILE")
-        WEB_PRIMARY_IP=$(jq -r '.infrastructure.servers.web_primary_ip // "10.1.1.111"' "$MASTER_CONFIG_FILE")
-        WEB_SECONDARY_IP=$(jq -r '.infrastructure.servers.web_secondary_ip // "10.1.1.112"' "$MASTER_CONFIG_FILE")
-        APP_PRIMARY_IP=$(jq -r '.infrastructure.servers.app_primary_ip // "10.1.2.121"' "$MASTER_CONFIG_FILE")
-        APP_SECONDARY_IP=$(jq -r '.infrastructure.servers.app_secondary_ip // "10.1.2.122"' "$MASTER_CONFIG_FILE")
-        DB_PRIMARY_IP=$(jq -r '.infrastructure.servers.db_primary_ip // "10.1.3.131"' "$MASTER_CONFIG_FILE")
-        BASTION_IP=$(jq -r '.infrastructure.servers.bastion_ip // "10.1.1.110"' "$MASTER_CONFIG_FILE")
-        
-        # Construct server hosts
-        APP_SERVER_HOST="app.${PRIVATE_DOMAIN_NAME}"
-        DB_SERVER_HOST="db.${PRIVATE_DOMAIN_NAME}"
-        
-        log "✅ Configuration loaded from master_config.json"
-        log "   - Private Domain: $PRIVATE_DOMAIN_NAME"
-        log "   - Public Domain: $PUBLIC_DOMAIN_NAME"
-        log "   - App Server: $APP_SERVER_HOST"
-        log "   - DB Server: $DB_SERVER_HOST:$DB_PORT"
-    else
-        warn "jq not available, will install and retry loading configuration"
-    fi
-else
-    warn "master_config.json not found, using default configuration"
-fi
 
 log "Creative Energy App Server 설치를 시작합니다..."
 log "서버 역할: API 처리 + 비즈니스 로직 ($APP_SERVER_HOST)"
@@ -135,15 +183,21 @@ if [ -f "$MASTER_CONFIG_FILE" ] && ! command -v jq >/dev/null 2>&1; then
     log "jq 패키지 설치 중..."
     dnf install -y jq
     
-    # jq 설치 후 설정 재로딩
+    # jq 설치 후 설정 재로딩 (이미 설정된 도메인 값은 보존)
     if command -v jq >/dev/null 2>&1; then
         log "jq 설치 완료, 설정 재로딩 중..."
-        PRIVATE_DOMAIN_NAME=$(jq -r '.infrastructure.domain.private_domain_name // "your_private_domain_name.net"' "$MASTER_CONFIG_FILE")
-        PUBLIC_DOMAIN_NAME=$(jq -r '.infrastructure.domain.public_domain_name // "your_public_domain_name.net"' "$MASTER_CONFIG_FILE")
+        # Only reload if not already set by get_domain_configuration()
+        if [ -z "$PRIVATE_DOMAIN_NAME" ]; then
+            PRIVATE_DOMAIN_NAME=$(jq -r '.infrastructure.domain.private_domain_name // "cesvc.net"' "$MASTER_CONFIG_FILE")
+        fi
+        if [ -z "$PUBLIC_DOMAIN_NAME" ]; then
+            PUBLIC_DOMAIN_NAME=$(jq -r '.infrastructure.domain.public_domain_name // "creative-energy.net"' "$MASTER_CONFIG_FILE")
+        fi
         DB_PORT=$(jq -r '.application.database.port // "2866"' "$MASTER_CONFIG_FILE")
         APP_SERVER_HOST="app.${PRIVATE_DOMAIN_NAME}"
         DB_SERVER_HOST="db.${PRIVATE_DOMAIN_NAME}"
         log "✅ Configuration reloaded after jq installation"
+        log "   Using domain: $PRIVATE_DOMAIN_NAME (private), $PUBLIC_DOMAIN_NAME (public)"
     fi
 fi
 
@@ -278,17 +332,17 @@ chown $APP_USER:$APP_USER $APP_DIR/ecosystem.config.js
 # 11. DB 연결 테스트 스크립트 생성
 log "DB 연결 테스트 스크립트 생성 중..."
 
-cat > /home/$APP_USER/test_db_connection.sh << 'EOF'
+cat > /home/$APP_USER/test_db_connection.sh << EOF
 #!/bin/bash
 
 echo "=== DB 서버 연결 테스트 ==="
-echo "DB 서버: db.your_private_domain_name.net:2866"
-echo "시간: $(date)"
+echo "DB 서버: db.${PRIVATE_DOMAIN_NAME}:2866"
+echo "시간: \$(date)"
 echo ""
 
 # 1. 네트워크 연결 테스트
 #echo "1. 네트워크 연결 테스트:"
-#if ping -c 3 db.your_private_domain_name.net &>/dev/null; then
+#if ping -c 3 db.${PRIVATE_DOMAIN_NAME} &>/dev/null; then
 #    echo "✅ 네트워크 연결 성공"
 #else
 #    echo "❌ 네트워크 연결 실패"
@@ -298,7 +352,7 @@ echo ""
 # 2. 포트 연결 테스트
 echo ""
 echo "2. 포트 연결 테스트:"
-if timeout 5 bash -c "cat < /dev/null > /dev/tcp/db.your_private_domain_name.net/2866" 2>/dev/null; then
+if timeout 5 bash -c "cat < /dev/null > /dev/tcp/db.${PRIVATE_DOMAIN_NAME}/2866" 2>/dev/null; then
     echo "✅ 포트 2866 연결 성공"
 else
     echo "❌ 포트 2866 연결 실패"
@@ -308,7 +362,7 @@ fi
 # 3. PostgreSQL 연결 테스트
 echo ""
 echo "3. PostgreSQL 연결 테스트 (계정 정보 필요):"
-echo "   psql -h db.your_private_domain_name.net -p 2866 -U cedbadmin -d cedb -c \"SELECT 1;\""
+echo "   psql -h db.${PRIVATE_DOMAIN_NAME} -p 2866 -U cedbadmin -d cedb -c \"SELECT 1;\""
 
 echo ""
 echo "=== 연결 테스트 완료 ==="
@@ -446,7 +500,7 @@ cat > "$VM_INFO_FILE" << EOF
   "vm_number": "$VM_NUMBER",
   "server_type": "app-server",
   "load_balancer": {
-    "name": "app.your_private_domain_name.net",
+    "name": "app.${PRIVATE_DOMAIN_NAME}",
     "ip": "10.1.2.100",
     "policy": "Round Robin"
   },
@@ -523,8 +577,8 @@ log "================================================================"
 log ""
 log "🏗️ 설치된 구성:"
 log "- App Server: Rocky Linux 9.4 + Node.js $NODE_VERSION"
-log "- DB 서버: db.your_private_domain_name.net:2866 (외부)"
-log "- 서버 주소: app.your_private_domain_name.net:3000"
+log "- DB 서버: db.${PRIVATE_DOMAIN_NAME}:2866 (외부)"
+log "- 서버 주소: app.${PRIVATE_DOMAIN_NAME}:3000"
 log ""
 log "✅ 설치 및 설정 완료 상태:"
 log ""
@@ -581,8 +635,8 @@ log "/usr/local/bin/bootstrap_app_vm.sh"
 log ""
 log "⚠️  중요 사항:"
 log "- 이 서버는 API 처리만 담당합니다 (정적 파일 서빙 없음)"
-log "- Web Server(www.your_private_domain_name.net)에서 이 서버로 API 요청을 프록시합니다"
-log "- DB는 별도 서버(db.your_private_domain_name.net:2866)에 위치합니다"
+log "- Web Server(www.${PRIVATE_DOMAIN_NAME})에서 이 서버로 API 요청을 프록시합니다"
+log "- DB는 별도 서버(db.${PRIVATE_DOMAIN_NAME}:2866)에 위치합니다"
 log "- /health 엔드포인트에서 서버 식별 정보(VM 번호, IP 등) 제공"
 log ""
 log "================================================================"

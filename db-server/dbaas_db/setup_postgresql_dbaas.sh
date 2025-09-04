@@ -29,25 +29,6 @@ PURPLE='\033[0;35m'
 CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
-# Configuration - DBaaS Database Connection
-DB_HOST="db.your_private_domain_name.net"
-DB_PORT="2866"
-DB_NAME="cedb"
-DB_USER="cedbadmin"
-DB_PASSWORD="cedbadmin123!"
-SCHEMA_FILE="./postgresql_dbaas_init_schema.sql"
-
-# App Server Configuration
-APP_SERVER_HOST="app.your_private_domain_name.net"
-APP_SERVER_PORT="3000"
-
-echo -e "${BLUE}================================================================${NC}"
-echo -e "${BLUE} Creative Energy DBaaS Database Setup Script${NC}"
-echo -e "${BLUE} Target Database: ${DB_HOST}:${DB_PORT}/${DB_NAME}${NC}"
-echo -e "${BLUE} App Server: ${APP_SERVER_HOST}:${APP_SERVER_PORT}${NC}"
-echo -e "${BLUE} Execution Host: $(hostname)${NC}"
-echo -e "${BLUE}================================================================${NC}"
-
 # Function to print colored output
 print_status() {
     echo -e "${GREEN}[INFO]${NC} $1"
@@ -69,17 +50,119 @@ print_step() {
     echo -e "${PURPLE}[STEP]${NC} $1"
 }
 
+# Function to get domain configuration
+get_domain_configuration() {
+    echo -e "${CYAN}================================================================${NC}"
+    echo -e "${CYAN} Domain Configuration Setup${NC}"
+    echo -e "${CYAN}================================================================${NC}"
+    echo
+    
+    # Try to auto-detect from master_config.json if exists
+    local auto_detected_domain=""
+    if [ -f "/home/rocky/master_config.json" ]; then
+        auto_detected_domain=$(cat /home/rocky/master_config.json 2>/dev/null | grep -o '"private_domain_name":"[^"]*"' | cut -d'"' -f4 2>/dev/null || echo "")
+    fi
+    
+    if [ -n "$auto_detected_domain" ]; then
+        echo -e "${GREEN}Auto-detected domain from master_config.json: ${auto_detected_domain}${NC}"
+        echo -n "Use this domain? [Y/n]: "
+        read -r use_auto
+        if [[ "$use_auto" =~ ^[Yy]$|^$ ]]; then
+            PRIVATE_DOMAIN="$auto_detected_domain"
+        else
+            PRIVATE_DOMAIN=""
+        fi
+    fi
+    
+    # If not auto-detected or user declined, ask for input
+    if [ -z "$PRIVATE_DOMAIN" ]; then
+        echo "Please enter your private domain name"
+        echo "Examples: cesvc.net, internal.local, company.local"
+        echo -n "Private domain: "
+        read -r PRIVATE_DOMAIN
+        
+        # Validate input
+        if [ -z "$PRIVATE_DOMAIN" ]; then
+            print_error "Domain name cannot be empty!"
+            exit 1
+        fi
+    fi
+    
+    # Set configuration based on domain
+    DB_HOST="db.${PRIVATE_DOMAIN}"
+    APP_SERVER_HOST="app.${PRIVATE_DOMAIN}"
+    
+    # Display configuration
+    echo
+    echo -e "${BLUE}Domain Configuration:${NC}"
+    echo "  Private Domain: ${PRIVATE_DOMAIN}"
+    echo "  Database Host: ${DB_HOST}"
+    echo "  App Server Host: ${APP_SERVER_HOST}"
+    echo
+    echo -n "Confirm this configuration? [Y/n]: "
+    read -r confirm
+    if [[ ! "$confirm" =~ ^[Yy]$|^$ ]]; then
+        print_status "Configuration cancelled by user. Please restart the script."
+        exit 0
+    fi
+    
+    print_success "Domain configuration confirmed!"
+}
+
+# Get domain configuration first
+get_domain_configuration
+
+# Configuration - DBaaS Database Connection
+DB_PORT="2866"
+DB_NAME="cedb"
+DB_USER="cedbadmin"
+DB_PASSWORD="cedbadmin123!"
+SCHEMA_FILE="./postgresql_dbaas_init_schema.sql"
+
+# App Server Configuration
+APP_SERVER_PORT="3000"
+
+echo
+echo -e "${BLUE}================================================================${NC}"
+echo -e "${BLUE} Creative Energy DBaaS Database Setup Script${NC}"
+echo -e "${BLUE} Target Database: ${DB_HOST}:${DB_PORT}/${DB_NAME}${NC}"
+echo -e "${BLUE} App Server: ${APP_SERVER_HOST}:${APP_SERVER_PORT}${NC}"
+echo -e "${BLUE} Execution Host: $(hostname)${NC}"
+echo -e "${BLUE}================================================================${NC}"
+
 # Function to check prerequisites
 check_prerequisites() {
     print_step "Step 1: Checking prerequisites..."
     
-    # Check if psql is installed
+    # Check if psql is installed, install if not found
     if ! command -v psql &> /dev/null; then
-        print_error "PostgreSQL client (psql) is not installed"
-        echo "Install it with:"
-        echo "  CentOS/Rocky Linux: sudo dnf install postgresql"
-        echo "  Ubuntu/Debian: sudo apt-get install postgresql-client"
-        exit 1
+        print_warning "PostgreSQL client (psql) is not installed. Installing now..."
+        
+        # Detect OS and install PostgreSQL client
+        if [ -f /etc/rocky-release ] || [ -f /etc/centos-release ] || [ -f /etc/redhat-release ]; then
+            print_status "Detected RHEL-based system. Installing PostgreSQL client..."
+            if sudo dnf install -y postgresql postgresql-contrib; then
+                print_success "PostgreSQL client installed successfully"
+            else
+                print_error "Failed to install PostgreSQL client"
+                print_error "Please run manually: sudo dnf install -y postgresql postgresql-contrib"
+                exit 1
+            fi
+        elif [ -f /etc/debian_version ]; then
+            print_status "Detected Debian-based system. Installing PostgreSQL client..."
+            if sudo apt-get update && sudo apt-get install -y postgresql-client; then
+                print_success "PostgreSQL client installed successfully"
+            else
+                print_error "Failed to install PostgreSQL client"
+                print_error "Please run manually: sudo apt-get install postgresql-client"
+                exit 1
+            fi
+        else
+            print_error "Unknown operating system. Please install PostgreSQL client manually:"
+            print_error "  CentOS/Rocky Linux: sudo dnf install postgresql"
+            print_error "  Ubuntu/Debian: sudo apt-get install postgresql-client"
+            exit 1
+        fi
     fi
     
     local psql_version=$(psql --version 2>/dev/null | head -n 1)
@@ -314,7 +397,7 @@ BIND_HOST=0.0.0.0
 # =====================================
 # CORS Configuration
 # =====================================
-ALLOWED_ORIGINS=http://www.your_private_domain_name.net,https://www.your_private_domain_name.net,http://www.your_public_domain_name.net,https://www.your_public_domain_name.net
+ALLOWED_ORIGINS=http://www.${PRIVATE_DOMAIN},https://www.${PRIVATE_DOMAIN},http://${APP_SERVER_HOST}:${APP_SERVER_PORT}
 
 # =====================================
 # Security Configuration
@@ -406,7 +489,7 @@ show_setup_completion() {
     echo
     echo -e "${BLUE}🚀 Next Steps:${NC}"
     echo "   1. Copy .env.app_server to your app-server directory:"
-    echo "      scp .env.app_server user@app.your_private_domain_name.net:/path/to/app-server/.env"
+    echo "      scp .env.app_server user@${APP_SERVER_HOST}:/path/to/app-server/.env"
     echo
     echo "   2. Install app-server dependencies:"
     echo "      cd /path/to/app-server && npm install"
@@ -415,7 +498,7 @@ show_setup_completion() {
     echo "      npm start"
     echo
     echo "   4. Test the connection from app-server:"
-    echo "      curl http://app.your_private_domain_name.net:3000/api/orders/products"
+    echo "      curl http://${APP_SERVER_HOST}:${APP_SERVER_PORT}/api/orders/products"
     echo
     echo -e "${BLUE}🔍 Verification Commands:${NC}"
     echo "   Database connection:"
@@ -425,7 +508,7 @@ show_setup_completion() {
     echo "   SELECT * FROM product_inventory_view LIMIT 5;"
     echo
     echo "   Monitor app server:"
-    echo "   curl http://app.your_private_domain_name.net:3000/health"
+    echo "   curl http://${APP_SERVER_HOST}:${APP_SERVER_PORT}/health"
     echo
     echo -e "${YELLOW}⚠️  Important Notes:${NC}"
     echo "   • Database credentials are stored in .env.app_server"
