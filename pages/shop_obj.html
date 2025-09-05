@@ -509,6 +509,49 @@ Contact: ars4mundus@gmail.com
         }
     </style>
 </head>
+    <!-- Object Storage Dynamic URL Script -->
+    <script>
+        // Object Storage URL 동적 생성
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                // master_config.json에서 bucket string 로드
+                const response = await fetch('/web-server/master_config.json');
+                if (response.ok) {
+                    const config = await response.json();
+                    const bucketString = config.user_input_variables?.object_storage_bucket_string;
+                    
+                    if (!bucketString) {
+                        console.warn('Bucket string not found in config');
+                        return;
+                    }
+                    
+                    // Object Storage base URL 패턴 - 32자 hex 문자열 매칭
+                    const objectStorePattern = /https:\/\/object-store\.kr-west1\.e\.samsungsdscloud\.com\/[a-f0-9]{32}:ceweb/g;
+                    const newBaseUrl = `https://object-store.kr-west1.e.samsungsdscloud.com/${bucketString}:ceweb`;
+                    
+                    // img 태그의 src 속성 업데이트
+                    document.querySelectorAll('img').forEach(img => {
+                        if (img.src && img.src.includes('object-store.kr-west1.e.samsungsdscloud.com')) {
+                            img.src = img.src.replace(objectStorePattern, newBaseUrl);
+                        }
+                    });
+                    
+                    // OBJECT_STORAGE_PLACEHOLDER도 교체 (fallback 데이터용)
+                    window.OBJECT_STORAGE_BASE_URL = newBaseUrl;
+                    
+                    // 인라인 스타일의 background-image 업데이트
+                    document.querySelectorAll('[style]').forEach(elem => {
+                        const style = elem.getAttribute('style');
+                        if (style && style.includes('object-store.kr-west1.e.samsungsdscloud.com')) {
+                            elem.setAttribute('style', style.replace(objectStorePattern, newBaseUrl));
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Failed to load bucket configuration:', error);
+            }
+        });
+    </script>
 <body>
     <!-- Header -->
     <header class="header">
@@ -606,6 +649,7 @@ Contact: ars4mundus@gmail.com
             } catch (error) {
                 console.error('API 호출 실패:', error);
                 // Fallback to sample data with Object Storage URLs
+                const baseUrl = window.OBJECT_STORAGE_BASE_URL || 'https://object-store.kr-west1.e.samsungsdscloud.com/89097ddf09b84d96af496aded95dac29:ceweb';
                 return {
                     success: true,
                     products: [
@@ -615,7 +659,7 @@ Contact: ars4mundus@gmail.com
                             title: 'BigBoys 1st Full Album [SimplyFit] Standard Edition',
                             subtitle: 'Standard Edition',
                             price: '18,500원',
-                            image: '{{OBJECT_STORAGE_MEDIA_BASE}}bb_prod1.png',
+                            image: `${baseUrl}/media/img/bb_prod1.png`,
                             category: 'bigboys',
                             type: 'album',
                             badge: 'NEW'
@@ -625,7 +669,7 @@ Contact: ars4mundus@gmail.com
                             title: 'BigBoys 1st Full Album [SimplyFit] Limited Edition',
                             subtitle: 'with Photo Book & Photo Cards',
                             price: '35,000원',
-                            image: '{{OBJECT_STORAGE_MEDIA_BASE}}bb_prod2.png',
+                            image: `${baseUrl}/media/img/bb_prod2.png`,
                             category: 'bigboys',
                             type: 'album',
                             badge: 'LIMITED'
@@ -635,7 +679,7 @@ Contact: ars4mundus@gmail.com
                             title: 'BigBoys Official Light Stick',
                             subtitle: 'Ver. 1.0',
                             price: '42,000원',
-                            image: '{{OBJECT_STORAGE_MEDIA_BASE}}bb_prod3.png',
+                            image: `${baseUrl}/media/img/bb_prod3.png`,
                             category: 'bigboys',
                             type: 'goods',
                             badge: null
@@ -645,7 +689,7 @@ Contact: ars4mundus@gmail.com
                             title: 'BigBoys Official T-Shirt',
                             subtitle: 'Black / White Available',
                             price: '28,000원',
-                            image: '{{OBJECT_STORAGE_MEDIA_BASE}}bb_prod4.png',
+                            image: `${baseUrl}/media/img/bb_prod4.png`,
                             category: 'bigboys',
                             type: 'goods',
                             badge: 'LIMITED'
@@ -656,7 +700,7 @@ Contact: ars4mundus@gmail.com
                             title: 'Cloudy 2nd Official Album [In the Sky]',
                             subtitle: 'Sky Blue Ver.',
                             price: '16,800원',
-                            image: '{{OBJECT_STORAGE_MEDIA_BASE}}cloudy_prod1.png',
+                            image: `${baseUrl}/media/img/cloudy_prod1.png`,
                             category: 'cloudy',
                             type: 'album',
                             badge: 'NEW'
@@ -666,7 +710,7 @@ Contact: ars4mundus@gmail.com
                             title: 'Cloudy 1st Official Album [JUMP]',
                             subtitle: 'Purple Ver.',
                             price: '16,800원',
-                            image: '{{OBJECT_STORAGE_MEDIA_BASE}}cloudy_prod2.png',
+                            image: `${baseUrl}/media/img/cloudy_prod2.png`,
                             category: 'cloudy',
                             type: 'album',
                             badge: null
@@ -676,7 +720,7 @@ Contact: ars4mundus@gmail.com
                             title: 'Cloudy Official Merchandise',
                             subtitle: 'Eco Bag',
                             price: '40,000원',
-                            image: '{{OBJECT_STORAGE_MEDIA_BASE}}cloudy_prod3.png',
+                            image: `${baseUrl}/media/img/cloudy_prod3.png`,
                             category: 'cloudy',
                             type: 'goods',
                             badge: 'LIMITED'
@@ -686,7 +730,7 @@ Contact: ars4mundus@gmail.com
                             title: 'Cloudy Official Light Stick',
                             subtitle: 'Ver. 2.0',
                             price: '42,000원',
-                            image: '{{OBJECT_STORAGE_MEDIA_BASE}}cloudy_prod4.png',
+                            image: `${baseUrl}/media/img/cloudy_prod4.png`,
                             category: 'cloudy',
                             type: 'goods',
                             badge: null

@@ -371,7 +371,70 @@ Contact: ars4mundus@gmail.com
             }
         }
     </style>
+    
 </head>
+    <!-- Object Storage Dynamic URL Script -->
+    <script>
+        // Object Storage URL 동적 생성
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                // master_config.json에서 bucket string 로드
+                const response = await fetch('/web-server/master_config.json');
+                if (response.ok) {
+                    const config = await response.json();
+                    const bucketString = config.user_input_variables?.object_storage_bucket_string;
+                    
+                    if (!bucketString) {
+                        console.warn('Bucket string not found in config');
+                        return;
+                    }
+                    
+                    // Object Storage base URL 패턴 - 32자 hex 문자열 매칭
+                    const objectStorePattern = /https:\/\/object-store\.kr-west1\.e\.samsungsdscloud\.com\/[a-f0-9]{32}:ceweb/g;
+                    const newBaseUrl = `https://object-store.kr-west1.e.samsungsdscloud.com/${bucketString}:ceweb`;
+                    
+                    // img 태그의 src 속성 업데이트
+                    document.querySelectorAll('img').forEach(img => {
+                        if (img.src && img.src.includes('object-store.kr-west1.e.samsungsdscloud.com')) {
+                            img.src = img.src.replace(objectStorePattern, newBaseUrl);
+                        }
+                    });
+                    
+                    // 인라인 스타일의 background-image 업데이트
+                    document.querySelectorAll('[style]').forEach(elem => {
+                        const style = elem.getAttribute('style');
+                        if (style && style.includes('object-store.kr-west1.e.samsungsdscloud.com')) {
+                            elem.setAttribute('style', style.replace(objectStorePattern, newBaseUrl));
+                        }
+                    });
+                    
+                    // CSS 룰의 background-image 업데이트
+                    try {
+                        const styleSheets = document.styleSheets;
+                        for (let sheet of styleSheets) {
+                            try {
+                                const rules = sheet.cssRules || sheet.rules;
+                                if (!rules) continue;
+                                
+                                for (let rule of rules) {
+                                    if (rule.style && rule.style.backgroundImage && 
+                                        rule.style.backgroundImage.includes('object-store.kr-west1.e.samsungsdscloud.com')) {
+                                        rule.style.backgroundImage = rule.style.backgroundImage.replace(objectStorePattern, newBaseUrl);
+                                    }
+                                }
+                            } catch (e) {
+                                // Cross-origin stylesheets may throw errors
+                            }
+                        }
+                    } catch (e) {
+                        // Ignore errors
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to load bucket configuration:', error);
+            }
+        });
+    </script>
 <body>
     <!-- Header -->
     <header class="header">
@@ -398,7 +461,7 @@ Contact: ars4mundus@gmail.com
     <!-- Hero Banner -->
     <section class="hero-banner">
         <div class="hero-content">
-            <img src="{{OBJECT_STORAGE_MEDIA_BASE}}logo.svg" alt="Creative Energy Logo" class="hero-logo" 
+            <img src="" alt="Creative Energy Logo" class="hero-logo" 
                  onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
             <h1 class="hero-title" style="display: none;">CREATIVE ENERGY</h1>
             <div class="breadcrumb">

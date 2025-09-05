@@ -23,7 +23,7 @@ class ServerStatusIcons {
     constructor(containerId) {
         this.container = document.getElementById(containerId);
         this.config = null;
-        this.loadBalancers = {};
+        // Load Balancer 정보 제거됨
         this.servers = {};
         this.updateInterval = null;
         
@@ -39,10 +39,10 @@ class ServerStatusIcons {
                 this.config = await window.MasterVariablesLoader.getAllConfig();
             } else {
                 // fallback: master_config.json 직접 로드
-                const response = await fetch('./web-server/master_config.json');
+                const response = await fetch('/web-server/master_config.json');
                 const masterConfig = await response.json();
                 this.config = {
-                    privateDomain: masterConfig.infrastructure?.domain?.private_domain_name || 'your_private_domain_name.net',
+                    privateDomain: masterConfig.infrastructure?.domain?.private_domain_name || 'cesvc.net',
                     webLbServiceIp: masterConfig.infrastructure?.load_balancer?.web_lb_service_ip || '10.1.1.100',
                     appLbServiceIp: masterConfig.infrastructure?.load_balancer?.app_lb_service_ip || '10.1.2.100',
                     webPrimaryIp: masterConfig.infrastructure?.servers?.web_primary_ip || '10.1.1.111',
@@ -54,7 +54,7 @@ class ServerStatusIcons {
         } catch (error) {
             console.warn('Failed to load configuration, using defaults:', error.message);
             this.config = {
-                privateDomain: 'your_private_domain_name.net',
+                privateDomain: 'cesvc.net',
                 webLbServiceIp: '10.1.1.100',
                 appLbServiceIp: '10.1.2.100',
                 webPrimaryIp: '10.1.1.111',
@@ -64,11 +64,7 @@ class ServerStatusIcons {
             };
         }
 
-        // Load Balancer 아키텍처 동적 설정
-        this.loadBalancers = {
-            web: { name: `www.${this.config.privateDomain}`, ip: this.config.webLbServiceIp, policy: 'Round Robin' },
-            app: { name: `app.${this.config.privateDomain}`, ip: this.config.appLbServiceIp, policy: 'Round Robin' }
-        };
+        // Load Balancer 정보 제거됨
         
         this.servers = {
             web: [
@@ -126,10 +122,6 @@ class ServerStatusIcons {
                         <div class="tooltip-row">
                             <span class="tooltip-label">IP:</span>
                             <span class="tooltip-value" id="tooltipIp">Unknown</span>
-                        </div>
-                        <div class="tooltip-row">
-                            <span class="tooltip-label">Load Balancer:</span>
-                            <span class="tooltip-value" id="tooltipLB">-</span>
                         </div>
                         <div class="tooltip-row">
                             <span class="tooltip-label">응답시간:</span>
@@ -466,7 +458,6 @@ class ServerStatusIcons {
         statusElement.className = `tooltip-value ${serverInfo.status}`;
         
         document.getElementById('tooltipIp').textContent = serverInfo.ip || 'Unknown';
-        document.getElementById('tooltipLB').textContent = serverInfo.loadBalancer || 'Unknown';
         document.getElementById('tooltipResponseTime').textContent = serverInfo.responseTime || '-';
 
         tooltip.classList.add('show');
@@ -532,14 +523,12 @@ class ServerStatusIcons {
                 server.status = 'unknown';
                 server.responseTime = '-';
                 server.name = `Web-${index + 1}`;
-                server.loadBalancer = this.loadBalancers.web.name;
             });
             
             this.servers.app.forEach((server, index) => {
                 server.status = 'unknown';
                 server.responseTime = '-';
                 server.name = `App-${index + 1}`;
-                server.loadBalancer = this.loadBalancers.app.name;
             });
             
             // 현재 Load Balancer에서 응답 중인 서버만 녹색으로 표시

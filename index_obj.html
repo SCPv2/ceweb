@@ -985,5 +985,20 @@ Contact: ars4mundus@gmail.com
 
     <!-- Master Variables Loader -->
     <script src="./scripts/master-variables-loader.js"></script>
+    <script>
+document.addEventListener("DOMContentLoaded", function() {
+            // Config 다시 로드 후 템플릿 교체 실행
+            window.TemplateVariablesLoader.loadConfig().then(() => {
+                if (typeof initTemplateVariables === "function") {
+                    initTemplateVariables({
+                        logChanges: false,
+                        replaceObjectStorage: true,
+                        replaceDomains: true,
+                        replaceServerIps: true
+                    });
+                }
+            });
+        });
+    </script>
 </body>
 </html>

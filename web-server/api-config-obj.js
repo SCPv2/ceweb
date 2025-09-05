@@ -712,6 +712,10 @@ if (typeof document !== 'undefined') {
     }
 }
 
+// 함수 별칭 (하위 호환성)
+const getProducts = getProductsObj;
+const getAdminProducts = getAdminProductsObj;
+
 // 환경 정보 출력 (개발용)
 console.log('Object Storage API 환경 설정:', {
     environment: API_CONFIG_OBJ.getCurrentEnv(),

@@ -132,19 +132,6 @@ Contact: ars4mundus@gmail.com
             outline: none;
         }
 
-        .phone-group {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .phone-select {
-            width: 80px;
-        }
-
-        .phone-input {
-            flex: 1;
-        }
 
         /* Product Quantity Section */
         .quantity-section {
@@ -456,26 +443,6 @@ Contact: ars4mundus@gmail.com
                     <input type="text" class="form-input" id="customerName" placeholder="주문자 이름을 입력하세요" required>
                 </div>
                 
-                <div class="form-group">
-                    <label class="form-label">휴대폰 번호 *</label>
-                    <div class="phone-group">
-                        <select class="form-select phone-select" id="phonePrefix">
-                            <option value="010">010</option>
-                            <option value="011">011</option>
-                            <option value="016">016</option>
-                            <option value="017">017</option>
-                            <option value="018">018</option>
-                            <option value="019">019</option>
-                        </select>
-                        <input type="text" class="form-input phone-input" id="phoneMiddle" placeholder="1234" maxlength="4">
-                        <input type="text" class="form-input phone-input" id="phoneLast" placeholder="5678" maxlength="4">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">이메일</label>
-                    <input type="email" class="form-input" id="email" placeholder="example@email.com">
-                </div>
             </div>
 
             <div class="section-header">상품 정보</div>
@@ -799,24 +766,10 @@ Contact: ars4mundus@gmail.com
         // 폼 유효성 검사
         function validateOrderForm() {
             const customerName = document.getElementById('customerName').value.trim();
-            const phoneMiddle = document.getElementById('phoneMiddle').value.trim();
-            const phoneLast = document.getElementById('phoneLast').value.trim();
             
             if (!customerName) {
                 alert('주문자 이름을 입력해주세요.');
                 document.getElementById('customerName').focus();
-                return false;
-            }
-            
-            if (!phoneMiddle || !phoneLast) {
-                alert('휴대폰 번호를 입력해주세요.');
-                if (!phoneMiddle) document.getElementById('phoneMiddle').focus();
-                else document.getElementById('phoneLast').focus();
-                return false;
-            }
-            
-            if (!/^\d{4}$/.test(phoneMiddle) || !/^\d{4}$/.test(phoneLast)) {
-                alert('휴대폰 번호는 숫자만 입력해주세요.');
                 return false;
             }
             

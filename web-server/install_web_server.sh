@@ -223,8 +223,22 @@ if [ -f "$WEB_DIR/web-server/nginx-site.conf" ]; then
     
     # server_name 설정 업데이트 (nginx-site.conf를 동적으로 수정)
     cp "$WEB_DIR/web-server/nginx-site.conf" /tmp/nginx-site.conf.tmp
-    sed -i "s/server_name www\.cesvc\.net.*/server_name $SERVER_NAMES;/" /tmp/nginx-site.conf.tmp
+    
+    # 모든 템플릿 변수 치환
+    sed -i "s/server_name www\.cesvc\.net.*/server_name $SERVER_NAMES localhost _;/" /tmp/nginx-site.conf.tmp
     sed -i "s/proxy_pass http:\/\/app\.cesvc\.net:3000/proxy_pass http:\/\/$APP_SERVER_HOST:$APP_PORT/g" /tmp/nginx-site.conf.tmp
+    
+    # 템플릿 변수들 치환 (실제 값으로 대체)
+    sed -i "s/{{PUBLIC_IP_1}}//g" /tmp/nginx-site.conf.tmp
+    sed -i "s/{{PUBLIC_IP_2}}//g" /tmp/nginx-site.conf.tmp  
+    sed -i "s/{{WEB_LB_SERVICE_IP}}//g" /tmp/nginx-site.conf.tmp
+    sed -i "s/{{WEB_PRIMARY_IP}}//g" /tmp/nginx-site.conf.tmp
+    sed -i "s/{{PUBLIC_IP_PREFIX}}//g" /tmp/nginx-site.conf.tmp
+    
+    # 중복된 공백 및 빈 값들 정리
+    sed -i 's/  */ /g' /tmp/nginx-site.conf.tmp
+    sed -i 's/ ;/;/g' /tmp/nginx-site.conf.tmp
+    
     cp /tmp/nginx-site.conf.tmp /etc/nginx/conf.d/creative-energy.conf
     rm /tmp/nginx-site.conf.tmp
     
@@ -321,6 +335,18 @@ server {
         add_header Cache-Control "no-cache, no-store, must-revalidate";
         add_header Pragma no-cache;
         add_header Expires 0;
+    }
+    
+    # Master Configuration 엔드포인트 - 설정 파일 제공
+    location /web-server/master_config.json {
+        alias /home/rocky/ceweb/web-server/master_config.json;
+        add_header Content-Type application/json;
+        add_header Cache-Control "no-cache, no-store, must-revalidate";
+        add_header Pragma no-cache;
+        add_header Expires 0;
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, OPTIONS";
+        add_header Access-Control-Allow-Headers "Content-Type";
     }
     
     # API 프록시 (App Load Balancer로 전달)

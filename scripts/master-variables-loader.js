@@ -72,7 +72,7 @@ class TemplateVariablesLoader {
         }
 
         try {
-            const response = await fetch('./web-server/master_config.json');
+            const response = await fetch('/web-server/master_config.json');
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }

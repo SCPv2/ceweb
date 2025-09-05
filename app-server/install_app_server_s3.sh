@@ -48,11 +48,95 @@ fi
 # Load master configuration
 MASTER_CONFIG_FILE="/home/rocky/ceweb/web-server/master_config.json"
 
-# Configuration variables with defaults
-PRIVATE_DOMAIN_NAME="your_private_domain_name.net"
-PUBLIC_DOMAIN_NAME="your_public_domain_name.net"
-APP_SERVER_HOST="app.your_private_domain_name.net"
-DB_SERVER_HOST="db.your_private_domain_name.net"
+# Function to get domain configuration interactively
+get_domain_configuration() {
+    echo
+    echo -e "${BLUE}================================================================${NC}"
+    echo -e "${BLUE} Domain Configuration Setup${NC}"
+    echo -e "${BLUE}================================================================${NC}"
+    echo
+    
+    # Load master configuration file if available
+    local auto_detected_private=""
+    local auto_detected_public=""
+    
+    # Try to auto-detect from master_config.json if exists
+    if [ -f "$MASTER_CONFIG_FILE" ] && command -v jq >/dev/null 2>&1; then
+        auto_detected_private=$(jq -r '.user_input_variables.private_domain_name // empty' "$MASTER_CONFIG_FILE" 2>/dev/null || echo "")
+        auto_detected_public=$(jq -r '.user_input_variables.public_domain_name // empty' "$MASTER_CONFIG_FILE" 2>/dev/null || echo "")
+        
+        if [ -n "$auto_detected_private" ] && [ -n "$auto_detected_public" ]; then
+            log "Auto-detected domains from master_config.json:"
+            log "  Private: $auto_detected_private"
+            log "  Public: $auto_detected_public"
+            echo -n "Use these domains? [Y/n]: "
+            read -r use_auto
+            if [[ "$use_auto" =~ ^[Yy]$|^$ ]]; then
+                PRIVATE_DOMAIN_NAME="$auto_detected_private"
+                PUBLIC_DOMAIN_NAME="$auto_detected_public"
+            else
+                auto_detected_private=""
+                auto_detected_public=""
+            fi
+        fi
+    fi
+    
+    # Get private domain
+    if [ -z "$auto_detected_private" ]; then
+        echo "Please enter your private domain name"
+        echo "Examples: cesvc.net, internal.local, company.local"
+        echo -n "Private domain [cesvc.net]: "
+        read -r input_private
+        PRIVATE_DOMAIN_NAME="${input_private:-cesvc.net}"
+    fi
+    
+    # Get public domain  
+    if [ -z "$auto_detected_public" ]; then
+        echo
+        echo "Please enter your public domain name"
+        echo "Examples: creative-energy.net, yourdomain.com"
+        echo -n "Public domain [creative-energy.net]: "
+        read -r input_public
+        PUBLIC_DOMAIN_NAME="${input_public:-creative-energy.net}"
+    fi
+    
+    # Validate inputs
+    if [ -z "$PRIVATE_DOMAIN_NAME" ]; then
+        error "Private domain name cannot be empty!"
+        exit 1
+    fi
+    
+    if [ -z "$PUBLIC_DOMAIN_NAME" ]; then
+        error "Public domain name cannot be empty!"
+        exit 1
+    fi
+    
+    # Set server hostnames based on domains
+    APP_SERVER_HOST="app.${PRIVATE_DOMAIN_NAME}"
+    DB_SERVER_HOST="db.${PRIVATE_DOMAIN_NAME}"
+    
+    # Display final configuration
+    echo
+    log "Domain Configuration:"
+    log "  Private Domain: $PRIVATE_DOMAIN_NAME"
+    log "  Public Domain: $PUBLIC_DOMAIN_NAME"
+    log "  App Server: $APP_SERVER_HOST"
+    log "  DB Server: $DB_SERVER_HOST"
+    echo
+    echo -n "Confirm this configuration? [Y/n]: "
+    read -r confirm
+    if [[ ! "$confirm" =~ ^[Yy]$|^$ ]]; then
+        log "Configuration cancelled by user. Please restart the script."
+        exit 0
+    fi
+    
+    log "✅ Domain configuration confirmed!"
+}
+
+# Get domain configuration first
+get_domain_configuration
+
+# Other configuration variables with defaults
 DB_PORT="2866"
 WEB_LB_SERVICE_IP="10.1.1.100"
 APP_LB_SERVICE_IP="10.1.2.100"
@@ -62,40 +146,6 @@ APP_PRIMARY_IP="10.1.2.121"
 APP_SECONDARY_IP="10.1.2.122"
 DB_PRIMARY_IP="10.1.3.131"
 BASTION_IP="10.1.1.110"
-
-# Load configuration from master_config.json if available
-if [ -f "$MASTER_CONFIG_FILE" ]; then
-    log "Loading configuration from master_config.json..."
-    
-    # Check if jq is available
-    if command -v jq >/dev/null 2>&1; then
-        PRIVATE_DOMAIN_NAME=$(jq -r '.infrastructure.domain.private_domain_name // "your_private_domain_name.net"' "$MASTER_CONFIG_FILE")
-        PUBLIC_DOMAIN_NAME=$(jq -r '.infrastructure.domain.public_domain_name // "your_public_domain_name.net"' "$MASTER_CONFIG_FILE")
-        DB_PORT=$(jq -r '.application.database.port // "2866"' "$MASTER_CONFIG_FILE")
-        WEB_LB_SERVICE_IP=$(jq -r '.infrastructure.load_balancer.web_lb_service_ip // "10.1.1.100"' "$MASTER_CONFIG_FILE")
-        APP_LB_SERVICE_IP=$(jq -r '.infrastructure.load_balancer.app_lb_service_ip // "10.1.2.100"' "$MASTER_CONFIG_FILE")
-        WEB_PRIMARY_IP=$(jq -r '.infrastructure.servers.web_primary_ip // "10.1.1.111"' "$MASTER_CONFIG_FILE")
-        WEB_SECONDARY_IP=$(jq -r '.infrastructure.servers.web_secondary_ip // "10.1.1.112"' "$MASTER_CONFIG_FILE")
-        APP_PRIMARY_IP=$(jq -r '.infrastructure.servers.app_primary_ip // "10.1.2.121"' "$MASTER_CONFIG_FILE")
-        APP_SECONDARY_IP=$(jq -r '.infrastructure.servers.app_secondary_ip // "10.1.2.122"' "$MASTER_CONFIG_FILE")
-        DB_PRIMARY_IP=$(jq -r '.infrastructure.servers.db_primary_ip // "10.1.3.131"' "$MASTER_CONFIG_FILE")
-        BASTION_IP=$(jq -r '.infrastructure.servers.bastion_ip // "10.1.1.110"' "$MASTER_CONFIG_FILE")
-        
-        # Construct server hosts
-        APP_SERVER_HOST="app.${PRIVATE_DOMAIN_NAME}"
-        DB_SERVER_HOST="db.${PRIVATE_DOMAIN_NAME}"
-        
-        log "✅ Configuration loaded from master_config.json"
-        log "   - Private Domain: $PRIVATE_DOMAIN_NAME"
-        log "   - Public Domain: $PUBLIC_DOMAIN_NAME"
-        log "   - App Server: $APP_SERVER_HOST"
-        log "   - DB Server: $DB_SERVER_HOST:$DB_PORT"
-    else
-        warn "jq not available, will install and retry loading configuration"
-    fi
-else
-    warn "master_config.json not found, using default configuration"
-fi
 
 log "Creative Energy App Server (S3 Enhanced) 설치를 시작합니다..."
 log "서버 역할: API 처리 + 비즈니스 로직 + Samsung Cloud Platform S3 ($APP_SERVER_HOST)"
@@ -313,28 +363,28 @@ chown $APP_USER:$APP_USER $APP_DIR/ecosystem.config.js
 # 14. DB 연결 테스트 스크립트 생성
 log "DB 연결 테스트 스크립트 생성 중..."
 
-cat > /home/$APP_USER/test_db_connection.sh << 'EOF'
+cat > /home/$APP_USER/test_db_connection.sh << EOF
 #!/bin/bash
 
 echo "=== DB 서버 연결 테스트 ==="
-echo "DB 서버: $DB_SERVER_HOST:$DB_PORT"
-echo "시간: $(date)"
+echo "DB 서버: ${DB_SERVER_HOST}:${DB_PORT}"
+echo "시간: \$(date)"
 echo ""
 
 # 2. 포트 연결 테스트
 echo ""
 echo "2. 포트 연결 테스트:"
-if timeout 5 bash -c "cat < /dev/null > /dev/tcp/$DB_SERVER_HOST/$DB_PORT" 2>/dev/null; then
-    echo "✅ 포트 2866 연결 성공"
+if timeout 5 bash -c "cat < /dev/null > /dev/tcp/${DB_SERVER_HOST}/${DB_PORT}" 2>/dev/null; then
+    echo "✅ 포트${DB_PORT} 연결 성공"
 else
-    echo "❌ 포트 2866 연결 실패"
+    echo "❌ 포트 ${DB_PORT} 연결 실패"
     exit 1
 fi
 
 # 3. PostgreSQL 연결 테스트
 echo ""
 echo "3. PostgreSQL 연결 테스트 (계정 정보 필요):"
-echo "   psql -h $DB_SERVER_HOST -p $DB_PORT -U cedbadmin -d cedb -c \"SELECT 1;\""
+echo "   psql -h ${DB_SERVER_HOST} -p ${DB_PORT} -U cedbadmin -d cedb -c \"SELECT 1;\""
 
 echo ""
 echo "=== 연결 테스트 완료 ==="
