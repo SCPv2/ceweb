@@ -23,6 +23,34 @@ const { getObjectStorageService } = require('../objService');
 const objectStorageService = getObjectStorageService();
 
 // 공용 상품 목록 조회 (shop_obj.html용)
+const fs = require('fs');
+const path = require('path');
+
+// Object Storage URL 생성 함수
+function generateObjectStorageUrl(relativePath, bucketString) {
+    if (!relativePath || !bucketString) {
+        return relativePath;
+    }
+    const cleanPath = relativePath.replace('../', '');
+    return `https://object-store.kr-west1.e.samsungsdscloud.com/${bucketString}:ceweb/${cleanPath}`;
+}
+
+// master_config.json에서 bucket string 로드
+function loadBucketString() {
+    try {
+        const configPath = path.join(__dirname, '../../web-server/master_config.json');
+        if (fs.existsSync(configPath)) {
+            const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+            return config.user_input_variables?.object_storage_bucket_string;
+        }
+    } catch (error) {
+        console.warn('Failed to load bucket string:', error.message);
+    }
+    return null;
+}
+
+// Bucket string 로드
+const BUCKET_STRING = loadBucketString();
 router.get('/products', async (req, res) => {
   try {
     const query = `

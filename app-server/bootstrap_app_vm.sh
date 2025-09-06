@@ -65,7 +65,7 @@ log_message "부팅 시간: $(uptime)"
 
 # 2. 애플리케이션 디렉토리 및 권한 설정 (최우선)
 APP_USER="rocky"
-APP_DIR="/home/$APP_USER/ceweb"
+APP_DIR="/home/$APP_USER/ceweb/app-server"
 
 log_message "2. 애플리케이션 디렉토리 및 권한 설정..."
 if [ -d "$APP_DIR" ]; then
@@ -74,8 +74,8 @@ if [ -d "$APP_DIR" ]; then
     execute_and_log "디렉토리 권한 복구" "chown -R $APP_USER:$APP_USER $APP_DIR"
     execute_and_log "디렉토리 권한 설정" "chmod -R 755 $APP_DIR"
     
-    # 오디션 파일 디렉토리 권한 확인
-    AUDITION_DIR="$APP_DIR/files/audition"
+    # 오디션 파일 디렉토리 권한 확인 (상위 디렉토리에 위치)
+    AUDITION_DIR="/home/$APP_USER/ceweb/files/audition"
     if [ -d "$AUDITION_DIR" ]; then
         execute_and_log "오디션 디렉토리 권한 설정" "chown -R $APP_USER:$APP_USER '$AUDITION_DIR' && chmod -R 755 '$AUDITION_DIR'"
         log_message "✅ 오디션 파일 디렉토리 권한 복구"
@@ -176,7 +176,7 @@ done
 
 # 9. VM 식별 정보 생성
 log_message "9. VM 식별 정보 생성..."
-VM_INFO_FILE="/home/$APP_USER/ceweb/vm-info.json"
+VM_INFO_FILE="/home/$APP_USER/ceweb/app-server/vm-info.json"
 PM2_STATUS=$(sudo -u $APP_USER pm2 jlist | jq -r '.[0].pm2_env.status' 2>/dev/null || echo "unknown")
 
 # Load Balancer 환경: VM 인스턴스 번호 자동 감지

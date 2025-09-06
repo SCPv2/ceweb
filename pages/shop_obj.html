@@ -525,6 +525,9 @@ Contact: ars4mundus@gmail.com
                         return;
                     }
                     
+                    // bucketString을 전역 변수로 저장 (fallback에서 사용)
+                    window.BUCKET_STRING = bucketString;
+                    
                     // Object Storage base URL 패턴 - 32자 hex 문자열 매칭
                     const objectStorePattern = /https:\/\/object-store\.kr-west1\.e\.samsungsdscloud\.com\/[a-f0-9]{32}:ceweb/g;
                     const newBaseUrl = `https://object-store.kr-west1.e.samsungsdscloud.com/${bucketString}:ceweb`;
@@ -649,7 +652,9 @@ Contact: ars4mundus@gmail.com
             } catch (error) {
                 console.error('API 호출 실패:', error);
                 // Fallback to sample data with Object Storage URLs
-                const baseUrl = window.OBJECT_STORAGE_BASE_URL || 'https://object-store.kr-west1.e.samsungsdscloud.com/89097ddf09b84d96af496aded95dac29:ceweb';
+                // bucketString이 있으면 사용, 없으면 placeholder 사용
+                const fallbackBucketString = window.BUCKET_STRING || 'OBJECT_STORAGE_PLACEHOLDER';
+                const baseUrl = window.OBJECT_STORAGE_BASE_URL || `https://object-store.kr-west1.e.samsungsdscloud.com/${fallbackBucketString}:ceweb`;
                 return {
                     success: true,
                     products: [
