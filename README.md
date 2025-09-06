@@ -89,7 +89,7 @@ ceweb/                                  # 프로젝트 루트 디렉토리
 
 ### 🌐 도메인 구조
 
-- **w ww.cesvc.net**: 메인 웹사이트 (Nginx)
+- **www.cesvc.net**: 메인 웹사이트 (Nginx)
 - **app.cesvc.net**: API 서버 (Node.js)  
 - **db.cesvc.net**: 데이터베이스 서버 (PostgreSQL)
 
