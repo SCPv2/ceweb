@@ -243,7 +243,7 @@ npm start
 [//]: # (
 
 ==============================================================================
-Copyright (c) 2025 Stan Hong. All rights reserved.
+Copyright (c) 2025 Stan H. All rights reserved.
 
 This software and its source code are the exclusive property of Stan Hong.
 

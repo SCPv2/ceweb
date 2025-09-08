@@ -15,6 +15,7 @@ Contact: ars4mundus@gmail.com
 -->
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -36,9 +37,9 @@ Contact: ars4mundus@gmail.com
 
         /* Header - Consistent with main site */
         .header {
-            background: rgba(0,0,0,0.9);
+            background: rgba(0, 0, 0, 0.9);
             backdrop-filter: blur(10px);
-            box-shadow: 0 2px 20px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
             position: fixed;
             width: 100%;
             top: 0;
@@ -102,10 +103,10 @@ Contact: ars4mundus@gmail.com
             position: absolute;
             top: 100%;
             left: 0;
-            background: rgba(0,0,0,0.9);
+            background: rgba(0, 0, 0, 0.9);
             backdrop-filter: blur(10px);
             min-width: 200px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
             border-radius: 8px;
             padding: 1rem 0;
             z-index: 1001;
@@ -122,6 +123,7 @@ Contact: ars4mundus@gmail.com
                 opacity: 0;
                 transform: translateY(-10px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -137,7 +139,7 @@ Contact: ars4mundus@gmail.com
             text-transform: uppercase;
             letter-spacing: 0.5px;
             transition: all 0.3s ease;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .dropdown-item:last-child {
@@ -207,7 +209,7 @@ Contact: ars4mundus@gmail.com
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0,0,0,0.4);
+            background: rgba(0, 0, 0, 0.4);
             z-index: 1;
         }
 
@@ -222,8 +224,8 @@ Contact: ars4mundus@gmail.com
 
         /* Hero Section */
         .hero {
-            background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.7)), 
-                        url('../../media/img/bb_prod0.png') center/cover;
+            background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.7)),
+                url('../../media/img/bb_prod0.png') center/cover;
             background-attachment: fixed;
         }
 
@@ -232,17 +234,20 @@ Contact: ars4mundus@gmail.com
             font-weight: bold;
             letter-spacing: 0.5rem;
             margin-bottom: 1rem;
-            text-shadow: 0 0 30px rgba(255,255,255,0.3);
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
             animation: pulse 3s ease-in-out infinite;
         }
 
         @keyframes pulse {
-            0%, 100% { 
-                text-shadow: 0 0 30px rgba(255,255,255,0.3);
+
+            0%,
+            100% {
+                text-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
                 transform: scale(1);
             }
-            50% { 
-                text-shadow: 0 0 60px rgba(255,255,255,0.6), 0 0 90px rgba(231,76,60,0.4);
+
+            50% {
+                text-shadow: 0 0 60px rgba(255, 255, 255, 0.6), 0 0 90px rgba(231, 76, 60, 0.4);
                 transform: scale(1.02);
             }
         }
@@ -265,8 +270,8 @@ Contact: ars4mundus@gmail.com
 
         /* Album Section */
         .album-section {
-            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), 
-                        url('../../media/img/bb_prod1.png') center/cover;
+            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+                url('../../media/img/bb_prod1.png') center/cover;
             background-attachment: fixed;
         }
 
@@ -279,7 +284,7 @@ Contact: ars4mundus@gmail.com
             font-weight: bold;
             margin-bottom: 1rem;
             color: #fff;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
         }
 
         .album-subtitle {
@@ -299,7 +304,7 @@ Contact: ars4mundus@gmail.com
         }
 
         .track-list {
-            background: rgba(0,0,0,0.7);
+            background: rgba(0, 0, 0, 0.7);
             padding: 2rem;
             border-radius: 15px;
             backdrop-filter: blur(10px);
@@ -318,7 +323,7 @@ Contact: ars4mundus@gmail.com
             justify-content: space-between;
             align-items: center;
             padding: 1rem 0;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             cursor: pointer;
             transition: all 0.3s ease;
         }
@@ -350,8 +355,8 @@ Contact: ars4mundus@gmail.com
 
         /* Performance Section */
         .performance-section {
-            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), 
-                        url('../../media/img/bb_prod2.png') center/cover;
+            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+                url('../../media/img/bb_prod2.png') center/cover;
             background-attachment: fixed;
         }
 
@@ -363,18 +368,18 @@ Contact: ars4mundus@gmail.com
         }
 
         .performance-card {
-            background: rgba(0,0,0,0.8);
+            background: rgba(0, 0, 0, 0.8);
             padding: 2rem;
             border-radius: 15px;
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             transition: all 0.3s ease;
         }
 
         .performance-card:hover {
             transform: translateY(-10px);
             border-color: #e74c3c;
-            box-shadow: 0 20px 40px rgba(231,76,60,0.2);
+            box-shadow: 0 20px 40px rgba(231, 76, 60, 0.2);
         }
 
         .performance-date {
@@ -404,8 +409,8 @@ Contact: ars4mundus@gmail.com
 
         /* Behind Section */
         .behind-section {
-            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), 
-                        url('../../media/img/bb_prod3.png') center/cover;
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
+                url('../../media/img/bb_prod3.png') center/cover;
             background-attachment: fixed;
         }
 
@@ -440,9 +445,9 @@ Contact: ars4mundus@gmail.com
         .stat-box {
             text-align: center;
             padding: 1.5rem;
-            background: rgba(231,76,60,0.1);
+            background: rgba(231, 76, 60, 0.1);
             border-radius: 10px;
-            border: 1px solid rgba(231,76,60,0.3);
+            border: 1px solid rgba(231, 76, 60, 0.3);
         }
 
         .stat-number {
@@ -471,9 +476,9 @@ Contact: ars4mundus@gmail.com
 
         .visual-item {
             aspect-ratio: 1;
-            background: rgba(231,76,60,0.2);
+            background: rgba(231, 76, 60, 0.2);
             border-radius: 10px;
-            border: 1px solid rgba(231,76,60,0.3);
+            border: 1px solid rgba(231, 76, 60, 0.3);
             overflow: hidden;
         }
 
@@ -519,7 +524,7 @@ Contact: ars4mundus@gmail.com
         .social-link {
             width: 60px;
             height: 60px;
-            background: rgba(231,76,60,0.1);
+            background: rgba(231, 76, 60, 0.1);
             border: 2px solid #e74c3c;
             border-radius: 50%;
             display: flex;
@@ -556,12 +561,19 @@ Contact: ars4mundus@gmail.com
         }
 
         @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% {
+
+            0%,
+            20%,
+            50%,
+            80%,
+            100% {
                 transform: translateX(-50%) translateY(0);
             }
+
             40% {
                 transform: translateX(-50%) translateY(-10px);
             }
+
             60% {
                 transform: translateX(-50%) translateY(-5px);
             }
@@ -637,14 +649,16 @@ Contact: ars4mundus@gmail.com
 
         @keyframes glow {
             from {
-                text-shadow: 0 0 20px rgba(231,76,60,0.5);
+                text-shadow: 0 0 20px rgba(231, 76, 60, 0.5);
             }
+
             to {
-                text-shadow: 0 0 40px rgba(231,76,60,0.8);
+                text-shadow: 0 0 40px rgba(231, 76, 60, 0.8);
             }
         }
     </style>
 </head>
+
 <body>
     <!-- Loading Overlay -->
     <div class="loading-overlay" id="loadingOverlay">
@@ -698,11 +712,11 @@ Contact: ars4mundus@gmail.com
                 <h2 class="album-title">SIMPLY FIT</h2>
                 <p class="album-subtitle">1st Full Album</p>
                 <p class="album-description">
-                    Big Boys의 첫 번째 정규 앨범 'Simply Fit'은 그들의 음악적 성장과 
-                    다채로운 매력을 담은 역작입니다. 타이틀곡을 비롯해 총 12곡의 
+                    Big Boys의 첫 번째 정규 앨범 'Simply Fit'은 그들의 음악적 성장과
+                    다채로운 매력을 담은 역작입니다. 타이틀곡을 비롯해 총 12곡의
                     트랙으로 구성되어 있으며, 각기 다른 장르와 스타일을 선보입니다.
                 </p>
-                
+
                 <div class="track-list">
                     <h3>Track List</h3>
                     <div class="track-item">
@@ -746,7 +760,7 @@ Contact: ars4mundus@gmail.com
                     <h3 class="performance-title">Simply Fit Showcase</h3>
                     <p class="performance-venue">KSPO DOME, Seoul</p>
                     <p class="performance-description">
-                        첫 번째 정규 앨범 발매를 기념하는 특별한 쇼케이스 공연으로 
+                        첫 번째 정규 앨범 발매를 기념하는 특별한 쇼케이스 공연으로
                         팬들과 함께 새로운 음악을 선보였습니다.
                     </p>
                 </div>
@@ -755,7 +769,7 @@ Contact: ars4mundus@gmail.com
                     <h3 class="performance-title">Music Bank Special</h3>
                     <p class="performance-venue">KBS Hall, Seoul</p>
                     <p class="performance-description">
-                        뮤직뱅크 특별 무대에서 선보인 파워풀한 퍼포먼스는 
+                        뮤직뱅크 특별 무대에서 선보인 파워풀한 퍼포먼스는
                         많은 화제를 모았습니다.
                     </p>
                 </div>
@@ -764,7 +778,7 @@ Contact: ars4mundus@gmail.com
                     <h3 class="performance-title">Summer Festival</h3>
                     <p class="performance-venue">Olympic Park, Seoul</p>
                     <p class="performance-description">
-                        여름 페스티벌의 헤드라이너로 참여하여 대규모 관중들과 
+                        여름 페스티벌의 헤드라이너로 참여하여 대규모 관중들과
                         열정적인 무대를 만들어냈습니다.
                     </p>
                 </div>
@@ -780,15 +794,15 @@ Contact: ars4mundus@gmail.com
                 <div class="behind-text">
                     <h2>BEHIND THE MUSIC</h2>
                     <p>
-                        Big Boys는 단순한 아이돌 그룹을 넘어서 진정한 아티스트로 성장하고 있습니다. 
-                        각 멤버들의 개성과 재능이 하나로 어우러져 만들어내는 시너지는 
+                        Big Boys는 단순한 아이돌 그룹을 넘어서 진정한 아티스트로 성장하고 있습니다.
+                        각 멤버들의 개성과 재능이 하나로 어우러져 만들어내는 시너지는
                         K-POP 씬에 새로운 바람을 불러일으키고 있습니다.
                     </p>
                     <p>
-                        끊임없는 연습과 노력, 그리고 팬들과의 소통을 통해 
+                        끊임없는 연습과 노력, 그리고 팬들과의 소통을 통해
                         더욱 완성도 높은 음악과 퍼포먼스를 선보이기 위해 최선을 다하고 있습니다.
                     </p>
-                    
+
                     <div class="behind-stats">
                         <div class="stat-box">
                             <div class="stat-number">50M+</div>
@@ -808,24 +822,24 @@ Contact: ars4mundus@gmail.com
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="behind-visual">
                     <div class="visual-grid">
                         <div class="visual-item">
-                            <img src="../../media/img/bb_prod1.png" alt="Big Boys 1" 
-                                 onerror="this.style.display='none';">
+                            <img src="../../media/img/bb_prod1.png" alt="Big Boys 1"
+                                onerror="this.style.display='none';">
                         </div>
                         <div class="visual-item">
-                            <img src="../../media/img/bb_prod2.png" alt="Big Boys 2" 
-                                 onerror="this.style.display='none';">
+                            <img src="../../media/img/bb_prod2.png" alt="Big Boys 2"
+                                onerror="this.style.display='none';">
                         </div>
                         <div class="visual-item">
-                            <img src="../../media/img/bb_prod3.png" alt="Big Boys 3" 
-                                 onerror="this.style.display='none';">
+                            <img src="../../media/img/bb_prod3.png" alt="Big Boys 3"
+                                onerror="this.style.display='none';">
                         </div>
                         <div class="visual-item">
-                            <img src="../../media/img/bb_prod4.png" alt="Big Boys 4" 
-                                 onerror="this.style.display='none';">
+                            <img src="../../media/img/bb_prod4.png" alt="Big Boys 4"
+                                onerror="this.style.display='none';">
                         </div>
                     </div>
                 </div>
@@ -840,7 +854,7 @@ Contact: ars4mundus@gmail.com
             <p style="color: #ccc; font-size: 1.1rem; margin-bottom: 1rem;">
                 Keep following your dreams and stay fit!
             </p>
-            
+
             <div class="social-links">
                 <a href="#" class="social-link">f</a>
                 <a href="#" class="social-link">📷</a>
@@ -848,9 +862,9 @@ Contact: ars4mundus@gmail.com
                 <a href="#" class="social-link">🎵</a>
                 <a href="#" class="social-link">𝕏</a>
             </div>
-            
+
             <div class="footer-text">
-                <p>&copy; 2024 Creative Energy. All rights reserved.</p>
+                <p>&copy; 2025 Stan H. All rights reserved.</p>
                 <p>Big Boys Official Website</p>
             </div>
         </div>
@@ -860,7 +874,7 @@ Contact: ars4mundus@gmail.com
     <script src="../../web-server/api-config-obj.js"></script>
     <script>
         // Loading screen
-        window.addEventListener('load', function() {
+        window.addEventListener('load', function () {
             setTimeout(() => {
                 document.getElementById('loadingOverlay').classList.add('hidden');
             }, 2000);
@@ -868,7 +882,7 @@ Contact: ars4mundus@gmail.com
 
         // Hide scroll indicator after first scroll
         let scrolled = false;
-        window.addEventListener('scroll', function() {
+        window.addEventListener('scroll', function () {
             if (!scrolled) {
                 document.getElementById('scrollIndicator').style.display = 'none';
                 scrolled = true;
@@ -879,7 +893,7 @@ Contact: ars4mundus@gmail.com
         window.addEventListener('scroll', () => {
             const scrolled = window.pageYOffset;
             const sections = document.querySelectorAll('.section');
-            
+
             sections.forEach((section, index) => {
                 const speed = (index + 1) * 0.1;
                 section.style.transform = `translateY(${scrolled * speed}px)`;
@@ -888,7 +902,7 @@ Contact: ars4mundus@gmail.com
 
         // Track list interaction
         document.querySelectorAll('.track-item').forEach(track => {
-            track.addEventListener('click', function() {
+            track.addEventListener('click', function () {
                 // Placeholder for track play functionality
                 const trackName = this.querySelector('.track-name').textContent;
                 alert(`재생 중: ${trackName}`);
@@ -897,18 +911,18 @@ Contact: ars4mundus@gmail.com
 
         // Performance card hover effects
         document.querySelectorAll('.performance-card').forEach(card => {
-            card.addEventListener('mouseenter', function() {
+            card.addEventListener('mouseenter', function () {
                 this.style.transform = 'translateY(-15px) scale(1.02)';
             });
-            
-            card.addEventListener('mouseleave', function() {
+
+            card.addEventListener('mouseleave', function () {
                 this.style.transform = 'translateY(-10px) scale(1)';
             });
         });
 
         // Visual item gallery effect
         document.querySelectorAll('.visual-item').forEach(item => {
-            item.addEventListener('click', function() {
+            item.addEventListener('click', function () {
                 // Simple zoom effect
                 if (this.style.position === 'fixed') {
                     // Reset to normal
@@ -936,17 +950,17 @@ Contact: ars4mundus@gmail.com
         function scrollToSection(sectionIndex) {
             const sections = document.querySelectorAll('.section');
             if (sections[sectionIndex]) {
-                sections[sectionIndex].scrollIntoView({ 
-                    behavior: 'smooth' 
+                sections[sectionIndex].scrollIntoView({
+                    behavior: 'smooth'
                 });
             }
         }
 
         // Keyboard navigation
-        document.addEventListener('keydown', function(e) {
+        document.addEventListener('keydown', function (e) {
             const sections = document.querySelectorAll('.section');
             const currentSection = Math.floor(window.scrollY / window.innerHeight);
-            
+
             if (e.key === 'ArrowDown' && currentSection < sections.length - 1) {
                 e.preventDefault();
                 scrollToSection(currentSection + 1);
@@ -958,7 +972,7 @@ Contact: ars4mundus@gmail.com
 
         // Social links interaction
         document.querySelectorAll('.social-link').forEach(link => {
-            link.addEventListener('click', function(e) {
+            link.addEventListener('click', function (e) {
                 e.preventDefault();
                 // Placeholder for social media integration
                 const platform = this.textContent;
@@ -971,7 +985,7 @@ Contact: ars4mundus@gmail.com
             const title = document.querySelector('.hero-title');
             const text = title.textContent;
             title.innerHTML = '';
-            
+
             text.split('').forEach((char, index) => {
                 const span = document.createElement('span');
                 span.textContent = char;
@@ -1024,4 +1038,5 @@ Contact: ars4mundus@gmail.com
         });
     </script>
 </body>
+
 </html>
