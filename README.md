@@ -54,7 +54,7 @@ ceweb/                                  # 프로젝트 루트 디렉토리
 │   ├── admin.html                      # 👑 관리자 패널 (상품/주문/재고 관리)
 │   ├── audition.html                   # 🎤 오디션 신청 페이지 (파일 업로드)
 │   ├── notice.html                     # 📢 공지사항 게시판
-│   └── shop-db 적용전.html             # 📋 Shop 페이지 백업 (DB 적용 이전 버전)
+│   └── shop-db 적용전.html              # 📋 Shop 페이지 백업 (DB 적용 이전 버전)
 │
 ├── 🎨 artist/                          # 아티스트별 페이지
 │   ├── cloudy.html                     # ☁️ Cloudy 아티스트 소개 및 앨범 정보
@@ -89,7 +89,7 @@ ceweb/                                  # 프로젝트 루트 디렉토리
 
 ### 🌐 도메인 구조
 
-- **www.cesvc.net**: 메인 웹사이트 (Nginx)
+- **'www.cesvc.net**: 메인 웹사이트 (Nginx)
 - **app.cesvc.net**: API 서버 (Node.js)  
 - **db.cesvc.net**: 데이터베이스 서버 (PostgreSQL)
 
